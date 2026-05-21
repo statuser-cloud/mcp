@@ -1,0 +1,61 @@
+{
+  "name": "@statuser/mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Statuser.cloud — monitor servers, manage incidents and status pages from your AI client",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "statuser",
+    "monitoring",
+    "uptime",
+    "status-page",
+    "incidents",
+    "claude"
+  ],
+  "homepage": "https://statuser.cloud",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/statuser-cloud/mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/statuser-cloud/mcp/issues"
+  },
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "statuser-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && chmod +x dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "fetch-spec": "tsx scripts/fetch-spec.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint \"src/**/*.ts\" \"scripts/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\" \"scripts/**/*.ts\"",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "undici": "^7.2.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "eslint": "^9.17.0",
+    "openapi-typescript": "^7.5.2",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

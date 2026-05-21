@@ -1,0 +1,12 @@
+src
+scripts
+tsconfig.json
+.eslintrc*
+.prettierrc*
+.editorconfig
+.github
+.vscode
+.idea
+*.tsbuildinfo
+node_modules
+.env*

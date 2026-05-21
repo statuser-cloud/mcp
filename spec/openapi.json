@@ -1,0 +1,5958 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1/telegram/linked": {
+      "get": {
+        "operationId": "TelegramClientController_getLinkedAccounts",
+        "summary": "Получить список привязанных Телеграм аккаунтов",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Возвращает список привязанных аккаунтов Телеграм"
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/telegram/set-topic": {
+      "patch": {
+        "operationId": "TelegramClientController_setTopic",
+        "summary": "Установить топик для уведомлений",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Топик для уведомлений успешно установлен"
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/account": {
+      "get": {
+        "operationId": "AccountsController_getAccount",
+        "summary": "Получить информацию об аккаунте",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Информация об аккаунте успешно получена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Аккаунт не найден"
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "AccountsController_updateAccount",
+        "summary": "Обновить информацию об аккаунте",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Информация об аккаунте успешно обновлена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Аккаунт не найден"
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/billing/current-plan": {
+      "get": {
+        "operationId": "BillingController_getCurrentPlan",
+        "summary": "Получить информацию о текущем тарифе аккаунта",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Информация о тарифе успешно получена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentPlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Биллинг"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/billing/plans": {
+      "get": {
+        "operationId": "BillingController_getPublicPlans",
+        "summary": "Получить список публичных тарифов",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Публичные тарифы успешно получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlanResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Биллинг"
+        ]
+      }
+    },
+    "/v1/servers": {
+      "post": {
+        "operationId": "ServersController_addServer",
+        "summary": "Добавить в мониторинг новый сервер",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Сервер успешно добавлен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Серверы"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "ServersController_getServers",
+        "summary": "Получить все серверы на аккаунте",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Максимальное количество серверов",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Смещение для пагинации",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список серверов успешно получен"
+          }
+        },
+        "tags": [
+          "Серверы"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/servers/{id}": {
+      "get": {
+        "operationId": "ServersController_getServerById",
+        "summary": "Получить сервер",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Сервер успешно получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Сервер не найден"
+          }
+        },
+        "tags": [
+          "Серверы"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ServersController_deleteServer",
+        "summary": "Удалить сервер из мониторинга",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Сервер успешно удален"
+          },
+          "404": {
+            "description": "Сервер не найден"
+          }
+        },
+        "tags": [
+          "Серверы"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "ServersController_updateServer",
+        "summary": "Обновить сервер",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Сервер успешно обновлен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Сервер не найден"
+          }
+        },
+        "tags": [
+          "Серверы"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/servers/{id}/checks": {
+      "get": {
+        "operationId": "ServersController_getServerChecks",
+        "summary": "Получить проверки сервера",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Дата начала для фильтрации",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "Дата окончания для фильтрации",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список проверок сервера успешно получен"
+          },
+          "404": {
+            "description": "Сервер не найден"
+          }
+        },
+        "tags": [
+          "Серверы"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/servers/{id}/heartbeat/events": {
+      "get": {
+        "operationId": "ServersController_getServerHeartbeatEvents",
+        "summary": "Получить heartbeat события сервера",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Дата начала для фильтрации",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "Дата окончания для фильтрации",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список heartbeat событий успешно получен"
+          },
+          "404": {
+            "description": "Сервер не найден"
+          }
+        },
+        "tags": [
+          "Серверы"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/servers/{id}/{action}": {
+      "patch": {
+        "operationId": "ServersController_updateServerPauseStatus",
+        "summary": "Приостановить или возобновить проверки сервера",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "action",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Статус проверок сервера успешно обновлён"
+          },
+          "404": {
+            "description": "Сервер не найден"
+          }
+        },
+        "tags": [
+          "Серверы"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/servers/{id}/dns-history": {
+      "get": {
+        "operationId": "ServersController_getDnsHistory",
+        "summary": "Получить историю изменений DNS записей сервера",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "История изменений DNS записей успешно получена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DnsRecordDiffResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Сервер не найден"
+          }
+        },
+        "tags": [
+          "Серверы"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/servers/{id}/test-notify": {
+      "post": {
+        "operationId": "ServersController_sendTestNotification",
+        "summary": "Отправить тестовую нотификацию для сервера",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Тестовая нотификация успешно отправлена"
+          },
+          "404": {
+            "description": "Сервер не найден"
+          }
+        },
+        "tags": [
+          "Серверы"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/notification-rules": {
+      "get": {
+        "operationId": "NotificationRuleController_getNotificationRules",
+        "summary": "Получить правила уведомлений для аккаунта",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Список правил уведомлений успешно получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationRuleResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Нотификации"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "NotificationRuleController_createOrUpdateNotificationRule",
+        "summary": "Обновить правило уведомлений для аккаунта",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNotificationRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Правило уведомлений успешно обновлено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationRuleResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Нотификации"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/webhooks": {
+      "get": {
+        "operationId": "WebhookController_list",
+        "summary": "Получить список вебхуков аккаунта",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Список вебхуков успешно получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookEndpointResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Вебхуки"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "WebhookController_create",
+        "summary": "Создать вебхук",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWebhookEndpointDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Вебхук успешно создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Вебхуки"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/webhooks/{id}": {
+      "patch": {
+        "operationId": "WebhookController_update",
+        "summary": "Обновить вебхук",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWebhookEndpointDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Вебхук успешно обновлён",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Вебхуки"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "WebhookController_remove",
+        "summary": "Удалить вебхук",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Вебхук успешно удалён"
+          }
+        },
+        "tags": [
+          "Вебхуки"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/webhooks/{id}/test-notify": {
+      "post": {
+        "operationId": "WebhookController_sendTest",
+        "summary": "Отправить тестовый запрос в вебхук",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Тестовый запрос в вебхук успешно отправлен"
+          },
+          "502": {
+            "description": "Не удалось доставить тестовый вебхук",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "statusCode": 502,
+                    "error_code": "webhook_test_delivery_failed",
+                    "message": "Failed to deliver test webhook",
+                    "meta": {
+                      "reason": "timeout",
+                      "webhook_status": 500
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Вебхуки"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/max/links": {
+      "get": {
+        "operationId": "MaxClientController_linkAccount",
+        "summary": "Получить ссылку для привязки аккаунта MAX",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Возвращает ссылку для привязки",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateMaxLinkDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/max/linked": {
+      "get": {
+        "operationId": "MaxClientController_getLinkedAccounts",
+        "summary": "Получить список привязанных MAX аккаунтов",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Возвращает список привязанных MAX аккаунтов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MaxResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/max/unlink": {
+      "delete": {
+        "operationId": "MaxClientController_unlinkAccount",
+        "summary": "Отвязать MAX аккаунт",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "ID аккаунта MAX, который нужно отвязать",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "max_id": {
+                    "type": "string",
+                    "description": "ID получателя MAX"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Аккаунт MAX успешно отвязан"
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/max/2fa-account": {
+      "patch": {
+        "operationId": "MaxClientController_update2faAccount",
+        "summary": "Изменить используемый для 2fa MAX аккаунт",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMaxDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Изменяет используемый для 2fa MAX аккаунт"
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/notification-emails": {
+      "get": {
+        "operationId": "NotificationEmailsController_list",
+        "summary": "Получить список емейл для уведомлений",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Список емейл аккаунта",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationEmailResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "NotificationEmailsController_add",
+        "summary": "Добавить емейл для уведомлений (отправит письмо с кодом)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddNotificationEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Письмо с кодом отправлено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationEmailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/notification-emails/{id}/confirm": {
+      "post": {
+        "operationId": "NotificationEmailsController_confirm",
+        "summary": "Подтвердить емейл кодом из письма",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmNotificationEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Емейл подтверждён",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationEmailResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Неверный или истекший код"
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/notification-emails/{id}/resend": {
+      "post": {
+        "operationId": "NotificationEmailsController_resend",
+        "summary": "Повторно отправить код подтверждения",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Код отправлен повторно"
+          },
+          "404": {
+            "description": "Емейл не найден"
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/notification-emails/{id}": {
+      "delete": {
+        "operationId": "NotificationEmailsController_remove",
+        "summary": "Удалить емейл из списка уведомлений",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Емейл удалён"
+          },
+          "404": {
+            "description": "Емейл не найден"
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/holiday-mode": {
+      "get": {
+        "operationId": "HolidayModeController_getHolidayMode",
+        "summary": "Получить статус режима праздников",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolidayModeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "HolidayModeController_setHolidayMode",
+        "summary": "Изменить статус режима праздников",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHolidayModeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolidayModeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/servers/{serverId}/incidents": {
+      "get": {
+        "operationId": "IncidentsController_getIncidentsByServer",
+        "summary": "Получить инциденты сервера",
+        "parameters": [
+          {
+            "name": "serverId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Инциденты сервера успешно получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Сервер не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}": {
+      "get": {
+        "operationId": "IncidentsController_getIncident",
+        "summary": "Получить инцидент",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Инцидент успешно получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents": {
+      "get": {
+        "operationId": "IncidentsController_getIncidentsByAccount",
+        "summary": "Получить все инциденты на аккаунте",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Статус инцидента (опционально)",
+            "schema": {
+              "enum": [
+                "ongoing",
+                "resolved",
+                "dismissed",
+                "auto_closed_changed",
+                "auto_closed_timeout"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Инциденты успешно получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/events": {
+      "get": {
+        "operationId": "IncidentsController_getIncidentEventsByServer",
+        "summary": "Получить события инцидента",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "События инцидента успешно получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentEventResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/server": {
+      "get": {
+        "operationId": "IncidentsController_getServerByIncidentId",
+        "summary": "Получить сервер по инциденту",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Сервер успешно получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/report": {
+      "get": {
+        "operationId": "IncidentsController_downloadIncidentReport",
+        "summary": "Скачать PDF отчет по инциденту",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sections",
+            "required": false,
+            "in": "query",
+            "description": "Секции, которые будут включены в отчет. Требуется передавать как repeated query (?sections=ai_summary&sections=events)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ai_summary",
+                  "diagnostics",
+                  "technical_reference",
+                  "events"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF отчет по инциденту успешно сформирован"
+          },
+          "403": {
+            "description": "PDF отчет по инциденту недоступен на текущем тарифе"
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/ai-summary": {
+      "post": {
+        "operationId": "IncidentsController_generateIncidentAiSummary",
+        "summary": "Сгенерировать AI саммари инцидента",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AI саммари успешно сгенерировано",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/ai-summary/rating": {
+      "post": {
+        "operationId": "IncidentsController_rateIncidentAiSummary",
+        "summary": "Оценить AI саммари инцидента",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentSummaryRatingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Оценка успешно сохранена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/comments": {
+      "post": {
+        "operationId": "IncidentCommentController_create",
+        "summary": "Создать комментарий к инциденту",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIncidentCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Комментарий успешно создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "IncidentCommentController_getAllCommentsByIncident",
+        "summary": "Получить все комментарии к инциденту",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Комментарии успешно получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommentResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/comments/upload-url": {
+      "post": {
+        "operationId": "IncidentCommentController_getAttachmentUploadUrl",
+        "summary": "Получить ссылку для загрузки вложения к комментарию инцидента",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIncidentCommentUploadUrlDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ссылка успешно получена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignedUploadUrlResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/comments/{commentId}": {
+      "patch": {
+        "operationId": "IncidentCommentController_update",
+        "summary": "Обновить комментарий",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIncidentCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Комментарий успешно обновлен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "IncidentCommentController_delete",
+        "summary": "Удалить комментарий",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Комментарий успешно удалён"
+          },
+          "404": {
+            "description": "Комментарий не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/check-slug/{slug}": {
+      "get": {
+        "operationId": "StatusPagesController_checkSlug",
+        "summary": "Проверить, свободен ли путь",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Результат проверки пути",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckSlugAvailabilityResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/check-domain/{domain}": {
+      "get": {
+        "operationId": "StatusPagesController_checkDomain",
+        "summary": "Проверить, свободен ли домен",
+        "parameters": [
+          {
+            "name": "domain",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Результат проверки домена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckDomainAvailabilityResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/upload-url": {
+      "post": {
+        "operationId": "StatusPagesController_getUploadUrl",
+        "summary": "Получить ссылку для загрузки логотипа или фавикона",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignedUploadUrlDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ссылка успешно получена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "uploadUrl": "https://s3.timeweb.cloud/...",
+                    "fileUrl": "https://s3.statuser.cloud/status-pages/..."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages": {
+      "get": {
+        "operationId": "StatusPagesController_getAccountStatusPages",
+        "summary": "Получить все страницы статуса на аккаунте",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Страницы статуса успешно получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StatusPageResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "StatusPagesController_createStatusPage",
+        "summary": "Создать новую страницу статуса",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStatusPageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Страница статуса успешно создана",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPageResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Страница не найдена"
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}": {
+      "get": {
+        "operationId": "StatusPagesController_getOneStatusPage",
+        "summary": "Получить страницу статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Страница статуса успешно получена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPageResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Страница не найдена"
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "StatusPagesController_deleteStatusPage",
+        "summary": "Удалить страницу статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Страница успешно удалена"
+          },
+          "404": {
+            "description": "Страница не найдена"
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "StatusPagesController_updateServer",
+        "summary": "Обновить страницу статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusPageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Страница успешно обновлена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPageResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Страница не найдена"
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/servers": {
+      "patch": {
+        "operationId": "StatusPagesController_updateGroupsAndServers",
+        "summary": "Обновить группы и серверы на странице статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusPageGroupsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Группы и серверы обновлены"
+          },
+          "404": {
+            "description": "Страница не найдена"
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/{action}": {
+      "patch": {
+        "operationId": "StatusPagesController_updateStatusPagePublishedStatus",
+        "summary": "Опубликовать или снять с публикации страницу статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "action",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Статус публикации страницы успешно обновлён"
+          },
+          "404": {
+            "description": "Страница не найдена"
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/incident-reports": {
+      "get": {
+        "operationId": "StatusPageIncidentReportsController_getReports",
+        "summary": "Получить отчёты инцидентов для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StatusPageIncidentReportResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "StatusPageIncidentReportsController_createReport",
+        "summary": "Создать отчёт по инциденту для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStatusPageIncidentReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPageIncidentReportResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/incident-reports/{reportId}": {
+      "patch": {
+        "operationId": "StatusPageIncidentReportsController_updateReport",
+        "summary": "Обновить отчёт для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "reportId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusPageIncidentReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPageIncidentReportResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "StatusPageIncidentReportsController_deleteReport",
+        "summary": "Удалить отчёт по инциденту для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "reportId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/incident-reports/{reportId}/updates": {
+      "post": {
+        "operationId": "StatusPageIncidentReportsController_createReportUpdate",
+        "summary": "Добавить обновление в отчёт для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "reportId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStatusPageIncidentReportUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPageIncidentReportResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/incident-reports/{reportId}/updates/{updateId}": {
+      "patch": {
+        "operationId": "StatusPageIncidentReportsController_updateReportUpdate",
+        "summary": "Обновить сообщение в отчёте для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "reportId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "updateId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusPageIncidentReportUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPageIncidentReportResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "StatusPageIncidentReportsController_deleteReportUpdate",
+        "summary": "Удалить сообщение из отчёта для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "reportId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "updateId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/planned-maintenances": {
+      "get": {
+        "operationId": "StatusPagePlannedMaintenancesController_getMaintenances",
+        "summary": "Получить плановые работы для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StatusPagePlannedMaintenanceResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "StatusPagePlannedMaintenancesController_createMaintenance",
+        "summary": "Создать плановые работы для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStatusPagePlannedMaintenanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPagePlannedMaintenanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/planned-maintenances/{maintenanceId}": {
+      "patch": {
+        "operationId": "StatusPagePlannedMaintenancesController_updateMaintenance",
+        "summary": "Обновить плановые работы для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maintenanceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusPagePlannedMaintenanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPagePlannedMaintenanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "StatusPagePlannedMaintenancesController_deleteMaintenance",
+        "summary": "Удалить плановые работы для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maintenanceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/planned-maintenances/{maintenanceId}/updates": {
+      "post": {
+        "operationId": "StatusPagePlannedMaintenancesController_createMaintenanceUpdate",
+        "summary": "Добавить обновление в запись плановых работ для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maintenanceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStatusPagePlannedMaintenanceUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPagePlannedMaintenanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/planned-maintenances/{maintenanceId}/updates/{updateId}": {
+      "patch": {
+        "operationId": "StatusPagePlannedMaintenancesController_updateMaintenanceUpdate",
+        "summary": "Обновить сообщение в записи плановых работ для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maintenanceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "updateId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusPagePlannedMaintenanceUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPagePlannedMaintenanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "StatusPagePlannedMaintenancesController_deleteMaintenanceUpdate",
+        "summary": "Удалить сообщение из записи плановых работ для страницы статуса",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maintenanceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "updateId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/2fa": {
+      "get": {
+        "operationId": "TwoFactorController_get2faInfo",
+        "summary": "Получить информацию по 2fa на аккаунте",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Информацию по 2fa успешно получена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info2faResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Statuser API",
+    "description": "\nОфициальный API для интеграции с платформой Statuser.\n\nStatuser — сервис мониторинга доступности серверов, сайтов и приложений. С помощью публичного API вы можете интегрировать мониторинг в свою систему, управлять проверками, получать инциденты, настраивать уведомления и страницы статуса.\n\n---\n\n### Аутентификация\n\nВсе запросы требуют аутентификации с помощью API ключа, который можно создать в <a href=\"https://statuser.cloud/my/account/api-keys\" target=\"_blank\" rel=\"noopener noreferrer\">панели управления</a>. API ключ необходимо передавать в заголовке каждого запроса:\n\n```\nAuthorization: Bearer <ваш токен>\n```\n\n---\n\n### Версионирование\n\nВсе эндпоинты и примеры в документации используют явную версию. Версионирование задаётся на уровне каждого эндпоинта и не является глобальным.\n\nВерсия указывается в пути запроса сразу после базового URL. Например:\n\n```\nGET /v1/account\n```\n\nЭтот запрос обращается к первой версии метода получения данных об аккаунте.\n\nAPI Statuser следует принципам [семантического версионирования](https://semver.org/lang/ru/), при этом добавление новых полей в ответ может происходить без изменения версии эндпоинта.\n\nРекомендуется обрабатывать только нужные поля, а не весь ответ целиком. Не передавайте ответы API сторонним системам без валидации.\n\nРазрабатывайте интеграции так, чтобы они были устойчивы к добавлению новых полей и не полагались на порядок ключей в JSON-объекте.\n\n---\n\n### Ограничение частоты запросов\n\nЧтобы обеспечить стабильность для всех пользователей, Statuser защищает API от всплесков входящего трафика, анализируя количество запросов c каждого аккаунта к каждой конечной точке.\n\nВ каждом ответе API возвращаются заголовки, содержащие информацию о текущем лимите:\n\n| Заголовок              | Описание                                                                 |\n|------------------------|--------------------------------------------------------------------------|\n| `ratelimit-limit`      | Максимальное количество запросов в рамках текущего окна                  |\n| `ratelimit-policy`     | Политика лимитов, например `3000;w=900` означает 3000 запросов на 900 сек |\n| `ratelimit-remaining`  | Количество оставшихся запросов в текущем окне                            |\n| `ratelimit-reset`      | Через сколько секунд произойдёт сброс лимита                             |\n\nЕсли лимит превышен, API вернёт ошибку в формате:\n\n```json\n{\n  \"status\": 429,\n  \"error_code\": \"too_many_requests\"\n  \"message\": \"Too many requests from this IP, try again later\",\n}\n```\n\nДля корректной работы с ограничениями частоты запросов используйте значение `ratelimit-reset`, чтобы отложить повторный запрос до завершения текущего окна лимита.\n\n---\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Поддержка",
+      "url": "https://statuser.cloud",
+      "email": "info@statuser.cloud"
+    }
+  },
+  "tags": [
+    {
+      "name": "Аккаунт",
+      "description": ""
+    },
+    {
+      "name": "Биллинг",
+      "description": ""
+    },
+    {
+      "name": "Вебхуки",
+      "description": ""
+    },
+    {
+      "name": "Инциденты",
+      "description": ""
+    },
+    {
+      "name": "Нотификации",
+      "description": ""
+    },
+    {
+      "name": "Серверы",
+      "description": ""
+    },
+    {
+      "name": "Страницы статуса",
+      "description": ""
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.statuser.cloud"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "AccountResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID аккаунта"
+          },
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "Электронная почта пользователя"
+          },
+          "name": {
+            "type": "string",
+            "example": "Иван Иванов",
+            "description": "Имя пользователя"
+          },
+          "status": {
+            "type": "string",
+            "example": "active",
+            "description": "Статус аккаунта"
+          },
+          "password": {
+            "type": "string",
+            "example": "password",
+            "description": "Пароль аккаунта"
+          },
+          "avatar_url": {
+            "type": "object",
+            "example": "https://example.com/avatar.jpg",
+            "description": "URL аватара пользователя",
+            "nullable": true
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Дата создания аккаунта"
+          },
+          "password_changed_at": {
+            "type": "object",
+            "example": "2023-01-05T00:00:00.000Z",
+            "description": "Дата последней смены пароля",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Europe/Moscow",
+            "description": "Часовой пояс, который используется для отображения времени в нотификациях"
+          },
+          "is_ai_assistant_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Отображается ли чат с ИИ помощником в панели управления"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "status",
+          "password",
+          "avatar_url",
+          "created_at",
+          "password_changed_at",
+          "timezone",
+          "is_ai_assistant_enabled"
+        ]
+      },
+      "UpdateAccountDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "Электронная почта пользователя"
+          },
+          "name": {
+            "type": "string",
+            "example": "Иван Иванов",
+            "description": "Имя пользователя"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Europe/Moscow",
+            "description": "Часовой пояс, который используется для отображения времени в нотификациях"
+          },
+          "is_ai_assistant_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Отображается ли чат с ИИ помощником в панели управления"
+          }
+        }
+      },
+      "PlanFeaturesResponseDto": {
+        "type": "object",
+        "properties": {
+          "servers_limit": {
+            "type": "number",
+            "example": 50,
+            "description": "Максимальное количество серверов"
+          },
+          "available_locations": {
+            "example": [
+              "msk-1",
+              "ams-1",
+              "ala-1"
+            ],
+            "description": "Список доступных локаций мониторинга",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allow_location_selection": {
+            "type": "boolean",
+            "example": true,
+            "description": "Возможность ручного выбора локаций"
+          },
+          "min_check_interval_seconds": {
+            "type": "number",
+            "example": 60,
+            "description": "Минимальный интервал проверок (в секундах)"
+          },
+          "ssl_monitoring_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Поддержка мониторинга SSL"
+          },
+          "domain_monitoring_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Поддержка мониторинга доменов"
+          },
+          "dns_monitoring_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Поддержка мониторинга DNS"
+          },
+          "dns_history_retention_days": {
+            "type": "number",
+            "example": 30,
+            "description": "Срок хранения истории DNS записей (в днях)"
+          },
+          "keyword_monitoring_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Поддержка мониторинга ключевых слов"
+          },
+          "heartbeat_monitoring_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Поддержка мониторинга heartbeat"
+          },
+          "latency_alerts_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Поддержка уведомлений о медленном ответе"
+          },
+          "custom_success_http_codes_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Возможность задавать список HTTP-кодов, считающихся успешными"
+          },
+          "incident_retention_days": {
+            "type": "number",
+            "example": 60,
+            "description": "Срок хранения инцидентов (в днях)"
+          },
+          "network_diagnostics_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Доступность сетевой диагностики"
+          },
+          "screenshots_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Поддержка скриншотов при проверках"
+          },
+          "incident_comments_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Возможность комментирования инцидентов"
+          },
+          "incident_report_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Возможность скачивания отчета по инциденту"
+          },
+          "webhook_notifications_enabled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Доступность вебхук-уведомлений"
+          },
+          "status_pages_limit": {
+            "type": "number",
+            "example": 3,
+            "description": "Максимальное количество страниц статуса"
+          },
+          "custom_domain_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Поддержка подключения собственного домена"
+          },
+          "password_protected_status_page": {
+            "type": "boolean",
+            "example": true,
+            "description": "Защита страниц паролем"
+          },
+          "indexing_control_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Исключение страниц из индексации поисковиками"
+          },
+          "white_label_enabled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Возможность вайтлейбла (удаления логотипа Статусера)"
+          },
+          "status_page_minimum_incident_duration_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Возможность задавать минимальную длительность инцидента для отображения на странице статуса"
+          },
+          "status_page_incident_reports_per_month_limit": {
+            "type": "number",
+            "example": 1,
+            "description": "Лимит количества публичных отчётов по инцидентам для страниц статуса в месяц"
+          },
+          "status_page_planned_maintenances_per_month_limit": {
+            "type": "number",
+            "example": 1,
+            "description": "Лимит количества записей о плановых работах для страниц статуса в месяц"
+          }
+        },
+        "required": [
+          "servers_limit",
+          "available_locations",
+          "allow_location_selection",
+          "min_check_interval_seconds",
+          "ssl_monitoring_enabled",
+          "domain_monitoring_enabled",
+          "dns_monitoring_enabled",
+          "dns_history_retention_days",
+          "keyword_monitoring_enabled",
+          "heartbeat_monitoring_enabled",
+          "latency_alerts_enabled",
+          "custom_success_http_codes_enabled",
+          "incident_retention_days",
+          "network_diagnostics_enabled",
+          "screenshots_enabled",
+          "incident_comments_enabled",
+          "incident_report_enabled",
+          "webhook_notifications_enabled",
+          "status_pages_limit",
+          "custom_domain_enabled",
+          "password_protected_status_page",
+          "indexing_control_enabled",
+          "white_label_enabled",
+          "status_page_minimum_incident_duration_enabled",
+          "status_page_incident_reports_per_month_limit",
+          "status_page_planned_maintenances_per_month_limit"
+        ]
+      },
+      "PlanResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 2,
+            "description": "ID тарифа"
+          },
+          "name": {
+            "type": "string",
+            "example": "Pro",
+            "description": "Название текущего тарифа"
+          },
+          "price_per_month": {
+            "type": "number",
+            "example": 199,
+            "description": "Стоимость тарифа в месяц (в рублях)"
+          },
+          "price_per_year": {
+            "type": "number",
+            "example": 1990,
+            "description": "Стоимость тарифа в год (в рублях)"
+          },
+          "features": {
+            "description": "Ограничения и возможности тарифа",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlanFeaturesResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "price_per_month",
+          "price_per_year",
+          "features"
+        ]
+      },
+      "CurrentPlanResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 2,
+            "description": "ID тарифа"
+          },
+          "name": {
+            "type": "string",
+            "example": "Pro",
+            "description": "Название текущего тарифа"
+          },
+          "price_per_month": {
+            "type": "number",
+            "example": 199,
+            "description": "Стоимость тарифа в месяц (в рублях)"
+          },
+          "price_per_year": {
+            "type": "number",
+            "example": 1990,
+            "description": "Стоимость тарифа в год (в рублях)"
+          },
+          "features": {
+            "description": "Ограничения и возможности тарифа",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlanFeaturesResponseDto"
+              }
+            ]
+          },
+          "valid_until": {
+            "type": "object",
+            "example": "2025-12-31T23:59:59.000Z",
+            "description": "Срок действия текущего тарифа"
+          },
+          "current_billing_period": {
+            "type": "string",
+            "enum": [
+              "month",
+              "year"
+            ],
+            "example": "month",
+            "description": "Период оплаты текущего тарифа",
+            "nullable": true
+          },
+          "pending_plan": {
+            "description": "Планируемый тариф на который произойдет даунгрейд",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlanResponseDto"
+              }
+            ]
+          },
+          "pending_plan_effective_at": {
+            "type": "object",
+            "example": "2025-12-31T23:59:59.000Z",
+            "description": "Дата применения запланированного даунгрейда",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "price_per_month",
+          "price_per_year",
+          "features",
+          "valid_until",
+          "current_billing_period",
+          "pending_plan",
+          "pending_plan_effective_at"
+        ]
+      },
+      "CreateServerDto": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "example": "192.168.1.1",
+            "description": "Адрес нового сервера"
+          },
+          "protocol": {
+            "type": "string",
+            "example": "http",
+            "description": "Протокол проверки"
+          },
+          "port": {
+            "type": "number",
+            "example": "22",
+            "description": "Порт для проверки"
+          },
+          "http_method": {
+            "type": "string",
+            "example": "head",
+            "description": "HTTP метод",
+            "enum": [
+              "head",
+              "get",
+              "options",
+              "post",
+              "put",
+              "patch"
+            ]
+          },
+          "body": {
+            "type": "object",
+            "example": "{\"key\": \"value\"}",
+            "description": "Тело запроса",
+            "nullable": true
+          },
+          "keyword": {
+            "type": "object",
+            "example": "Welcome",
+            "description": "Ключевое слово для мониторинга",
+            "nullable": true
+          },
+          "keyword_mode": {
+            "type": "string",
+            "example": "present",
+            "description": "Режим проверки ключевого слова: успех если слово есть/если слова нет",
+            "enum": [
+              "present",
+              "absent"
+            ],
+            "nullable": true
+          },
+          "headers": {
+            "example": [],
+            "description": "Собственные заголовки запроса",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "is_follow_redirects": {
+            "type": "boolean",
+            "example": true,
+            "description": "Следовать за редиректами или нет"
+          },
+          "success_http_codes": {
+            "example": [
+              "2xx"
+            ],
+            "description": "HTTP-коды, которые считаются успешными. Поддерживаются конкретные коды (200, 301) и маски (2xx, 5xx)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "request_timeout": {
+            "type": "number",
+            "example": "10",
+            "description": "Таймаут запроса"
+          },
+          "check_interval": {
+            "type": "number",
+            "example": 60,
+            "description": "Интервал проверки сервера в секундах",
+            "minimum": 10,
+            "maximum": 3600
+          },
+          "heartbeat_grace_interval": {
+            "type": "object",
+            "example": 300,
+            "description": "Допустимое опоздание в секундах для heartbeat: сколько ждать сверх check_interval",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "example": "Восхитительный сервер",
+            "description": "Название сервиса"
+          },
+          "description": {
+            "type": "string",
+            "example": "Восхитительный сервер для проверки статуса",
+            "description": "Описание сервиса"
+          },
+          "is_ssl_check": {
+            "type": "boolean",
+            "example": true,
+            "description": "Требуется ли выполнять проверку SSL-сертификата"
+          },
+          "is_domain_check": {
+            "type": "boolean",
+            "example": true,
+            "description": "Требуется ли выполнять проверку домена"
+          },
+          "is_latency_alert_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включить уведомления о медленном ответе сервера"
+          },
+          "latency_trigger_ms": {
+            "type": "number",
+            "example": 800,
+            "description": "Порог в мс для определения медленного ответа"
+          },
+          "locations": {
+            "type": "array",
+            "example": [
+              "msk-1",
+              "ams-1",
+              "ala-1"
+            ],
+            "description": "Локации, из которых требуется выполнять проверки"
+          },
+          "dns_record_types": {
+            "type": "string",
+            "example": [
+              "A",
+              "AAAA",
+              "MX"
+            ],
+            "description": "Типы DNS записей для мониторинга",
+            "enum": [
+              "A",
+              "AAAA",
+              "CNAME",
+              "MX",
+              "TXT",
+              "NS",
+              "SOA",
+              "PTR",
+              "SRV"
+            ]
+          }
+        },
+        "required": [
+          "host",
+          "protocol",
+          "port",
+          "http_method",
+          "body",
+          "keyword",
+          "keyword_mode",
+          "headers",
+          "is_follow_redirects",
+          "success_http_codes",
+          "request_timeout",
+          "check_interval",
+          "name",
+          "description",
+          "is_ssl_check",
+          "is_domain_check",
+          "locations",
+          "dns_record_types"
+        ]
+      },
+      "DnsRecord": {
+        "type": "object",
+        "properties": {
+          "record_type": {
+            "type": "string",
+            "example": "A",
+            "description": "Тип DNS записи",
+            "enum": [
+              "A",
+              "AAAA",
+              "CNAME",
+              "MX",
+              "TXT",
+              "NS",
+              "SOA",
+              "PTR",
+              "SRV"
+            ]
+          },
+          "records": {
+            "example": [
+              {
+                "value": "192.168.1.1"
+              },
+              {
+                "value": "192.168.1.2"
+              },
+              {
+                "priority": 10,
+                "exchange": "mail.example.com"
+              },
+              {
+                "priority": 10,
+                "weight": 5,
+                "port": 443,
+                "target": "service.example.com"
+              }
+            ],
+            "description": "Структурированные значения DNS записей",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "record_type",
+          "records"
+        ]
+      },
+      "ServerResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID сервера"
+          },
+          "host": {
+            "type": "string",
+            "example": "192.168.1.1",
+            "description": "IP адрес сервера"
+          },
+          "protocol": {
+            "type": "string",
+            "example": "http",
+            "description": "Протокол сервера"
+          },
+          "heartbeat_token": {
+            "type": "object",
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "description": "Токен для heartbeat URL (только для protocol=heartbeat)",
+            "nullable": true
+          },
+          "last_heartbeat_at": {
+            "type": "object",
+            "example": "2025-12-31T23:59:59.000Z",
+            "description": "Время последнего полученного heartbeat (только для protocol=heartbeat)",
+            "nullable": true
+          },
+          "heartbeat_grace_interval": {
+            "type": "object",
+            "example": 300,
+            "description": "Допустимое опоздание в секундах для heartbeat: сколько ждать сверх check_interval",
+            "nullable": true
+          },
+          "port": {
+            "type": "object",
+            "example": "22",
+            "description": "Порт для проверки tcp"
+          },
+          "http_method": {
+            "type": "string",
+            "example": "head",
+            "description": "HTTP метод",
+            "enum": [
+              "head",
+              "get",
+              "options",
+              "post",
+              "put",
+              "patch"
+            ]
+          },
+          "request_timeout": {
+            "type": "number",
+            "example": "10",
+            "description": "Таймаут запроса"
+          },
+          "check_interval": {
+            "type": "number",
+            "example": 60,
+            "description": "Интервал проверки сервера в секундах"
+          },
+          "name": {
+            "type": "object",
+            "example": "Восхитительный сервер",
+            "description": "Название сервиса"
+          },
+          "description": {
+            "type": "object",
+            "example": "Восхитительный сервер для проверки статуса",
+            "description": "Описание сервиса",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "example": "online",
+            "description": "Текущий статус сервиса"
+          },
+          "body": {
+            "type": "object",
+            "example": "{\"key\": \"value\"}",
+            "description": "Тело запроса для проверки",
+            "nullable": true
+          },
+          "keyword": {
+            "type": "object",
+            "example": "Welcome",
+            "description": "Ключевое слово для мониторинга",
+            "nullable": true
+          },
+          "keyword_mode": {
+            "type": "string",
+            "example": "present",
+            "description": "Режим проверки ключевого слова",
+            "enum": [
+              "present",
+              "absent"
+            ],
+            "nullable": true
+          },
+          "headers": {
+            "example": "{\"Authorization\": \"Bearer token\"}",
+            "description": "Собственные заголовки запроса",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "is_follow_redirects": {
+            "type": "boolean",
+            "example": true,
+            "description": "Следовать за редиректами или нет"
+          },
+          "success_http_codes": {
+            "example": [
+              "2xx"
+            ],
+            "description": "HTTP-коды, которые считаются успешными (коды или маски, например 2xx)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "last_unavailable_at": {
+            "type": "object",
+            "example": "2023-01-02T00:00:00.000Z",
+            "description": "Время, когда сервер в последний раз стал недоступен (начало текущего или последнего инцидента)"
+          },
+          "last_available_at": {
+            "type": "object",
+            "example": "2023-01-03T12:34:56.000Z",
+            "description": "Время, когда сервер в последний раз восстановил доступность (завершение последнего инцидента или последняя успешная проверка)"
+          },
+          "last_checked_at": {
+            "type": "object",
+            "example": "2023-01-02T00:00:00.000Z",
+            "description": "Время последней проверки сервера"
+          },
+          "is_ssl_check": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включены ли проверки SSL-сертификата"
+          },
+          "ssl": {
+            "type": "object",
+            "description": "Информация о SSL-сертификате"
+          },
+          "is_domain_check": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включены ли проверки времени окончания домена"
+          },
+          "domain": {
+            "type": "object",
+            "description": "Информация о домене"
+          },
+          "is_latency_alert_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включены ли уведомления о медленном ответе"
+          },
+          "latency_trigger_ms": {
+            "type": "number",
+            "example": 800,
+            "description": "Порог в мс для перехода в состояние SLOW"
+          },
+          "locations": {
+            "example": [
+              "msk-1",
+              "ams-1",
+              "ala-1"
+            ],
+            "description": "Локации, из которых выполняются проверки",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dns_record_types": {
+            "type": "object",
+            "example": [
+              "A",
+              "AAAA",
+              "MX"
+            ],
+            "description": "Типы DNS записей для мониторинга",
+            "nullable": true
+          },
+          "dns_records": {
+            "description": "Текущие DNS записи домена",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DnsRecord"
+            }
+          },
+          "dns_error_code": {
+            "type": "string",
+            "example": "NODATA",
+            "description": "Код последней DNS ошибки (только для protocol=dns)",
+            "enum": [
+              "NODATA",
+              "NXDOMAIN",
+              "SERVFAIL",
+              "REFUSED",
+              "FORMERR",
+              "NOTIMP",
+              "UNKNOWN"
+            ],
+            "nullable": true
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Время создания сервера"
+          }
+        },
+        "required": [
+          "id",
+          "host",
+          "protocol",
+          "heartbeat_token",
+          "last_heartbeat_at",
+          "heartbeat_grace_interval",
+          "port",
+          "http_method",
+          "request_timeout",
+          "check_interval",
+          "name",
+          "description",
+          "status",
+          "body",
+          "keyword",
+          "keyword_mode",
+          "headers",
+          "is_follow_redirects",
+          "success_http_codes",
+          "last_unavailable_at",
+          "last_available_at",
+          "last_checked_at",
+          "is_ssl_check",
+          "ssl",
+          "is_domain_check",
+          "domain",
+          "is_latency_alert_enabled",
+          "latency_trigger_ms",
+          "locations",
+          "dns_record_types",
+          "dns_records",
+          "dns_error_code",
+          "created_at"
+        ]
+      },
+      "ServerHeader": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "Content-Type",
+            "description": "Ключ заголовка"
+          },
+          "value": {
+            "type": "string",
+            "example": "application/json",
+            "description": "Значение заголовка"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ]
+      },
+      "UpdateServerDto": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "example": "192.168.1.1",
+            "description": "Адрес сервера"
+          },
+          "protocol": {
+            "type": "string",
+            "example": "http",
+            "description": "Протокол проверки"
+          },
+          "port": {
+            "type": "number",
+            "example": 22,
+            "description": "Порт для проверки"
+          },
+          "http_method": {
+            "type": "string",
+            "example": "head",
+            "description": "HTTP метод",
+            "enum": [
+              "head",
+              "get",
+              "options",
+              "post",
+              "put",
+              "patch"
+            ]
+          },
+          "body": {
+            "type": "object",
+            "example": "{\"key\": \"value\"}",
+            "description": "Тело запроса",
+            "nullable": true
+          },
+          "keyword": {
+            "type": "object",
+            "example": "Welcome",
+            "description": "Ключевое слово для мониторинга",
+            "nullable": true
+          },
+          "keyword_mode": {
+            "type": "string",
+            "example": "present",
+            "description": "Режим проверки ключевого слова",
+            "enum": [
+              "present",
+              "absent"
+            ],
+            "nullable": true
+          },
+          "headers": {
+            "example": [
+              {
+                "key": "Authorization",
+                "value": "Bearer token"
+              }
+            ],
+            "description": "Собственные заголовки запроса",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServerHeader"
+            }
+          },
+          "is_follow_redirects": {
+            "type": "boolean",
+            "example": true,
+            "description": "Следовать за редиректами или нет"
+          },
+          "success_http_codes": {
+            "example": [
+              "2xx"
+            ],
+            "description": "HTTP-коды, которые считаются успешными. Поддерживаются конкретные коды (200, 301) и маски (2xx, 5xx)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "request_timeout": {
+            "type": "number",
+            "example": "10",
+            "description": "Таймаут запроса"
+          },
+          "check_interval": {
+            "type": "number",
+            "example": 60,
+            "description": "Интервал проверки сервера в секундах",
+            "minimum": 10,
+            "maximum": 3600
+          },
+          "heartbeat_grace_interval": {
+            "type": "object",
+            "example": 300,
+            "description": "Период ожидания в секундах для heartbeat: сколько ждать сверх check_interval",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "example": "Восхитительный сервер",
+            "description": "Название сервиса"
+          },
+          "description": {
+            "type": "string",
+            "example": "Восхитительный сервер для проверки статуса",
+            "description": "Описание сервиса"
+          },
+          "is_ssl_check": {
+            "type": "boolean",
+            "example": true,
+            "description": "Требуется ли выполнять проверку SSL-сертификата"
+          },
+          "is_domain_check": {
+            "type": "boolean",
+            "example": true,
+            "description": "Требуется ли выполнять проверку домена"
+          },
+          "is_latency_alert_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включить уведомления о медленном ответе сервера"
+          },
+          "latency_trigger_ms": {
+            "type": "number",
+            "example": 800,
+            "description": "Порог (мс) для определения медленного ответа"
+          },
+          "locations": {
+            "type": "array",
+            "example": [
+              "msk-1",
+              "ams-1",
+              "ala-1"
+            ],
+            "description": "Локации, из которых требуется выполнять проверки"
+          },
+          "dns_record_types": {
+            "type": "string",
+            "example": [
+              "A",
+              "AAAA",
+              "MX"
+            ],
+            "description": "Типы DNS записей для мониторинга",
+            "enum": [
+              "A",
+              "AAAA",
+              "CNAME",
+              "MX",
+              "TXT",
+              "NS",
+              "SOA",
+              "PTR",
+              "SRV"
+            ]
+          }
+        },
+        "required": [
+          "http_method",
+          "body",
+          "headers",
+          "is_follow_redirects",
+          "request_timeout",
+          "description",
+          "is_ssl_check",
+          "is_domain_check",
+          "locations"
+        ]
+      },
+      "DnsRecordDiffResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "Уникальный идентификатор изменения"
+          },
+          "domain": {
+            "type": "string",
+            "example": "example.com",
+            "description": "Доменное имя"
+          },
+          "record_type": {
+            "type": "string",
+            "example": "A",
+            "description": "Тип DNS записи",
+            "enum": [
+              "A",
+              "AAAA",
+              "CNAME",
+              "MX",
+              "TXT",
+              "NS",
+              "SOA",
+              "PTR",
+              "SRV"
+            ]
+          },
+          "added_records": {
+            "type": "object",
+            "example": [
+              {
+                "value": "new-record.example.com"
+              }
+            ],
+            "description": "Добавленные DNS записи",
+            "nullable": true
+          },
+          "removed_records": {
+            "type": "object",
+            "example": [
+              {
+                "value": "old-record.example.com"
+              }
+            ],
+            "description": "Удаленные DNS записи",
+            "nullable": true
+          },
+          "change_type": {
+            "type": "string",
+            "example": "modified",
+            "description": "Тип изменения",
+            "enum": [
+              "added",
+              "modified",
+              "removed"
+            ]
+          },
+          "changed_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Время изменения записи"
+          }
+        },
+        "required": [
+          "id",
+          "domain",
+          "record_type",
+          "added_records",
+          "removed_records",
+          "change_type",
+          "changed_at"
+        ]
+      },
+      "NotificationRuleResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "service_alerts",
+            "description": "Тип подписки на уведомления, например, для оповещений или обновлений",
+            "enum": [
+              "updates",
+              "weekly_reports",
+              "service_alerts",
+              "test_alerts",
+              "ssl_alerts",
+              "domain_alerts",
+              "dns_alerts",
+              "ideas",
+              "billing_alerts",
+              "holiday_mode",
+              "api_key_alerts",
+              "security_alerts",
+              "receipt"
+            ]
+          },
+          "channels": {
+            "type": "object",
+            "description": "Каналы для уведомлений и их активный статус",
+            "properties": {
+              "email": {
+                "type": "boolean",
+                "example": true,
+                "description": "Включены ли уведомления на емейл для данного типа подписки"
+              },
+              "telegram": {
+                "type": "boolean",
+                "example": true,
+                "description": "Включены ли уведомления в Телеграм для данного типа подписки"
+              },
+              "max": {
+                "type": "boolean",
+                "example": true,
+                "description": "Включены ли уведомления в MAX для данного типа подписки"
+              }
+            }
+          }
+        },
+        "required": [
+          "type",
+          "channels"
+        ]
+      },
+      "CreateNotificationRuleDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "service_alerts",
+            "description": "Тип подписки на уведомления, например, для оповещений или обновлений",
+            "enum": [
+              "updates",
+              "weekly_reports",
+              "service_alerts",
+              "test_alerts",
+              "ssl_alerts",
+              "domain_alerts",
+              "dns_alerts",
+              "ideas",
+              "billing_alerts",
+              "holiday_mode",
+              "api_key_alerts",
+              "security_alerts",
+              "receipt"
+            ]
+          },
+          "email": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включены ли уведомления по емейл для данного типа подписки"
+          },
+          "telegram": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включены ли уведомления в Телеграм для данного типа подписки"
+          },
+          "max": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включены ли уведомления в MAX для данного типа подписки"
+          }
+        },
+        "required": [
+          "type",
+          "email",
+          "telegram",
+          "max"
+        ]
+      },
+      "WebhookEndpointResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID вебхука"
+          },
+          "name": {
+            "type": "string",
+            "example": "Slack prod",
+            "description": "Название вебхука"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://example.com/webhooks/statuser",
+            "description": "URL, куда будет отправляться вебхук"
+          },
+          "subscriptions": {
+            "type": "array",
+            "example": [
+              "service_alerts",
+              "dns_alerts"
+            ],
+            "description": "Список подписок, которые отправляются на этот webhook",
+            "items": {
+              "type": "string",
+              "enum": [
+                "updates",
+                "weekly_reports",
+                "service_alerts",
+                "test_alerts",
+                "ssl_alerts",
+                "domain_alerts",
+                "dns_alerts",
+                "ideas",
+                "billing_alerts",
+                "holiday_mode",
+                "api_key_alerts",
+                "security_alerts",
+                "receipt"
+              ]
+            }
+          },
+          "is_secret_set": {
+            "type": "boolean",
+            "example": true,
+            "description": "Указан ли секрет для подписи запросов вебхука"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-08T12:00:00.000Z",
+            "description": "Дата добавления вебхука"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "url",
+          "subscriptions",
+          "is_secret_set",
+          "created_at"
+        ]
+      },
+      "CreateWebhookEndpointDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Slack prod",
+            "description": "Название вебхука"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://example.com/webhooks/statuser",
+            "description": "URL, куда будет отправляться вебхук"
+          },
+          "secret": {
+            "type": "object",
+            "example": null,
+            "description": "Секрет для подписи запросов вебхука. Не возвращается обратно из API",
+            "nullable": true
+          },
+          "subscriptions": {
+            "type": "array",
+            "example": [
+              "service_alerts",
+              "dns_alerts"
+            ],
+            "description": "Список типов подписок, которые должны отправляться на этот вебхук",
+            "items": {
+              "type": "string",
+              "enum": [
+                "updates",
+                "weekly_reports",
+                "service_alerts",
+                "test_alerts",
+                "ssl_alerts",
+                "domain_alerts",
+                "dns_alerts",
+                "ideas",
+                "billing_alerts",
+                "holiday_mode",
+                "api_key_alerts",
+                "security_alerts",
+                "receipt"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "url",
+          "secret",
+          "subscriptions"
+        ]
+      },
+      "UpdateWebhookEndpointDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Slack prod",
+            "description": "Название вебхука"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://example.com/webhooks/statuser",
+            "description": "URL, куда будет отправляться вебхук"
+          },
+          "secret": {
+            "type": "object",
+            "example": "my-secret",
+            "description": "Секрет для подписи запросов вебхука. Не возвращается обратно из API",
+            "nullable": true
+          },
+          "subscriptions": {
+            "type": "array",
+            "example": [
+              "service_alerts",
+              "dns_alerts"
+            ],
+            "description": "Список типов подписок, которые должны отправляться на этот вебхук",
+            "items": {
+              "type": "string",
+              "enum": [
+                "updates",
+                "weekly_reports",
+                "service_alerts",
+                "test_alerts",
+                "ssl_alerts",
+                "domain_alerts",
+                "dns_alerts",
+                "ideas",
+                "billing_alerts",
+                "holiday_mode",
+                "api_key_alerts",
+                "security_alerts",
+                "receipt"
+              ]
+            }
+          }
+        }
+      },
+      "CreateMaxLinkDto": {
+        "type": "object",
+        "properties": {
+          "link_user": {
+            "type": "string",
+            "description": "Ссылка для привязки аккаунта MAX пользователя",
+            "example": "https://max.ru/statuser_notify_bot?start=ab12cd34"
+          },
+          "link_group": {
+            "type": "string",
+            "description": "Ссылка для запуска групповой привязки в MAX",
+            "example": "https://max.ru/statuser_notify_bot?start=ab12cd34_group"
+          }
+        },
+        "required": [
+          "link_user",
+          "link_group"
+        ]
+      },
+      "MaxResponseDto": {
+        "type": "object",
+        "properties": {
+          "max_id": {
+            "type": "string",
+            "description": "ID чата в Max",
+            "example": "1234567890"
+          },
+          "max_name": {
+            "type": "object",
+            "description": "Название чата или имя пользователя",
+            "example": "My Team Chat",
+            "nullable": true
+          },
+          "avatar_url": {
+            "type": "object",
+            "description": "Прямая ссылка на аватар в S3",
+            "example": "https://s3.statuser.cloud/avatars/avatar_a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "description": "Тип получателя: пользователь или чат",
+            "enum": [
+              "user",
+              "chat"
+            ],
+            "example": "chat"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Дата привязки аккаунта MAX",
+            "example": "2024-11-30T14:48:00.000Z"
+          },
+          "is_2fa_account": {
+            "type": "boolean",
+            "description": "Используется ли аккаунт для двухфакторной аутентификации",
+            "example": true
+          }
+        },
+        "required": [
+          "max_id",
+          "max_name",
+          "avatar_url",
+          "type",
+          "created_at",
+          "is_2fa_account"
+        ]
+      },
+      "UpdateMaxDto": {
+        "type": "object",
+        "properties": {
+          "max_id": {
+            "type": "string",
+            "description": "ID чата в Max"
+          }
+        },
+        "required": [
+          "max_id"
+        ]
+      },
+      "NotificationEmailResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "ID записи"
+          },
+          "email": {
+            "type": "string",
+            "description": "Емейл"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "confirmed"
+            ],
+            "description": "Статус подтверждения емейл"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Дата создания"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "status",
+          "created_at"
+        ]
+      },
+      "AddNotificationEmailDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Емейл для уведомлений",
+            "example": "alerts@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ConfirmNotificationEmailDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Код подтверждения емейл из письма",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "HolidayModeResponseDto": {
+        "type": "object",
+        "properties": {
+          "holiday_until": {
+            "type": "string",
+            "nullable": true,
+            "description": "Дата и время (UTC) до включения уведомлений, либо null, если режим отключен"
+          }
+        },
+        "required": [
+          "holiday_until"
+        ]
+      },
+      "CreateHolidayModeDto": {
+        "type": "object",
+        "properties": {
+          "holiday_until": {
+            "type": "object",
+            "example": "2025-08-18 13:20:25.495746+00",
+            "description": "Дата и время (UTC) до включения уведомлений, либо null для выключения режима",
+            "nullable": true
+          }
+        },
+        "required": [
+          "holiday_until"
+        ]
+      },
+      "IncidentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID инцидента"
+          },
+          "server_id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID сервера"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Время начала инцидента"
+          },
+          "ended_at": {
+            "type": "object",
+            "example": "2023-01-02T00:00:00.000Z",
+            "description": "Время окончания инцидента",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "example": "resolved",
+            "description": "Статус инцидента",
+            "enum": [
+              "ongoing",
+              "resolved",
+              "dismissed",
+              "auto_closed_changed",
+              "auto_closed_timeout"
+            ]
+          },
+          "root_error": {
+            "type": "string",
+            "description": "Основная ошибка проверки сервера"
+          },
+          "keyword": {
+            "type": "object",
+            "description": "Ключевое слово, которое искали при типе проверки keyword",
+            "nullable": true,
+            "example": "simple"
+          },
+          "screenshot": {
+            "type": "object",
+            "example": "https://s3.statuser.cloud/sreenshots/img.png",
+            "description": "Ссылка на скриншот страницы"
+          },
+          "replay": {
+            "type": "object",
+            "example": "curl -X GET 1.1.1.1",
+            "description": "Команда для повтора запроса"
+          },
+          "details": {
+            "type": "object",
+            "description": "Детали проваленной проверки"
+          }
+        },
+        "required": [
+          "id",
+          "server_id",
+          "started_at",
+          "ended_at",
+          "status",
+          "root_error",
+          "keyword",
+          "screenshot",
+          "replay",
+          "details"
+        ]
+      },
+      "IncidentEventResponseDto": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Время создания события"
+          },
+          "type": {
+            "type": "string",
+            "example": "end",
+            "description": "Тип события",
+            "enum": [
+              "error",
+              "resolved",
+              "notification",
+              "comment",
+              "start",
+              "end"
+            ]
+          },
+          "meta": {
+            "description": "Метаданные события",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ErrorMeta"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationMeta"
+              },
+              {
+                "$ref": "#/components/schemas/CommentMeta"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "created_at",
+          "type",
+          "meta"
+        ]
+      },
+      "IncidentSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "object",
+            "description": "Сгенерированное ИИ саммари диагностики инцидента",
+            "example": "Сервер недоступен из-за сетевого таймаута..."
+          },
+          "rating": {
+            "type": "string",
+            "description": "Оценка саммари пользователем",
+            "example": "positive",
+            "enum": [
+              "positive",
+              "negative"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "summary",
+          "rating"
+        ]
+      },
+      "IncidentSummaryRatingDto": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "string",
+            "description": "Оценка саммари",
+            "example": "positive",
+            "enum": [
+              "positive",
+              "negative"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "rating"
+        ]
+      },
+      "IncidentCommentAttachmentDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "https://s3.statuser.cloud/incident-attachments-dev/uuid.png",
+            "description": "URL вложенного файла"
+          },
+          "file_name": {
+            "type": "string",
+            "example": "error-screenshot.png",
+            "description": "Имя вложенного файла"
+          }
+        },
+        "required": [
+          "url",
+          "file_name"
+        ]
+      },
+      "CreateIncidentCommentDto": {
+        "type": "object",
+        "properties": {
+          "comment_text": {
+            "type": "string",
+            "example": "Текст комментария",
+            "description": "Текст комментария"
+          },
+          "attached_files": {
+            "description": "Список прикрепленных файлов",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IncidentCommentAttachmentDto"
+            }
+          }
+        },
+        "required": [
+          "comment_text"
+        ]
+      },
+      "CommentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID комментария"
+          },
+          "comment_text": {
+            "type": "string",
+            "example": "Комментарий",
+            "description": "Текст комментария"
+          },
+          "attached_files": {
+            "example": [],
+            "description": "Прикрепленные к комментарию файлы",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IncidentCommentAttachmentDto"
+            }
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Дата создания комментария"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Дата обновления комментария"
+          }
+        },
+        "required": [
+          "id",
+          "comment_text",
+          "attached_files",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "CreateIncidentCommentUploadUrlDto": {
+        "type": "object",
+        "properties": {
+          "file_name": {
+            "type": "string",
+            "example": "incident-log.txt",
+            "description": "Имя файла для загрузки"
+          },
+          "content_type": {
+            "type": "string",
+            "example": "text/plain",
+            "description": "MIME-тип файла"
+          },
+          "file_size": {
+            "type": "number",
+            "example": 1024,
+            "description": "Размер файла в байтах"
+          }
+        },
+        "required": [
+          "file_name"
+        ]
+      },
+      "PresignedUploadUrlResponseDto": {
+        "type": "object",
+        "properties": {
+          "uploadUrl": {
+            "type": "string",
+            "example": "https://s3.timeweb.cloud/..."
+          },
+          "fileUrl": {
+            "type": "string",
+            "example": "https://s3.statuser.cloud/status-pages/..."
+          }
+        },
+        "required": [
+          "uploadUrl",
+          "fileUrl"
+        ]
+      },
+      "UpdateIncidentCommentDto": {
+        "type": "object",
+        "properties": {
+          "comment_text": {
+            "type": "string",
+            "example": "Текст комментария",
+            "description": "Текст комментария"
+          },
+          "attached_files": {
+            "description": "Список прикрепленных файлов с именами",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IncidentCommentAttachmentDto"
+            }
+          }
+        }
+      },
+      "CheckSlugAvailabilityResponseDto": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "example": true,
+            "description": "Флаг, указывающий, свободен ли путь"
+          }
+        },
+        "required": [
+          "available"
+        ]
+      },
+      "CheckDomainAvailabilityResponseDto": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "example": true,
+            "description": "Флаг, указывающий, не занят ли домен другой страницей статуса"
+          },
+          "cname_valid": {
+            "type": "boolean",
+            "example": true,
+            "description": "Флаг, указывающий, корректно ли настроена CNAME-запись"
+          }
+        },
+        "required": [
+          "available",
+          "cname_valid"
+        ]
+      },
+      "PresignedUploadUrlDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "logo",
+              "favicon"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "StatusPageDomain": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Домен страницы статуса",
+            "example": "up.example.com"
+          },
+          "status": {
+            "type": "string",
+            "example": "active",
+            "description": "Статус домена"
+          }
+        },
+        "required": [
+          "domain",
+          "status"
+        ]
+      },
+      "ReportServerStatusPage": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Публичное имя сервера на странице статуса",
+            "example": "My Server"
+          },
+          "description": {
+            "type": "string",
+            "description": "Комментарий к серверу",
+            "example": "My Server",
+            "nullable": true
+          },
+          "uptime": {
+            "type": "number",
+            "description": "Общее время безотказной работы сервера в процентах",
+            "example": 99.93
+          },
+          "current_status": {
+            "type": "string",
+            "enum": [
+              "operational",
+              "downtime",
+              "not_monitored",
+              "degraded",
+              "under_maintenance"
+            ],
+            "description": "Статус доступности сервера",
+            "example": "operational"
+          },
+          "order": {
+            "type": "number",
+            "description": "Общее время безотказной работы сервера в процентах",
+            "example": 99.93
+          },
+          "group_id": {
+            "type": "number",
+            "description": "Идентификатор группы серверов",
+            "example": 1
+          },
+          "availability": {
+            "description": "Доступность сервера по датам",
+            "items": {
+              "type": "array"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "uptime",
+          "current_status",
+          "order",
+          "group_id",
+          "availability"
+        ]
+      },
+      "ReportServerGroupStatusPage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Идентификатор группы",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Имя группы",
+            "example": "Бэкенд-сервисы"
+          },
+          "description": {
+            "type": "string",
+            "description": "Описание группы",
+            "example": "Группа для основных API-сервисов",
+            "nullable": true
+          },
+          "order": {
+            "type": "number",
+            "description": "Порядок отображения группы",
+            "example": 0
+          },
+          "status": {
+            "type": "string",
+            "example": "operational",
+            "description": "Статус группы"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "order",
+          "status"
+        ]
+      },
+      "StatusPageIncidentReportLinkedIncidentResponseDto": {
+        "type": "object",
+        "properties": {
+          "incident_id": {
+            "type": "number",
+            "example": 42,
+            "description": "ID инцидента"
+          },
+          "server_id": {
+            "type": "number",
+            "example": 7,
+            "description": "ID сервера, к которому относится инцидент"
+          },
+          "server_name": {
+            "type": "string",
+            "example": "API Gateway",
+            "description": "Публичное имя сервера на странице статуса"
+          },
+          "status": {
+            "type": "string",
+            "example": "ongoing",
+            "enum": [
+              "ongoing",
+              "resolved",
+              "dismissed",
+              "auto_closed_changed",
+              "auto_closed_timeout"
+            ],
+            "description": "Статус инцидента"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-06T16:10:00.000Z",
+            "description": "Время начала инцидента"
+          },
+          "ended_at": {
+            "type": "object",
+            "example": "2026-03-06T16:45:00.000Z",
+            "nullable": true,
+            "description": "Время окончания инцидента"
+          }
+        },
+        "required": [
+          "incident_id",
+          "server_id",
+          "server_name",
+          "status",
+          "started_at",
+          "ended_at"
+        ]
+      },
+      "StatusPageIncidentReportServerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID сервиса на status page"
+          },
+          "name": {
+            "type": "string",
+            "example": "API Gateway",
+            "description": "Публичное имя сервиса на странице статуса"
+          },
+          "status": {
+            "type": "string",
+            "example": "degraded",
+            "enum": [
+              "not_affected",
+              "downtime",
+              "degraded",
+              "resolved"
+            ],
+            "description": "Статус влияния на сервис"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status"
+        ]
+      },
+      "StatusPageIncidentReportUpdateResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 10100,
+            "description": "ID обновления внутри отчёта"
+          },
+          "message": {
+            "type": "string",
+            "example": "Мы нашли причину сбоя и уже выкатываем исправление. Следующее обновление через 10 минут",
+            "description": "Текст апдейта"
+          },
+          "is_initial": {
+            "type": "boolean",
+            "example": true,
+            "description": "Является ли запись стартовым сообщением отчёта"
+          },
+          "published_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-06T16:12:00.000Z",
+            "description": "Когда обновление было опубликовано"
+          },
+          "servers": {
+            "description": "Статусы серверов на момент этого обновления",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusPageIncidentReportServerDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "message",
+          "is_initial",
+          "published_at",
+          "servers"
+        ]
+      },
+      "StatusPageIncidentReportResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 10100,
+            "description": "ID отчёта"
+          },
+          "title": {
+            "type": "string",
+            "example": "Проблемы с доступностью API Gateway",
+            "description": "Заголовок отчёта"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-06T16:10:00.000Z",
+            "description": "Время начала отчёта"
+          },
+          "current_status": {
+            "type": "string",
+            "example": "degraded",
+            "enum": [
+              "not_affected",
+              "downtime",
+              "degraded",
+              "resolved"
+            ],
+            "description": "Текущий статус отчёта по последнему известному состоянию сервисов"
+          },
+          "incidents": {
+            "description": "Инциденты, связанные с отчётом",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusPageIncidentReportLinkedIncidentResponseDto"
+            }
+          },
+          "servers": {
+            "description": "Актуальные статусы сервисов внутри отчёта",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusPageIncidentReportServerDto"
+            }
+          },
+          "updates": {
+            "description": "Таймлайн сообщений внутри отчёта",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusPageIncidentReportUpdateResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "started_at",
+          "current_status",
+          "incidents",
+          "servers",
+          "updates"
+        ]
+      },
+      "StatusPagePlannedMaintenanceServerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID сервиса на status page"
+          },
+          "name": {
+            "type": "string",
+            "example": "API Gateway",
+            "description": "Публичное имя сервиса на странице статуса"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "StatusPagePlannedMaintenanceUpdateResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 10100,
+            "description": "ID обновления внутри записи плановых работ"
+          },
+          "message": {
+            "type": "string",
+            "example": "Работы идут по плану. Возможны кратковременные перерывы в работе API.",
+            "description": "Текст апдейта"
+          },
+          "is_initial": {
+            "type": "boolean",
+            "example": true,
+            "description": "Является ли запись стартовым сообщением"
+          },
+          "published_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-06T16:12:00.000Z",
+            "description": "Когда обновление было опубликовано"
+          },
+          "servers": {
+            "description": "Сервисы, которых касается это обновление",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusPagePlannedMaintenanceServerDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "message",
+          "is_initial",
+          "published_at",
+          "servers"
+        ]
+      },
+      "StatusPagePlannedMaintenanceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 10100,
+            "description": "ID плановых работ"
+          },
+          "title": {
+            "type": "string",
+            "example": "Плановое обновление API Gateway",
+            "description": "Заголовок плановых работ"
+          },
+          "description": {
+            "type": "string",
+            "example": "Во время обновления возможны кратковременные перерывы в работе API и панели управления.",
+            "description": "Описание плановых работ"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-20T01:00:00.000Z",
+            "description": "Время начала плановых работ"
+          },
+          "ended_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-20T03:00:00.000Z",
+            "description": "Время завершения плановых работ"
+          },
+          "servers": {
+            "description": "Сервисы на странице статуса, затрагиваемые плановыми работами",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusPagePlannedMaintenanceServerDto"
+            }
+          },
+          "updates": {
+            "description": "История обновлений по плановым работам",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusPagePlannedMaintenanceUpdateResponseDto"
+            }
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-18T12:00:00.000Z",
+            "description": "Дата создания записи"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "started_at",
+          "ended_at",
+          "servers",
+          "updates",
+          "created_at"
+        ]
+      },
+      "StatusPageResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID страницы статуса"
+          },
+          "name": {
+            "type": "string",
+            "example": "Statuser",
+            "description": "Название страницы статуса"
+          },
+          "status": {
+            "type": "string",
+            "example": "operational",
+            "description": "Общий статус сервисов"
+          },
+          "slug": {
+            "type": "string",
+            "example": "statuser",
+            "description": "Уникальный путь страницы статуса"
+          },
+          "description": {
+            "type": "object",
+            "example": "Описание страницы статуса",
+            "description": "Описание страницы статуса",
+            "nullable": true
+          },
+          "logo_url": {
+            "type": "object",
+            "example": "https://example.com/logo.png",
+            "description": "URL логотипа",
+            "nullable": true
+          },
+          "favicon_url": {
+            "type": "object",
+            "example": "https://example.com/favicon.png",
+            "description": "URL фавикона",
+            "nullable": true
+          },
+          "company_url": {
+            "type": "object",
+            "example": "https://example.com",
+            "description": "URL сайта компании",
+            "nullable": true
+          },
+          "support_url": {
+            "type": "object",
+            "example": "support@example.com",
+            "description": "Email службы поддержки",
+            "nullable": true
+          },
+          "domains": {
+            "description": "Привязанные к странице статуса домены",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusPageDomain"
+            }
+          },
+          "is_indexed": {
+            "type": "boolean",
+            "example": true,
+            "description": "Индексируется ли страница поисковиками"
+          },
+          "is_published": {
+            "type": "boolean",
+            "example": true,
+            "description": "Опубликована ли страница"
+          },
+          "is_white_labeled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Вайт-лейблинг: скрыт ли бренд Statuser"
+          },
+          "timeline_days": {
+            "type": "number",
+            "example": 60,
+            "description": "Количество дней, показываемых в таймлайне"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Europe/Moscow",
+            "description": "Таймзона страницы статуса"
+          },
+          "uptime_decimal_places": {
+            "type": "number",
+            "example": 2,
+            "description": "Количество знаков после запятой у аптайма"
+          },
+          "theme_mode": {
+            "type": "string",
+            "example": "user",
+            "description": "Режим темы страницы статуса",
+            "enum": [
+              "user",
+              "light",
+              "dark"
+            ]
+          },
+          "is_not_monitored_operational": {
+            "type": "boolean",
+            "example": false,
+            "description": "Показывать ли статус Не в мониторинге зелёным, как Доступен"
+          },
+          "minimum_incident_duration": {
+            "type": "number",
+            "example": 0,
+            "description": "Минимальная длительность инцидента в секундах для отображения на странице"
+          },
+          "is_password_protected": {
+            "type": "boolean",
+            "example": true,
+            "description": "Защищена ли страница статуса паролем"
+          },
+          "servers": {
+            "description": "Список серверов, добавленных на страницу статуса",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportServerStatusPage"
+            }
+          },
+          "groups": {
+            "description": "Список групп серверов",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportServerGroupStatusPage"
+            }
+          },
+          "incident_reports": {
+            "description": "Публичные отчёты по инцидентам на странице статуса",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusPageIncidentReportResponseDto"
+            }
+          },
+          "planned_maintenances": {
+            "description": "Плановые работы на странице статуса",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusPagePlannedMaintenanceResponseDto"
+            }
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z",
+            "description": "Дата создания страницы статуса"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "slug",
+          "description",
+          "logo_url",
+          "favicon_url",
+          "company_url",
+          "support_url",
+          "domains",
+          "is_indexed",
+          "is_published",
+          "is_white_labeled",
+          "timeline_days",
+          "timezone",
+          "uptime_decimal_places",
+          "theme_mode",
+          "is_not_monitored_operational",
+          "minimum_incident_duration",
+          "is_password_protected",
+          "servers",
+          "groups",
+          "incident_reports",
+          "planned_maintenances",
+          "created_at"
+        ]
+      },
+      "CreateStatusPageDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Statuser",
+            "description": "Название страницы статуса"
+          },
+          "slug": {
+            "type": "string",
+            "example": "statuser",
+            "description": "Уникальный путь страницы статуса",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "example": "Описание страницы статуса",
+            "description": "Описание страницы статуса",
+            "nullable": true
+          },
+          "logo_url": {
+            "type": "object",
+            "example": "https://example.com/logo.png",
+            "description": "URL логотипа",
+            "nullable": true
+          },
+          "favicon_url": {
+            "type": "object",
+            "example": "https://example.com/favicon.png",
+            "description": "URL фавикона",
+            "nullable": true
+          },
+          "company_url": {
+            "type": "object",
+            "example": "https://example.com",
+            "description": "URL сайта компании",
+            "nullable": true
+          },
+          "support_url": {
+            "type": "object",
+            "example": "support@example.com",
+            "description": "Email службы поддержки",
+            "nullable": true
+          },
+          "domain": {
+            "type": "object",
+            "example": "status.example.com",
+            "description": "Собственный домен страницы статуса",
+            "nullable": true
+          },
+          "is_indexed": {
+            "type": "boolean",
+            "example": true,
+            "description": "Индексируется ли страница поисковиками"
+          },
+          "is_published": {
+            "type": "boolean",
+            "example": true,
+            "description": "Опубликована ли страница"
+          },
+          "is_white_labeled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Вайт-лейблинг: скрыть бренд Statuser"
+          },
+          "timeline_days": {
+            "type": "number",
+            "example": 60,
+            "description": "Количество дней таймлайна на странице статуса"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Europe/Moscow",
+            "description": "Таймзона, в которой считаются дни на странице статуса"
+          },
+          "uptime_decimal_places": {
+            "type": "number",
+            "example": 2,
+            "description": "Количество знаков после запятой для аптайма"
+          },
+          "theme_mode": {
+            "type": "string",
+            "example": "user",
+            "description": "Режим темы страницы статуса",
+            "enum": [
+              "user",
+              "light",
+              "dark"
+            ]
+          },
+          "is_not_monitored_operational": {
+            "type": "boolean",
+            "example": false,
+            "description": "Показывать ли статус Не в мониторинге зелёным, как Доступен"
+          },
+          "minimum_incident_duration": {
+            "type": "number",
+            "example": 0,
+            "description": "Минимальная длительность инцидента в секундах для отображения на странице"
+          },
+          "password": {
+            "type": "object",
+            "example": "mysecretpassword",
+            "description": "Пароль для доступа к странице статуса",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "slug",
+          "description",
+          "logo_url",
+          "favicon_url",
+          "company_url",
+          "support_url",
+          "domain",
+          "is_indexed",
+          "is_published",
+          "is_white_labeled",
+          "password"
+        ]
+      },
+      "UpdateStatusPageDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Statuser",
+            "description": "Название страницы статуса"
+          },
+          "slug": {
+            "type": "string",
+            "example": "statuser",
+            "description": "Уникальный путь страницы статуса"
+          },
+          "description": {
+            "type": "object",
+            "example": "Описание страницы статуса",
+            "description": "Описание страницы статуса",
+            "nullable": true
+          },
+          "logo_url": {
+            "type": "object",
+            "example": "https://example.com/logo.png",
+            "description": "URL логотипа",
+            "nullable": true
+          },
+          "favicon_url": {
+            "type": "object",
+            "example": "https://example.com/favicon.png",
+            "description": "URL фавикона",
+            "nullable": true
+          },
+          "company_url": {
+            "type": "object",
+            "example": "https://example.com",
+            "description": "URL сайта компании",
+            "nullable": true
+          },
+          "support_url": {
+            "type": "object",
+            "example": "support@example.com",
+            "description": "Email службы поддержки",
+            "nullable": true
+          },
+          "domain": {
+            "type": "object",
+            "example": "status.example.com",
+            "description": "Собственный домен страницы статуса",
+            "nullable": true
+          },
+          "is_indexed": {
+            "type": "boolean",
+            "example": true,
+            "description": "Индексируется ли страница поисковиками"
+          },
+          "is_published": {
+            "type": "boolean",
+            "example": true,
+            "description": "Опубликована ли страница"
+          },
+          "is_white_labeled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Вайт-лейблинг: скрыть бренд Statuser"
+          },
+          "timeline_days": {
+            "type": "number",
+            "example": 60,
+            "description": "Количество дней таймлайна на странице статуса"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Europe/Moscow",
+            "description": "Таймзона, в которой считаются дни на странице статуса"
+          },
+          "uptime_decimal_places": {
+            "type": "number",
+            "example": 2,
+            "description": "Количество знаков после запятой для аптайма"
+          },
+          "theme_mode": {
+            "type": "string",
+            "example": "user",
+            "description": "Режим темы страницы статуса",
+            "enum": [
+              "user",
+              "light",
+              "dark"
+            ]
+          },
+          "is_not_monitored_operational": {
+            "type": "boolean",
+            "example": false,
+            "description": "Показывать ли статус Не в мониторинге зелёным, как Доступен"
+          },
+          "minimum_incident_duration": {
+            "type": "number",
+            "example": 0,
+            "description": "Минимальная длительность инцидента в секундах для отображения на странице"
+          },
+          "password": {
+            "type": "object",
+            "example": "mysecretpassword",
+            "description": "Пароль для доступа к странице статуса",
+            "nullable": true
+          }
+        },
+        "required": [
+          "is_published"
+        ]
+      },
+      "UpdateStatusPageGroupsDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateStatusPageIncidentReportServerDto": {
+        "type": "object",
+        "properties": {
+          "server_id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID сервера на странице статуса"
+          },
+          "status": {
+            "type": "string",
+            "example": "downtime",
+            "enum": [
+              "not_affected",
+              "downtime",
+              "degraded",
+              "resolved"
+            ],
+            "description": "Статус влияния на сервер в момент создания отчёта"
+          }
+        },
+        "required": [
+          "server_id",
+          "status"
+        ]
+      },
+      "CreateStatusPageIncidentReportDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Проблемы с доступностью API Gateway",
+            "description": "Заголовок отчёта"
+          },
+          "initial_message": {
+            "type": "string",
+            "example": "Часть пользователей может сталкиваться с ошибками 502. Команда уже расследует причину",
+            "description": "Текст стартового сообщения отчёта"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-06T16:12:00.000Z",
+            "description": "Время начала отчёта"
+          },
+          "incident_ids": {
+            "example": [
+              42,
+              43
+            ],
+            "description": "Связанные инциденты, если отчёт основан на существующих инцидентах",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "servers": {
+            "description": "Стартовые статусы серверов в рамках отчёта",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateStatusPageIncidentReportServerDto"
+            }
+          }
+        },
+        "required": [
+          "title",
+          "initial_message",
+          "started_at",
+          "servers"
+        ]
+      },
+      "UpdateStatusPageIncidentReportDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Проблемы с доступностью API Gateway",
+            "description": "Заголовок отчёта"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-06T16:12:00.000Z",
+            "description": "Время начала отчёта"
+          }
+        }
+      },
+      "CreateStatusPageIncidentReportUpdateServerDto": {
+        "type": "object",
+        "properties": {
+          "server_id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID сервера на странице статуса"
+          },
+          "status": {
+            "type": "string",
+            "example": "downtime",
+            "enum": [
+              "not_affected",
+              "downtime",
+              "degraded",
+              "resolved"
+            ],
+            "description": "Новый статус влияния на сервер"
+          }
+        },
+        "required": [
+          "server_id",
+          "status"
+        ]
+      },
+      "CreateStatusPageIncidentReportUpdateDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Мы нашли причину сбоя и уже выкатываем исправление. Следующее обновление через 10 минут",
+            "description": "Текст апдейта"
+          },
+          "published_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-06T16:22:00.000Z",
+            "description": "Время публикации апдейта"
+          },
+          "servers": {
+            "description": "Новые статусы сервисов в рамках апдейта",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateStatusPageIncidentReportUpdateServerDto"
+            }
+          }
+        },
+        "required": [
+          "message",
+          "servers"
+        ]
+      },
+      "UpdateStatusPageIncidentReportUpdateDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Мы нашли причину сбоя и уже выкатываем исправление. Следующее обновление через 10 минут",
+            "description": "Обновлённый текст апдейта"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "CreateStatusPagePlannedMaintenanceServerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID сервиса на странице статуса"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "CreateStatusPagePlannedMaintenanceDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Плановое обновление API Gateway",
+            "description": "Заголовок плановых работ"
+          },
+          "description": {
+            "type": "string",
+            "example": "Во время обновления возможны кратковременные перерывы в работе API и панели управления.",
+            "description": "Описание плановых работ"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-20T01:00:00.000Z",
+            "description": "Время начала плановых работ"
+          },
+          "ended_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-20T03:00:00.000Z",
+            "description": "Время завершения плановых работ"
+          },
+          "servers": {
+            "example": [
+              {
+                "id": 1
+              },
+              {
+                "id": 2
+              },
+              {
+                "id": 3
+              }
+            ],
+            "description": "Сервисы на странице статуса, затрагиваемые плановыми работами",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateStatusPagePlannedMaintenanceServerDto"
+            }
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "started_at",
+          "ended_at",
+          "servers"
+        ]
+      },
+      "UpdateStatusPagePlannedMaintenanceServerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID сервиса на странице статуса"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "UpdateStatusPagePlannedMaintenanceDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Плановое обновление API Gateway",
+            "description": "Заголовок плановых работ"
+          },
+          "description": {
+            "type": "string",
+            "example": "Во время обновления возможны кратковременные перерывы в работе API и панели управления.",
+            "description": "Описание плановых работ"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-20T01:00:00.000Z",
+            "description": "Время начала плановых работ"
+          },
+          "ended_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-20T03:00:00.000Z",
+            "description": "Время завершения плановых работ"
+          },
+          "servers": {
+            "example": [
+              {
+                "id": 1
+              },
+              {
+                "id": 2
+              },
+              {
+                "id": 3
+              }
+            ],
+            "description": "Сервисы на странице статуса, затрагиваемые плановыми работами",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateStatusPagePlannedMaintenanceServerDto"
+            }
+          }
+        }
+      },
+      "CreateStatusPagePlannedMaintenanceUpdateDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Работы идут по плану. Возможны кратковременные перерывы в работе API.",
+            "description": "Текст апдейта о ходе плановых работ"
+          },
+          "published_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-20T01:30:00.000Z",
+            "description": "Время публикации апдейта"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "UpdateStatusPagePlannedMaintenanceUpdateDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Работы идут по плану. Завершаем проверку и скоро опубликуем финальный апдейт.",
+            "description": "Обновлённый текст апдейта"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "Info2faResponseDto": {
+        "type": "object",
+        "properties": {
+          "preferred_method": {
+            "type": "string",
+            "enum": [
+              "telegram",
+              "max",
+              "email",
+              "totp"
+            ],
+            "nullable": true,
+            "description": "Предпочитаемый метод двухфакторной аутентификации",
+            "example": "telegram"
+          },
+          "allowed_methods": {
+            "type": "array",
+            "description": "Список доступных методов двухфакторной аутентификации",
+            "example": [
+              "telegram",
+              "max",
+              "totp",
+              "email"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "telegram",
+                "max",
+                "email",
+                "totp"
+              ]
+            }
+          }
+        },
+        "required": [
+          "preferred_method",
+          "allowed_methods"
+        ]
+      }
+    }
+  }
+}
