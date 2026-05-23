@@ -1,6 +1,15 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
+import type { RequestBody } from '../generated/helpers.js';
+
+/**
+ * Compile-time guardrail: the request body sent to the backend must match
+ * the types generated from the swagger spec. If the backend DTO shape
+ * changes, TypeScript will flag the mismatch before the package is published.
+ */
+type CreateMonitorBody = RequestBody<'/v1/servers', 'post'>;
+type UpdateMonitorBody = RequestBody<'/v1/servers/{id}', 'patch'>;
 
 // Mirrors the public enum from PlanFeaturesResponseDto / ServerProtocol.
 const protocolEnum = z.enum([
@@ -54,21 +63,29 @@ const baseMonitorFields = {
     .optional()
     .describe('Whether the keyword should be present or absent.'),
   headers: z.array(headerSchema).optional(),
-  is_follow_redirects: z.boolean().optional(),
+  is_follow_redirects: z
+    .boolean()
+    .describe(
+      'Follow HTTP redirects. Required on create; for backend DTOs this field has no default.',
+    ),
   success_http_codes: z
     .array(z.string())
     .optional()
     .describe(
       'HTTP codes considered successful. Accepts exact codes (200, 301) and masks (2xx, 5xx).',
     ),
-  request_timeout: z.number().int().min(1).max(60).optional(),
+  request_timeout: z
+    .number()
+    .int()
+    .min(1)
+    .max(60)
+    .describe('Request timeout in seconds. Required on create.'),
   check_interval: z
     .number()
     .int()
     .min(60)
-    .optional()
     .describe(
-      'Interval between checks in seconds. Minimum depends on `min_check_interval_seconds` of the current plan.',
+      'Interval between checks in seconds. Required on create. Minimum depends on `min_check_interval_seconds` of the current plan.',
     ),
   heartbeat_grace_interval: z
     .number()
@@ -81,12 +98,12 @@ const baseMonitorFields = {
     ),
   name: z.string().max(150).optional(),
   description: z.string().max(500).optional(),
-  is_ssl_check: z.boolean().optional(),
-  is_domain_check: z.boolean().optional(),
+  is_ssl_check: z.boolean(),
+  is_domain_check: z.boolean(),
   is_latency_alert_enabled: z.boolean().optional(),
   latency_trigger_ms: z.number().int().min(50).max(60000).optional(),
   locations: z
-    .array(z.string())
+    .array(z.enum(['msk-1', 'spb-1', 'ala-1', 'nyc-1', 'ams-1']))
     .optional()
     .describe(
       'Locations to run checks from. Allowed values are the codes from `current_plan_get` -> `features.available_locations`.',
@@ -134,8 +151,10 @@ export function registerMonitorTools(server: McpServer, ctx: ToolContext): void 
       'Creates a new monitor. Returns 403 if the account is over the servers limit or if a requested feature is not on the current plan (DNS/keyword/heartbeat, latency alerts, custom success codes, non-default locations).',
     write: true,
     inputSchema: baseMonitorFields,
-    handler: async (args, { client }) =>
-      client.call({ method: 'POST', path: '/v1/servers', body: args }),
+    handler: async (args, { client }) => {
+      const body: CreateMonitorBody = args;
+      return client.call({ method: 'POST', path: '/v1/servers', body });
+    },
   });
 
   registerTool(server, ctx, {
@@ -153,12 +172,14 @@ export function registerMonitorTools(server: McpServer, ctx: ToolContext): void 
         ]),
       ),
     },
-    handler: async ({ id, ...patch }, { client }) =>
-      client.call({
+    handler: async ({ id, ...patch }, { client }) => {
+      const body: UpdateMonitorBody = patch;
+      return client.call({
         method: 'PATCH',
         path: `/v1/servers/${id}`,
-        body: patch,
-      }),
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {
