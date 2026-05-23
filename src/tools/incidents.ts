@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
+import type { RequestBody } from '../generated/helpers.js';
+
+type IncidentRateAiSummaryBody = RequestBody<
+  '/v1/incidents/{incidentId}/ai-summary/rating',
+  'post'
+>;
 
 const incidentStatusEnum = z.enum([
   'ongoing',
@@ -112,12 +118,14 @@ export function registerIncidentTools(
       id: z.number().int().positive(),
       rating: z.enum(['positive', 'negative']).nullable(),
     },
-    handler: async ({ id, rating }, { client }) =>
-      client.call({
+    handler: async ({ id, rating }, { client }) => {
+      const body: IncidentRateAiSummaryBody = { rating };
+      return client.call({
         method: 'POST',
         path: `/v1/incidents/${id}/ai-summary/rating`,
-        body: { rating },
-      }),
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {

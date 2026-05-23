@@ -4,6 +4,20 @@ import { request as undiciRequest } from 'undici';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
+import type { RequestBody } from '../generated/helpers.js';
+
+type IncidentCommentCreateBody = RequestBody<
+  '/v1/incidents/{incidentId}/comments',
+  'post'
+>;
+type IncidentCommentUpdateBody = RequestBody<
+  '/v1/incidents/{incidentId}/comments/{commentId}',
+  'patch'
+>;
+type IncidentCommentUploadUrlBody = RequestBody<
+  '/v1/incidents/{incidentId}/comments/upload-url',
+  'post'
+>;
 
 const attachmentInput = z.object({
   url: z
@@ -79,13 +93,14 @@ export function registerIncidentCommentTools(
         attached_local_files ?? [],
       );
       const allFiles = [...(attached_files ?? []), ...uploaded];
+      const body: IncidentCommentCreateBody = {
+        comment_text,
+        attached_files: allFiles.length ? allFiles : undefined,
+      };
       return ctx2.client.call({
         method: 'POST',
         path: `/v1/incidents/${incident_id}/comments`,
-        body: {
-          comment_text,
-          attached_files: allFiles.length ? allFiles : undefined,
-        },
+        body,
       });
     },
   });
@@ -105,12 +120,14 @@ export function registerIncidentCommentTools(
     handler: async (
       { incident_id, comment_id, ...patch },
       { client },
-    ) =>
-      client.call({
+    ) => {
+      const body: IncidentCommentUpdateBody = patch;
+      return client.call({
         method: 'PATCH',
         path: `/v1/incidents/${incident_id}/comments/${comment_id}`,
-        body: patch,
-      }),
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {
@@ -163,17 +180,18 @@ async function uploadLocalFiles(
     const ext = extname(fileName).toLowerCase();
     const contentType = MIME_BY_EXT[ext] ?? 'application/octet-stream';
 
+    const uploadBody: IncidentCommentUploadUrlBody = {
+      file_name: fileName,
+      content_type: contentType,
+      file_size: bytes.byteLength,
+    };
     const presigned = await ctx.client.call<{
       uploadUrl: string;
       fileUrl: string;
     }>({
       method: 'POST',
       path: `/v1/incidents/${incidentId}/comments/upload-url`,
-      body: {
-        file_name: fileName,
-        content_type: contentType,
-        file_size: bytes.byteLength,
-      },
+      body: uploadBody,
     });
 
     const res = await undiciRequest(presigned.uploadUrl, {

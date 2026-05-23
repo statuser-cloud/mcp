@@ -1,6 +1,14 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
+import type { RequestBody } from '../generated/helpers.js';
+
+type StatusPageCreateBody = RequestBody<'/v1/status-pages', 'post'>;
+type StatusPageUpdateBody = RequestBody<'/v1/status-pages/{id}', 'patch'>;
+type StatusPageSetGroupsBody = RequestBody<
+  '/v1/status-pages/{id}/servers',
+  'patch'
+>;
 
 const groupServerSchema = z.object({
   server_id: z
@@ -185,8 +193,10 @@ export function registerStatusPageTools(
       'Creates a public status page. `name` is required. If `slug` is omitted, a random one is generated. Plan-feature constraints apply for custom domain, password, indexing control, white-label, extended timeline and minimum incident duration. Account-level limit is `status_pages_limit` — 403 on overflow.',
     write: true,
     inputSchema: createStatusPageFields,
-    handler: async (args, { client }) =>
-      client.call({ method: 'POST', path: '/v1/status-pages', body: args }),
+    handler: async (args, { client }) => {
+      const body: StatusPageCreateBody = args;
+      return client.call({ method: 'POST', path: '/v1/status-pages', body });
+    },
   });
 
   registerTool(server, ctx, {
@@ -199,12 +209,14 @@ export function registerStatusPageTools(
       id: z.number().int().positive(),
       ...updateStatusPageFields,
     },
-    handler: async ({ id, ...patch }, { client }) =>
-      client.call({
+    handler: async ({ id, ...patch }, { client }) => {
+      const body: StatusPageUpdateBody = patch;
+      return client.call({
         method: 'PATCH',
         path: `/v1/status-pages/${id}`,
-        body: patch,
-      }),
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {
@@ -234,12 +246,14 @@ export function registerStatusPageTools(
       id: z.number().int().positive(),
       groups: z.array(groupSchema),
     },
-    handler: async ({ id, groups }, { client }) =>
-      client.call({
+    handler: async ({ id, groups }, { client }) => {
+      const body: StatusPageSetGroupsBody = { groups };
+      return client.call({
         method: 'PATCH',
         path: `/v1/status-pages/${id}/servers`,
-        body: { groups },
-      }),
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {

@@ -1,9 +1,35 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
+import type { RequestBody } from '../generated/helpers.js';
 
-const subscriptionTypeEnum = z.enum([
+type WebhookCreateBody = RequestBody<'/v1/webhooks', 'post'>;
+type WebhookUpdateBody = RequestBody<'/v1/webhooks/{id}', 'patch'>;
+type NotificationRuleSetBody = RequestBody<'/v1/notification-rules', 'patch'>;
+type NotificationEmailAddBody = RequestBody<'/v1/notification-emails', 'post'>;
+type NotificationEmailConfirmBody = RequestBody<
+  '/v1/notification-emails/{id}/confirm',
+  'post'
+>;
+
+// All public subscription types — used for per-channel notification rules.
+const notificationRuleSubscriptionEnum = z.enum([
   'updates',
+  'weekly_reports',
+  'service_alerts',
+  'ssl_alerts',
+  'domain_alerts',
+  'dns_alerts',
+  'ideas',
+  'billing_alerts',
+  'holiday_mode',
+  'api_key_alerts',
+  'security_alerts',
+]);
+
+// Webhook-eligible subset (excludes `updates`, which is product newsletter
+// delivered through other channels only).
+const webhookSubscriptionEnum = z.enum([
   'weekly_reports',
   'service_alerts',
   'ssl_alerts',
@@ -41,11 +67,16 @@ export function registerNotificationTools(
     inputSchema: {
       name: z.string().min(1).max(255),
       url: z.string().url(),
-      secret: z.string().nullable().optional(),
-      subscriptions: z.array(subscriptionTypeEnum),
+      secret: z
+        .string()
+        .nullable()
+        .describe('Signing secret. Pass `null` if you do not want signature.'),
+      subscriptions: z.array(webhookSubscriptionEnum),
     },
-    handler: async (args, { client }) =>
-      client.call({ method: 'POST', path: '/v1/webhooks', body: args }),
+    handler: async (args, { client }) => {
+      const body: WebhookCreateBody = args;
+      return client.call({ method: 'POST', path: '/v1/webhooks', body });
+    },
   });
 
   registerTool(server, ctx, {
@@ -59,10 +90,12 @@ export function registerNotificationTools(
       name: z.string().min(1).max(255).optional(),
       url: z.string().url().optional(),
       secret: z.string().nullable().optional(),
-      subscriptions: z.array(subscriptionTypeEnum).optional(),
+      subscriptions: z.array(webhookSubscriptionEnum).optional(),
     },
-    handler: async ({ id, ...patch }, { client }) =>
-      client.call({ method: 'PATCH', path: `/v1/webhooks/${id}`, body: patch }),
+    handler: async ({ id, ...patch }, { client }) => {
+      const body: WebhookUpdateBody = patch;
+      return client.call({ method: 'PATCH', path: `/v1/webhooks/${id}`, body });
+    },
   });
 
   registerTool(server, ctx, {
@@ -117,17 +150,19 @@ export function registerNotificationTools(
       'Creates or updates the rule for a single subscription type: toggles channels `email`, `telegram`, `max`. Selecting individual recipients/chats is not possible — these are account-wide on/off per channel. Returns the full updated list of rules.',
     write: true,
     inputSchema: {
-      type: subscriptionTypeEnum,
+      type: notificationRuleSubscriptionEnum,
       email: z.boolean(),
       telegram: z.boolean(),
       max: z.boolean(),
     },
-    handler: async (args, { client }) =>
-      client.call({
+    handler: async (args, { client }) => {
+      const body: NotificationRuleSetBody = args;
+      return client.call({
         method: 'PATCH',
         path: '/v1/notification-rules',
-        body: args,
-      }),
+        body,
+      });
+    },
   });
 
   // ---------- Notification emails ----------
@@ -151,12 +186,14 @@ export function registerNotificationTools(
     inputSchema: {
       email: z.string().email(),
     },
-    handler: async ({ email }, { client }) =>
-      client.call({
+    handler: async ({ email }, { client }) => {
+      const body: NotificationEmailAddBody = { email };
+      return client.call({
         method: 'POST',
         path: '/v1/notification-emails',
-        body: { email },
-      }),
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {
@@ -169,12 +206,14 @@ export function registerNotificationTools(
       id: z.number().int().positive(),
       code: z.string().min(1),
     },
-    handler: async ({ id, code }, { client }) =>
-      client.call({
+    handler: async ({ id, code }, { client }) => {
+      const body: NotificationEmailConfirmBody = { code };
+      return client.call({
         method: 'POST',
         path: `/v1/notification-emails/${id}/confirm`,
-        body: { code },
-      }),
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {

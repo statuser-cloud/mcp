@@ -1025,14 +1025,14 @@ export interface components {
         CreateWebhookEndpointDto: {
             name: string;
             url: string;
-            secret: Record<string, never> | null;
-            subscriptions: ("updates" | "weekly_reports" | "service_alerts" | "test_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts" | "receipt")[];
+            secret: string | null;
+            subscriptions: ("weekly_reports" | "service_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts")[];
         };
         UpdateWebhookEndpointDto: {
             name?: string;
             url?: string;
-            secret?: Record<string, never> | null;
-            subscriptions?: ("updates" | "weekly_reports" | "service_alerts" | "test_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts" | "receipt")[];
+            secret?: string | null;
+            subscriptions?: ("weekly_reports" | "service_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts")[];
         };
         CreateMaxLinkDto: {
             link_user: string;
@@ -1268,12 +1268,12 @@ export interface components {
         UpdateStatusPageDto: {
             name?: string;
             slug?: string;
-            description?: Record<string, never> | null;
-            logo_url?: Record<string, never> | null;
-            favicon_url?: Record<string, never> | null;
-            company_url?: Record<string, never> | null;
-            support_url?: Record<string, never> | null;
-            domain?: Record<string, never> | null;
+            description?: string | null;
+            logo_url?: string | null;
+            favicon_url?: string | null;
+            company_url?: string | null;
+            support_url?: string | null;
+            domain?: string | null;
             is_indexed?: boolean;
             is_published?: boolean;
             is_white_labeled?: boolean;
@@ -1283,9 +1283,24 @@ export interface components {
             theme_mode?: "user" | "light" | "dark";
             is_not_monitored_operational?: boolean;
             minimum_incident_duration?: number;
-            password?: Record<string, never> | null;
+            password?: string | null;
         };
-        UpdateStatusPageGroupsDto: Record<string, never>;
+        UpdateStatusPageServerDto: {
+            name: string;
+            server_id: number;
+            description?: string | null;
+            order: number;
+        };
+        UpdateStatusPageGroupDto: {
+            id?: number;
+            name: string;
+            order: number;
+            description?: string | null;
+            servers: components["schemas"]["UpdateStatusPageServerDto"][];
+        };
+        UpdateStatusPageGroupsDto: {
+            groups: components["schemas"]["UpdateStatusPageGroupDto"][];
+        };
         CreateStatusPageIncidentReportServerDto: {
             server_id: number;
             status: "not_affected" | "downtime" | "degraded" | "resolved";
@@ -1294,7 +1309,7 @@ export interface components {
             title: string;
             initial_message: string;
             started_at: string;
-            incident_ids?: string[];
+            incident_ids?: number[];
             servers: components["schemas"]["CreateStatusPageIncidentReportServerDto"][];
         };
         UpdateStatusPageIncidentReportDto: {

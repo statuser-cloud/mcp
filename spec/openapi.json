@@ -4260,7 +4260,7 @@
             "description": "URL, куда будет отправляться вебхук"
           },
           "secret": {
-            "type": "object",
+            "type": "string",
             "example": null,
             "description": "Секрет для подписи запросов вебхука. Не возвращается обратно из API",
             "nullable": true
@@ -4275,10 +4275,8 @@
             "items": {
               "type": "string",
               "enum": [
-                "updates",
                 "weekly_reports",
                 "service_alerts",
-                "test_alerts",
                 "ssl_alerts",
                 "domain_alerts",
                 "dns_alerts",
@@ -4286,8 +4284,7 @@
                 "billing_alerts",
                 "holiday_mode",
                 "api_key_alerts",
-                "security_alerts",
-                "receipt"
+                "security_alerts"
               ]
             }
           }
@@ -4314,7 +4311,7 @@
             "description": "URL, куда будет отправляться вебхук"
           },
           "secret": {
-            "type": "object",
+            "type": "string",
             "example": "my-secret",
             "description": "Секрет для подписи запросов вебхука. Не возвращается обратно из API",
             "nullable": true
@@ -4329,10 +4326,8 @@
             "items": {
               "type": "string",
               "enum": [
-                "updates",
                 "weekly_reports",
                 "service_alerts",
-                "test_alerts",
                 "ssl_alerts",
                 "domain_alerts",
                 "dns_alerts",
@@ -4340,8 +4335,7 @@
                 "billing_alerts",
                 "holiday_mode",
                 "api_key_alerts",
-                "security_alerts",
-                "receipt"
+                "security_alerts"
               ]
             }
           }
@@ -5718,37 +5712,37 @@
             "description": "Уникальный путь страницы статуса"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "example": "Описание страницы статуса",
             "description": "Описание страницы статуса",
             "nullable": true
           },
           "logo_url": {
-            "type": "object",
+            "type": "string",
             "example": "https://example.com/logo.png",
             "description": "URL логотипа",
             "nullable": true
           },
           "favicon_url": {
-            "type": "object",
+            "type": "string",
             "example": "https://example.com/favicon.png",
             "description": "URL фавикона",
             "nullable": true
           },
           "company_url": {
-            "type": "object",
+            "type": "string",
             "example": "https://example.com",
             "description": "URL сайта компании",
             "nullable": true
           },
           "support_url": {
-            "type": "object",
+            "type": "string",
             "example": "support@example.com",
             "description": "Email службы поддержки",
             "nullable": true
           },
           "domain": {
-            "type": "object",
+            "type": "string",
             "example": "status.example.com",
             "description": "Собственный домен страницы статуса",
             "nullable": true
@@ -5804,7 +5798,7 @@
             "description": "Минимальная длительность инцидента в секундах для отображения на странице"
           },
           "password": {
-            "type": "object",
+            "type": "string",
             "example": "mysecretpassword",
             "description": "Пароль для доступа к странице статуса",
             "nullable": true
@@ -5812,9 +5806,91 @@
         },
         "title": "UpdateStatusPageDto"
       },
+      "UpdateStatusPageServerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "API Server",
+            "description": "Отображаемое имя сервера на странице статуса"
+          },
+          "server_id": {
+            "type": "number",
+            "example": 5,
+            "description": "ID сервера из общего списка серверов"
+          },
+          "description": {
+            "type": "string",
+            "example": "Описание сервера",
+            "description": "Комментарий к серверу",
+            "nullable": true
+          },
+          "order": {
+            "type": "number",
+            "example": 0,
+            "description": "Порядок отображения сервера внутри группы"
+          }
+        },
+        "required": [
+          "name",
+          "server_id",
+          "order"
+        ],
+        "title": "UpdateStatusPageServerDto"
+      },
+      "UpdateStatusPageGroupDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 123,
+            "description": "Уникальный ID группы серверов. Передайте, чтобы обновить существующую группу; опустите, чтобы создать новую."
+          },
+          "name": {
+            "type": "string",
+            "example": "Backend",
+            "description": "Название группы серверов"
+          },
+          "order": {
+            "type": "number",
+            "example": 0,
+            "description": "Порядок отображения группы на странице статуса"
+          },
+          "description": {
+            "type": "string",
+            "example": "Группа основных бэкенд-сервисов",
+            "description": "Описание группы",
+            "nullable": true
+          },
+          "servers": {
+            "description": "Список серверов в этой группе",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateStatusPageServerDto"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "order",
+          "servers"
+        ],
+        "title": "UpdateStatusPageGroupDto"
+      },
       "UpdateStatusPageGroupsDto": {
         "type": "object",
-        "properties": {},
+        "properties": {
+          "groups": {
+            "description": "Группы серверов на странице статуса",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateStatusPageGroupDto"
+            }
+          }
+        },
+        "required": [
+          "groups"
+        ],
         "title": "UpdateStatusPageGroupsDto"
       },
       "CreateStatusPageIncidentReportServerDto": {
@@ -5870,7 +5946,7 @@
             "description": "Связанные инциденты, если отчёт основан на существующих инцидентах",
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "number"
             }
           },
           "servers": {

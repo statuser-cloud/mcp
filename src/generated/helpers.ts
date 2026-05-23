@@ -54,4 +54,3 @@ export type ResponseBody<
 
 /** Re-export of operations for explicit references when needed. */
 export type Operations = operations;
- 

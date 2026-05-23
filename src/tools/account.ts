@@ -1,6 +1,13 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
+import type { RequestBody } from '../generated/helpers.js';
+
+type AccountUpdateBody = RequestBody<'/v1/account', 'patch'>;
+type HolidayModeSetBody = RequestBody<'/v1/holiday-mode', 'post'>;
+type TelegramSetTopicBody = RequestBody<'/v1/telegram/set-topic', 'patch'>;
+type MaxUnlinkBody = RequestBody<'/v1/max/unlink', 'delete'>;
+type MaxSet2faBody = RequestBody<'/v1/max/2fa-account', 'patch'>;
 
 export function registerAccountTools(
   server: McpServer,
@@ -27,8 +34,10 @@ export function registerAccountTools(
       timezone: z.string().optional(),
       is_ai_assistant_enabled: z.boolean().optional(),
     },
-    handler: async (args, { client }) =>
-      client.call({ method: 'PATCH', path: '/v1/account', body: args }),
+    handler: async (args, { client }) => {
+      const body: AccountUpdateBody = args;
+      return client.call({ method: 'PATCH', path: '/v1/account', body });
+    },
   });
 
   registerTool(server, ctx, {
@@ -75,8 +84,10 @@ export function registerAccountTools(
           'ISO 8601 timestamp at which holiday mode ends, or `null` to disable.',
         ),
     },
-    handler: async (args, { client }) =>
-      client.call({ method: 'POST', path: '/v1/holiday-mode', body: args }),
+    handler: async (args, { client }) => {
+      const body: HolidayModeSetBody = args;
+      return client.call({ method: 'POST', path: '/v1/holiday-mode', body });
+    },
   });
 
   registerTool(server, ctx, {
@@ -109,8 +120,14 @@ export function registerAccountTools(
       telegram_id: z.string().describe('Telegram chat id (from `telegram_linked_list`).'),
       message_thread_id: z.number().int().nullable(),
     },
-    handler: async (args, { client }) =>
-      client.call({ method: 'PATCH', path: '/v1/telegram/set-topic', body: args }),
+    handler: async (args, { client }) => {
+      const body: TelegramSetTopicBody = args;
+      return client.call({
+        method: 'PATCH',
+        path: '/v1/telegram/set-topic',
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {
@@ -143,10 +160,11 @@ export function registerAccountTools(
       max_id: z.string(),
     },
     handler: async ({ max_id }, { client }) => {
+      const body: MaxUnlinkBody = { max_id };
       await client.call({
         method: 'DELETE',
         path: '/v1/max/unlink',
-        body: { max_id },
+        body,
       });
       return { unlinked: true, max_id };
     },
@@ -161,11 +179,13 @@ export function registerAccountTools(
     inputSchema: {
       max_id: z.string(),
     },
-    handler: async ({ max_id }, { client }) =>
-      client.call({
+    handler: async ({ max_id }, { client }) => {
+      const body: MaxSet2faBody = { max_id };
+      return client.call({
         method: 'PATCH',
         path: '/v1/max/2fa-account',
-        body: { max_id },
-      }),
+        body,
+      });
+    },
   });
 }

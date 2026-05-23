@@ -1,6 +1,40 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
+import type { RequestBody } from '../generated/helpers.js';
+
+type IncidentReportPublishBody = RequestBody<
+  '/v1/status-pages/{id}/incident-reports',
+  'post'
+>;
+type IncidentReportUpdateBody = RequestBody<
+  '/v1/status-pages/{id}/incident-reports/{reportId}',
+  'patch'
+>;
+type IncidentReportUpdateAddBody = RequestBody<
+  '/v1/status-pages/{id}/incident-reports/{reportId}/updates',
+  'post'
+>;
+type IncidentReportUpdateEditBody = RequestBody<
+  '/v1/status-pages/{id}/incident-reports/{reportId}/updates/{updateId}',
+  'patch'
+>;
+type MaintenanceScheduleBody = RequestBody<
+  '/v1/status-pages/{id}/planned-maintenances',
+  'post'
+>;
+type MaintenanceUpdateBody = RequestBody<
+  '/v1/status-pages/{id}/planned-maintenances/{maintenanceId}',
+  'patch'
+>;
+type MaintenanceUpdateAddBody = RequestBody<
+  '/v1/status-pages/{id}/planned-maintenances/{maintenanceId}/updates',
+  'post'
+>;
+type MaintenanceUpdateEditBody = RequestBody<
+  '/v1/status-pages/{id}/planned-maintenances/{maintenanceId}/updates/{updateId}',
+  'patch'
+>;
 
 const affectStatusEnum = z
   .enum(['not_affected', 'downtime', 'degraded', 'resolved'])
@@ -84,18 +118,20 @@ export function registerStatusPageReportTools(
         incident_ids,
       },
       { client },
-    ) =>
-      client.call({
+    ) => {
+      const body: IncidentReportPublishBody = {
+        title,
+        initial_message,
+        started_at,
+        servers,
+        incident_ids,
+      };
+      return client.call({
         method: 'POST',
         path: `/v1/status-pages/${status_page_id}/incident-reports`,
-        body: {
-          title,
-          initial_message,
-          started_at,
-          servers,
-          incident_ids,
-        },
-      }),
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {
@@ -113,12 +149,14 @@ export function registerStatusPageReportTools(
     handler: async (
       { status_page_id, report_id, ...patch },
       { client },
-    ) =>
-      client.call({
+    ) => {
+      const body: IncidentReportUpdateBody = patch;
+      return client.call({
         method: 'PATCH',
         path: `/v1/status-pages/${status_page_id}/incident-reports/${report_id}`,
-        body: patch,
-      }),
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {
@@ -140,14 +178,16 @@ export function registerStatusPageReportTools(
         .describe('ISO 8601. Defaults to "now" on the server side.'),
     },
     handler: async (
-      { status_page_id, report_id, ...body },
+      { status_page_id, report_id, ...rest },
       { client },
-    ) =>
-      client.call({
+    ) => {
+      const body: IncidentReportUpdateAddBody = rest;
+      return client.call({
         method: 'POST',
         path: `/v1/status-pages/${status_page_id}/incident-reports/${report_id}/updates`,
         body,
-      }),
+      });
+    },
   });
 
   registerTool(server, ctx, {
@@ -165,12 +205,14 @@ export function registerStatusPageReportTools(
     handler: async (
       { status_page_id, report_id, update_id, message },
       { client },
-    ) =>
-      client.call({
+    ) => {
+      const body: IncidentReportUpdateEditBody = { message };
+      return client.call({
         method: 'PATCH',
         path: `/v1/status-pages/${status_page_id}/incident-reports/${report_id}/updates/${update_id}`,
-        body: { message },
-      }),
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {
@@ -250,12 +292,14 @@ export function registerStatusPageReportTools(
           'Status-page servers affected by the maintenance. Use `status_page_get` to find ids.',
         ),
     },
-    handler: async ({ status_page_id, ...body }, { client }) =>
-      client.call({
+    handler: async ({ status_page_id, ...rest }, { client }) => {
+      const body: MaintenanceScheduleBody = rest;
+      return client.call({
         method: 'POST',
         path: `/v1/status-pages/${status_page_id}/planned-maintenances`,
         body,
-      }),
+      });
+    },
   });
 
   registerTool(server, ctx, {
@@ -276,12 +320,14 @@ export function registerStatusPageReportTools(
     handler: async (
       { status_page_id, maintenance_id, ...patch },
       { client },
-    ) =>
-      client.call({
+    ) => {
+      const body: MaintenanceUpdateBody = patch;
+      return client.call({
         method: 'PATCH',
         path: `/v1/status-pages/${status_page_id}/planned-maintenances/${maintenance_id}`,
-        body: patch,
-      }),
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {
@@ -297,14 +343,16 @@ export function registerStatusPageReportTools(
       published_at: z.string().optional(),
     },
     handler: async (
-      { status_page_id, maintenance_id, ...body },
+      { status_page_id, maintenance_id, ...rest },
       { client },
-    ) =>
-      client.call({
+    ) => {
+      const body: MaintenanceUpdateAddBody = rest;
+      return client.call({
         method: 'POST',
         path: `/v1/status-pages/${status_page_id}/planned-maintenances/${maintenance_id}/updates`,
         body,
-      }),
+      });
+    },
   });
 
   registerTool(server, ctx, {
@@ -322,12 +370,14 @@ export function registerStatusPageReportTools(
     handler: async (
       { status_page_id, maintenance_id, update_id, message },
       { client },
-    ) =>
-      client.call({
+    ) => {
+      const body: MaintenanceUpdateEditBody = { message };
+      return client.call({
         method: 'PATCH',
         path: `/v1/status-pages/${status_page_id}/planned-maintenances/${maintenance_id}/updates/${update_id}`,
-        body: { message },
-      }),
+        body,
+      });
+    },
   });
 
   registerTool(server, ctx, {
