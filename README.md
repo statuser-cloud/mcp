@@ -42,6 +42,18 @@ MCP-сервер для управления [Statuser](https://statuser.cloud) 
 
 ## Установка
 
+### В один клик
+
+Для клиентов с поддержкой MCP-deeplink установка укладывается в нажатие кнопки. Клиент откроется, попросит API-ключ и сам сохранит конфиг.
+
+[![Установить в VS Code](https://img.shields.io/badge/VS_Code-Установить-0098FF?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect?url=vscode:mcp/install?%7B%22name%22%3A%22statuser%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22%40statuser/mcp%22%5D%2C%22inputs%22%3A%5B%7B%22id%22%3A%22statuser_api_key%22%2C%22type%22%3A%22promptString%22%2C%22password%22%3Atrue%2C%22description%22%3A%22API-%5Cu043a%5Cu043b%5Cu044e%5Cu0447%20Statuser%20%28https%3A//statuser.cloud/my/account/api-keys%29%22%7D%5D%2C%22env%22%3A%7B%22STATUSER_API_KEY%22%3A%22%24%7Binput%3Astatuser_api_key%7D%22%7D%7D)
+[![Установить в VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Установить-24bfa5?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect?url=vscode-insiders:mcp/install?%7B%22name%22%3A%22statuser%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22%40statuser/mcp%22%5D%2C%22inputs%22%3A%5B%7B%22id%22%3A%22statuser_api_key%22%2C%22type%22%3A%22promptString%22%2C%22password%22%3Atrue%2C%22description%22%3A%22API-%5Cu043a%5Cu043b%5Cu044e%5Cu0447%20Statuser%20%28https%3A//statuser.cloud/my/account/api-keys%29%22%7D%5D%2C%22env%22%3A%7B%22STATUSER_API_KEY%22%3A%22%24%7Binput%3Astatuser_api_key%7D%22%7D%7D)
+[![Установить в Cursor](https://img.shields.io/badge/Cursor-Установить-000000?style=for-the-badge&logo=cursor&logoColor=white)](https://cursor.com/install-mcp?name=statuser&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIkBzdGF0dXNlci9tY3AiXSwiZW52Ijp7IlNUQVRVU0VSX0FQSV9LRVkiOiJBUElfS0VZX0hFUkUifX0)
+
+Перед установкой создайте API-ключ в [личном кабинете Statuser](https://statuser.cloud/my/account/api-keys) — клиент попросит его в момент установки. Кнопка для Cursor подставит плейсхолдер `API_KEY_HERE`; замените его на свой ключ в форме, которую откроет Cursor.
+
+Для Claude Desktop, Claude Code, Windsurf, Zed и других клиентов автоустановки пока нет — там нужен ручной конфиг ниже.
+
 ### Claude Desktop
 
 Откройте `Настройки → Developer → Edit Config` и добавьте в `claude_desktop_config.json`:
@@ -88,7 +100,7 @@ claude mcp add statuser --env STATUSER_API_KEY=ваш_ключ -- npx -y @status
 
 ### Cursor
 
-`Настройки → MCP → Add new server`:
+Самый быстрый путь — кнопка [«Установить в Cursor»](#в-один-клик) выше. Если нужно вручную, `Настройки → MCP → Add new server`:
 
 ```json
 {
@@ -106,7 +118,7 @@ claude mcp add statuser --env STATUSER_API_KEY=ваш_ключ -- npx -y @status
 
 ### VS Code (GitHub Copilot Chat и другие MCP-расширения)
 
-`Настройки → MCP servers → Add`:
+Самый быстрый путь — кнопка [«Установить в VS Code»](#в-один-клик) выше. Если нужно вручную, `Настройки → MCP servers → Add`:
 
 ```json
 {
