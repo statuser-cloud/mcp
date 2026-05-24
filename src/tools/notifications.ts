@@ -97,11 +97,17 @@ export function registerNotificationTools(
       secret: z
         .string()
         .nullable()
-        .describe('Signing secret. Pass `null` if you do not want signature.'),
+        .optional()
+        .describe(
+          'Signing secret. Omit (or pass `null`) if you do not want signatures.',
+        ),
       subscriptions: z.array(webhookSubscriptionEnum),
     },
     handler: async (args, { client }) => {
-      const body: WebhookCreateBody = args;
+      // Backend DTO marks `secret` as required (string | null), but for the
+      // tool we want callers to be able to omit it. Normalize undefined -> null
+      // so the wire payload still matches the swagger spec.
+      const body: WebhookCreateBody = { ...args, secret: args.secret ?? null };
       return client.call<WebhookCreateResponse>({
         method: 'POST',
         path: '/v1/webhooks',

@@ -366,13 +366,18 @@ export function registerStatusPageReportTools(
     name: 'status_page_maintenance_update_add',
     title: 'Add timeline update to planned maintenance',
     description:
-      'Appends a new message to the maintenance timeline ("started", "in progress", "completed", "postponed"). If `published_at` is omitted, the server stamps "now".',
+      'Appends a new message to the maintenance timeline ("started", "in progress", "completed", "postponed"). If `published_at` is omitted, the server stamps "now"; if provided, it must satisfy `started_at <= published_at <= now` — pre-announce updates before the window starts are not supported, and future-dated updates are rejected too.',
     write: true,
     inputSchema: {
       status_page_id: z.number().int().positive(),
       maintenance_id: z.number().int().positive(),
       message: z.string().min(1),
-      published_at: z.string().optional(),
+      published_at: z
+        .string()
+        .optional()
+        .describe(
+          'ISO 8601. Must be between the maintenance `started_at` and now (inclusive). Omit to let the server stamp the current time.',
+        ),
     },
     handler: async (
       { status_page_id, maintenance_id, ...rest },
