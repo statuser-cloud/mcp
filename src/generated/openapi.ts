@@ -946,11 +946,11 @@ export interface components {
             check_interval: number;
             name: Record<string, never>;
             description: Record<string, never> | null;
-            status: string;
+            status: "online" | "offline" | "pending" | "paused" | "failed";
             body: Record<string, never> | null;
             keyword: Record<string, never> | null;
             keyword_mode: "present" | "absent" | null;
-            headers: string[];
+            headers: components["schemas"]["ServerHeader"][];
             is_follow_redirects: boolean;
             success_http_codes: string[];
             last_unavailable_at: Record<string, never>;
