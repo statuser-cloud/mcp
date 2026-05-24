@@ -1,0 +1,115 @@
+name: Sync openapi spec
+
+on:
+  # Triggered by the backend CI/CD after a successful prod deploy
+  # (see server-monitoring-backend/.github/workflows/ci-cd.yaml).
+  repository_dispatch:
+    types: [backend-deployed]
+
+  # Safety net in case the dispatch did not arrive or the backend was
+  # deployed outside of CI (hotfix via kubectl etc.).
+  schedule:
+    - cron: '0 6 * * *'   # daily at 06:00 UTC
+
+  # Manual trigger from the Actions tab.
+  workflow_dispatch:
+
+# Run at most one instance at a time. If the backend releases twice
+# within a minute, process the runs sequentially to avoid competing PRs.
+concurrency:
+  group: sync-spec
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch latest spec and regenerate types
+        run: npm run fetch-spec
+
+      - name: Detect changes
+        id: diff
+        run: |
+          if git diff --quiet spec/ src/generated/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No spec changes — skipping PR creation."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Typecheck
+        if: steps.diff.outputs.changed == 'true'
+        run: npm run typecheck
+
+      - name: Lint
+        if: steps.diff.outputs.changed == 'true'
+        run: npm run lint
+
+      - name: Build
+        if: steps.diff.outputs.changed == 'true'
+        run: npm run build
+
+      - name: Bump patch version
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm version patch --no-git-tag-version
+          NEW_VERSION=$(jq -r .version package.json)
+          echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_ENV"
+
+      - name: Open pull request
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore: sync openapi spec'
+          title: 'Sync openapi spec from production (v${{ env.NEW_VERSION }})'
+          body: |
+            Auto-PR opened by the **Sync openapi spec** workflow.
+
+            **Source:**
+            - Trigger: `${{ github.event_name }}`
+            - Backend release: `${{ github.event.client_payload.backend_tag || 'n/a' }}`
+            - Backend commit: `${{ github.event.client_payload.backend_sha || 'n/a' }}`
+            - Backend deploy: `${{ github.event.client_payload.deployed_at || 'n/a' }}`
+
+            **What changed:**
+            - `spec/openapi.json` refreshed from production `/swagger-json`.
+            - `src/generated/openapi.ts` regenerated.
+            - `package.json` version bumped to `${{ env.NEW_VERSION }}` (patch).
+
+            **Before you merge:**
+            1. Review the `spec/openapi.json` diff. If it contains a **breaking
+               change** (removed endpoint, renamed field, narrower enum), bump
+               the version manually to minor/major in `package.json`.
+            2. If new endpoints showed up that deserve a curated tool with a
+               human-friendly description for the LLM, open a separate issue —
+               do not change anything in this PR.
+
+            **After merge** — push the version tag to trigger the npm publish:
+            ```bash
+            git pull
+            git tag "v$(jq -r .version package.json)"
+            git push --tags
+            ```
+          branch: chore/sync-spec
+          base: main
+          delete-branch: true
+          labels: |
+            automated
+            spec-sync
