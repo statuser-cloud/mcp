@@ -51,11 +51,7 @@ const groupServerSchema = z.object({
     .nullable()
     .optional()
     .describe('Optional comment shown under the server name.'),
-  order: z
-    .number()
-    .int()
-    .min(0)
-    .describe('Display order within the group.'),
+  order: z.number().int().min(0).describe('Display order within the group.'),
 });
 
 const groupSchema = z.object({
@@ -99,11 +95,15 @@ const optionalStatusPageFields = {
     .max(100)
     .nullable()
     .optional()
-    .describe('Password to gate the page. Requires `password_protected_status_page`.'),
+    .describe(
+      'Password to gate the page. Requires `password_protected_status_page`.',
+    ),
   is_indexed: z
     .boolean()
     .optional()
-    .describe('Allow search engines to index the page. Requires `indexing_control_enabled` if you want to disable it.'),
+    .describe(
+      'Allow search engines to index the page. Requires `indexing_control_enabled` if you want to disable it.',
+    ),
   is_white_labeled: z
     .boolean()
     .optional()
@@ -119,7 +119,9 @@ const optionalStatusPageFields = {
       z.literal(180),
     ])
     .optional()
-    .describe('How many days the timeline on the page covers. Must be one of: 7, 14, 30, 60, 90, 180.'),
+    .describe(
+      'How many days the timeline on the page covers. Must be one of: 7, 14, 30, 60, 90, 180.',
+    ),
   timezone: z.string().min(1).max(100).optional(),
   uptime_decimal_places: z.number().int().min(0).max(4).optional(),
   theme_mode: z

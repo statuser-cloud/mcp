@@ -187,10 +187,7 @@ export function registerStatusPageReportTools(
       title: z.string().min(3).max(255).optional(),
       started_at: z.string().optional(),
     },
-    handler: async (
-      { status_page_id, report_id, ...patch },
-      { client },
-    ) => {
+    handler: async ({ status_page_id, report_id, ...patch }, { client }) => {
       const body: IncidentReportUpdateBody = patch;
       return client.call<IncidentReportUpdateResponse>({
         method: 'PATCH',
@@ -218,10 +215,7 @@ export function registerStatusPageReportTools(
         .optional()
         .describe('ISO 8601. Defaults to "now" on the server side.'),
     },
-    handler: async (
-      { status_page_id, report_id, ...rest },
-      { client },
-    ) => {
+    handler: async ({ status_page_id, report_id, ...rest }, { client }) => {
       const body: IncidentReportUpdateAddBody = rest;
       return client.call<IncidentReportUpdateAddResponse>({
         method: 'POST',
@@ -267,10 +261,7 @@ export function registerStatusPageReportTools(
       report_id: z.number().int().positive(),
       update_id: z.number().int().positive(),
     },
-    handler: async (
-      { status_page_id, report_id, update_id },
-      { client },
-    ) => {
+    handler: async ({ status_page_id, report_id, update_id }, { client }) => {
       await client.call({
         method: 'DELETE',
         path: `/v1/status-pages/${status_page_id}/incident-reports/${report_id}/updates/${update_id}`,
@@ -454,10 +445,7 @@ export function registerStatusPageReportTools(
       status_page_id: z.number().int().positive(),
       maintenance_id: z.number().int().positive(),
     },
-    handler: async (
-      { status_page_id, maintenance_id },
-      { client },
-    ) => {
+    handler: async ({ status_page_id, maintenance_id }, { client }) => {
       await client.call({
         method: 'DELETE',
         path: `/v1/status-pages/${status_page_id}/planned-maintenances/${maintenance_id}`,

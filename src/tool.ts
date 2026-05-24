@@ -1,5 +1,5 @@
 import { z, type ZodTypeAny } from 'zod';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { type McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { StatuserClient } from './client.js';
 import type { ServerConfig } from './config.js';
 import { WriteNotAllowedError, formatUnknownError } from './errors.js';

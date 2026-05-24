@@ -134,10 +134,7 @@ export function registerIncidentCommentTools(
       comment_text: z.string().optional(),
       attached_files: z.array(attachmentInput).optional(),
     },
-    handler: async (
-      { incident_id, comment_id, ...patch },
-      { client },
-    ) => {
+    handler: async ({ incident_id, comment_id, ...patch }, { client }) => {
       const body: IncidentCommentUpdateBody = patch;
       return client.call<IncidentCommentUpdateResponse>({
         method: 'PATCH',
@@ -202,12 +199,11 @@ async function uploadLocalFiles(
       content_type: contentType,
       file_size: bytes.byteLength,
     };
-    const presigned =
-      await ctx.client.call<IncidentCommentUploadUrlResponse>({
-        method: 'POST',
-        path: `/v1/incidents/${incidentId}/comments/upload-url`,
-        body: uploadBody,
-      });
+    const presigned = await ctx.client.call<IncidentCommentUploadUrlResponse>({
+      method: 'POST',
+      path: `/v1/incidents/${incidentId}/comments/upload-url`,
+      body: uploadBody,
+    });
 
     const res = await undiciRequest(presigned.uploadUrl, {
       method: 'PUT',

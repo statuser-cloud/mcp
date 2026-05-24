@@ -170,7 +170,9 @@ export function registerIncidentTools(
       sections: z
         .array(reportSection)
         .optional()
-        .describe('Which sections to include. Defaults to all on the server side.'),
+        .describe(
+          'Which sections to include. Defaults to all on the server side.',
+        ),
     },
     handler: async ({ id, sections }, { client }) => {
       const res = await client.callBinary({

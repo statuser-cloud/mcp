@@ -129,12 +129,17 @@ const baseMonitorFields = {
       'Locations to run checks from. Allowed values are the codes from `current_plan_get` -> `features.available_locations`.',
     ),
   dns_record_types: z
-    .array(z.enum(['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SOA', 'PTR', 'SRV']))
+    .array(
+      z.enum(['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SOA', 'PTR', 'SRV']),
+    )
     .optional()
     .describe('Required for `dns` protocol.'),
 };
 
-export function registerMonitorTools(server: McpServer, ctx: ToolContext): void {
+export function registerMonitorTools(
+  server: McpServer,
+  ctx: ToolContext,
+): void {
   registerTool(server, ctx, {
     name: 'monitor_list',
     title: 'List monitors',

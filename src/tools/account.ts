@@ -148,7 +148,9 @@ export function registerAccountTools(
       'Routes Statuser notifications to a specific topic (`message_thread_id`) in a Telegram chat — typically useful for supergroup forums. Pass `message_thread_id: null` to clear the binding and post to the main chat. Use `telegram_linked_list` to discover available topics.',
     write: true,
     inputSchema: {
-      telegram_id: z.string().describe('Telegram chat id (from `telegram_linked_list`).'),
+      telegram_id: z
+        .string()
+        .describe('Telegram chat id (from `telegram_linked_list`).'),
       message_thread_id: z.number().int().nullable(),
     },
     handler: async (args, { client }) => {

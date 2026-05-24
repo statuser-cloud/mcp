@@ -35,9 +35,11 @@ async function main(): Promise<void> {
   if (toolsets.has('account')) registerAccountTools(server, ctx);
   if (toolsets.has('monitors')) registerMonitorTools(server, ctx);
   if (toolsets.has('incidents')) registerIncidentTools(server, ctx);
-  if (toolsets.has('incident-comments')) registerIncidentCommentTools(server, ctx);
+  if (toolsets.has('incident-comments'))
+    registerIncidentCommentTools(server, ctx);
   if (toolsets.has('status-pages')) registerStatusPageTools(server, ctx);
-  if (toolsets.has('status-page-reports')) registerStatusPageReportTools(server, ctx);
+  if (toolsets.has('status-page-reports'))
+    registerStatusPageReportTools(server, ctx);
   if (toolsets.has('notifications')) registerNotificationTools(server, ctx);
 
   const transport = new StdioServerTransport();

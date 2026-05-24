@@ -33,7 +33,9 @@ export class StatuserClient {
     return (await this.execute(opts)) as T;
   }
 
-  async callBinary(opts: Omit<RequestOptions, 'binary'>): Promise<BinaryResponse> {
+  async callBinary(
+    opts: Omit<RequestOptions, 'binary'>,
+  ): Promise<BinaryResponse> {
     return (await this.execute({ ...opts, binary: true })) as BinaryResponse;
   }
 
@@ -51,7 +53,6 @@ export class StatuserClient {
     }
 
     let attempt = 0;
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const res = await request(url, {
         method: opts.method,
@@ -74,7 +75,9 @@ export class StatuserClient {
         if (opts.binary) {
           const buf = Buffer.from(await res.body.arrayBuffer());
           return {
-            contentType: stringHeader(res.headers, 'content-type') ?? 'application/octet-stream',
+            contentType:
+              stringHeader(res.headers, 'content-type') ??
+              'application/octet-stream',
             filename: parseFilenameFromContentDisposition(
               stringHeader(res.headers, 'content-disposition'),
             ),
@@ -112,10 +115,7 @@ export class StatuserClient {
     }
   }
 
-  private buildUrl(
-    path: string,
-    query: RequestOptions['query'],
-  ): string {
+  private buildUrl(path: string, query: RequestOptions['query']): string {
     const base = path.startsWith('http')
       ? path
       : `${this.config.baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
