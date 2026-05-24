@@ -52,5 +52,17 @@ export type ResponseBody<
     : never
   : never;
 
+/**
+ * Typed JSON response body for whichever 2xx status the endpoint advertises:
+ * 200, then 201. Use this instead of `ResponseBody` when you do not care which
+ * specific success status is returned (most endpoints).
+ */
+export type OkResponseBody<
+  P extends keyof paths,
+  M extends AnyMethod & keyof paths[P],
+> = [ResponseBody<P, M, 200>] extends [never]
+  ? ResponseBody<P, M, 201>
+  : ResponseBody<P, M, 200>;
+
 /** Re-export of operations for explicit references when needed. */
 export type Operations = operations;

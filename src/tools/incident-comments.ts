@@ -4,7 +4,7 @@ import { request as undiciRequest } from 'undici';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { RequestBody } from '../generated/helpers.js';
+import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
 
 type IncidentCommentCreateBody = RequestBody<
   '/v1/incidents/{incidentId}/comments',
@@ -15,6 +15,23 @@ type IncidentCommentUpdateBody = RequestBody<
   'patch'
 >;
 type IncidentCommentUploadUrlBody = RequestBody<
+  '/v1/incidents/{incidentId}/comments/upload-url',
+  'post'
+>;
+
+type IncidentCommentListResponse = OkResponseBody<
+  '/v1/incidents/{incidentId}/comments',
+  'get'
+>;
+type IncidentCommentResponse = OkResponseBody<
+  '/v1/incidents/{incidentId}/comments',
+  'post'
+>;
+type IncidentCommentUpdateResponse = OkResponseBody<
+  '/v1/incidents/{incidentId}/comments/{commentId}',
+  'patch'
+>;
+type IncidentCommentUploadUrlResponse = OkResponseBody<
   '/v1/incidents/{incidentId}/comments/upload-url',
   'post'
 >;
@@ -60,7 +77,7 @@ export function registerIncidentCommentTools(
       incident_id: z.number().int().positive(),
     },
     handler: async ({ incident_id }, { client }) =>
-      client.call({
+      client.call<IncidentCommentListResponse>({
         method: 'GET',
         path: `/v1/incidents/${incident_id}/comments`,
       }),
@@ -97,7 +114,7 @@ export function registerIncidentCommentTools(
         comment_text,
         attached_files: allFiles.length ? allFiles : undefined,
       };
-      return ctx2.client.call({
+      return ctx2.client.call<IncidentCommentResponse>({
         method: 'POST',
         path: `/v1/incidents/${incident_id}/comments`,
         body,
@@ -122,7 +139,7 @@ export function registerIncidentCommentTools(
       { client },
     ) => {
       const body: IncidentCommentUpdateBody = patch;
-      return client.call({
+      return client.call<IncidentCommentUpdateResponse>({
         method: 'PATCH',
         path: `/v1/incidents/${incident_id}/comments/${comment_id}`,
         body,
@@ -185,14 +202,12 @@ async function uploadLocalFiles(
       content_type: contentType,
       file_size: bytes.byteLength,
     };
-    const presigned = await ctx.client.call<{
-      uploadUrl: string;
-      fileUrl: string;
-    }>({
-      method: 'POST',
-      path: `/v1/incidents/${incidentId}/comments/upload-url`,
-      body: uploadBody,
-    });
+    const presigned =
+      await ctx.client.call<IncidentCommentUploadUrlResponse>({
+        method: 'POST',
+        path: `/v1/incidents/${incidentId}/comments/upload-url`,
+        body: uploadBody,
+      });
 
     const res = await undiciRequest(presigned.uploadUrl, {
       method: 'PUT',

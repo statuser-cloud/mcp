@@ -1,13 +1,37 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { RequestBody } from '../generated/helpers.js';
+import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
 
 type WebhookCreateBody = RequestBody<'/v1/webhooks', 'post'>;
 type WebhookUpdateBody = RequestBody<'/v1/webhooks/{id}', 'patch'>;
 type NotificationRuleSetBody = RequestBody<'/v1/notification-rules', 'patch'>;
 type NotificationEmailAddBody = RequestBody<'/v1/notification-emails', 'post'>;
 type NotificationEmailConfirmBody = RequestBody<
+  '/v1/notification-emails/{id}/confirm',
+  'post'
+>;
+
+type WebhookListResponse = OkResponseBody<'/v1/webhooks', 'get'>;
+type WebhookCreateResponse = OkResponseBody<'/v1/webhooks', 'post'>;
+type WebhookUpdateResponse = OkResponseBody<'/v1/webhooks/{id}', 'patch'>;
+type NotificationRuleListResponse = OkResponseBody<
+  '/v1/notification-rules',
+  'get'
+>;
+type NotificationRuleSetResponse = OkResponseBody<
+  '/v1/notification-rules',
+  'patch'
+>;
+type NotificationEmailListResponse = OkResponseBody<
+  '/v1/notification-emails',
+  'get'
+>;
+type NotificationEmailAddResponse = OkResponseBody<
+  '/v1/notification-emails',
+  'post'
+>;
+type NotificationEmailConfirmResponse = OkResponseBody<
   '/v1/notification-emails/{id}/confirm',
   'post'
 >;
@@ -55,7 +79,10 @@ export function registerNotificationTools(
       'Lists all webhook endpoints configured on the account: name, URL, and the set of `subscriptions` (event types delivered to that webhook). The secret set on creation is not returned.',
     inputSchema: {},
     handler: async (_args, { client }) =>
-      client.call({ method: 'GET', path: '/v1/webhooks' }),
+      client.call<WebhookListResponse>({
+        method: 'GET',
+        path: '/v1/webhooks',
+      }),
   });
 
   registerTool(server, ctx, {
@@ -75,7 +102,11 @@ export function registerNotificationTools(
     },
     handler: async (args, { client }) => {
       const body: WebhookCreateBody = args;
-      return client.call({ method: 'POST', path: '/v1/webhooks', body });
+      return client.call<WebhookCreateResponse>({
+        method: 'POST',
+        path: '/v1/webhooks',
+        body,
+      });
     },
   });
 
@@ -94,7 +125,11 @@ export function registerNotificationTools(
     },
     handler: async ({ id, ...patch }, { client }) => {
       const body: WebhookUpdateBody = patch;
-      return client.call({ method: 'PATCH', path: `/v1/webhooks/${id}`, body });
+      return client.call<WebhookUpdateResponse>({
+        method: 'PATCH',
+        path: `/v1/webhooks/${id}`,
+        body,
+      });
     },
   });
 
@@ -140,7 +175,10 @@ export function registerNotificationTools(
       'Returns the current matrix of notification rules: for each subscription type (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `weekly_reports`, `updates`, `billing_alerts`, `holiday_mode`, `api_key_alerts`, `security_alerts`, `ideas`) — three boolean flags `email` / `telegram` / `max` indicating whether that channel is enabled. Webhooks have their own per-webhook `subscriptions` field and do not appear here.',
     inputSchema: {},
     handler: async (_args, { client }) =>
-      client.call({ method: 'GET', path: '/v1/notification-rules' }),
+      client.call<NotificationRuleListResponse>({
+        method: 'GET',
+        path: '/v1/notification-rules',
+      }),
   });
 
   registerTool(server, ctx, {
@@ -157,7 +195,7 @@ export function registerNotificationTools(
     },
     handler: async (args, { client }) => {
       const body: NotificationRuleSetBody = args;
-      return client.call({
+      return client.call<NotificationRuleSetResponse>({
         method: 'PATCH',
         path: '/v1/notification-rules',
         body,
@@ -174,7 +212,10 @@ export function registerNotificationTools(
       'Lists every email address added to the account for notifications, with confirmation status. Notifications go only to confirmed addresses; unconfirmed ones are shown for UX but are not used by notification rules.',
     inputSchema: {},
     handler: async (_args, { client }) =>
-      client.call({ method: 'GET', path: '/v1/notification-emails' }),
+      client.call<NotificationEmailListResponse>({
+        method: 'GET',
+        path: '/v1/notification-emails',
+      }),
   });
 
   registerTool(server, ctx, {
@@ -188,7 +229,7 @@ export function registerNotificationTools(
     },
     handler: async ({ email }, { client }) => {
       const body: NotificationEmailAddBody = { email };
-      return client.call({
+      return client.call<NotificationEmailAddResponse>({
         method: 'POST',
         path: '/v1/notification-emails',
         body,
@@ -208,7 +249,7 @@ export function registerNotificationTools(
     },
     handler: async ({ id, code }, { client }) => {
       const body: NotificationEmailConfirmBody = { code };
-      return client.call({
+      return client.call<NotificationEmailConfirmResponse>({
         method: 'POST',
         path: `/v1/notification-emails/${id}/confirm`,
         body,

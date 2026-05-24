@@ -1,15 +1,35 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { RequestBody } from '../generated/helpers.js';
+import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
 
 /**
  * Compile-time guardrail: the request body sent to the backend must match
  * the types generated from the swagger spec. If the backend DTO shape
  * changes, TypeScript will flag the mismatch before the package is published.
+ * The same idea applies to response shapes via OkResponseBody — if a backend
+ * release renames or drops a field, every dependant client.call site lights up.
  */
 type CreateMonitorBody = RequestBody<'/v1/servers', 'post'>;
 type UpdateMonitorBody = RequestBody<'/v1/servers/{id}', 'patch'>;
+
+type MonitorListResponse = OkResponseBody<'/v1/servers', 'get'>;
+type MonitorResponse = OkResponseBody<'/v1/servers/{id}', 'get'>;
+type MonitorCreateResponse = OkResponseBody<'/v1/servers', 'post'>;
+type MonitorUpdateResponse = OkResponseBody<'/v1/servers/{id}', 'patch'>;
+type MonitorPauseResponse = OkResponseBody<
+  '/v1/servers/{id}/{action}',
+  'patch'
+>;
+type MonitorChecksResponse = OkResponseBody<'/v1/servers/{id}/checks', 'get'>;
+type MonitorHeartbeatResponse = OkResponseBody<
+  '/v1/servers/{id}/heartbeat/events',
+  'get'
+>;
+type MonitorDnsHistoryResponse = OkResponseBody<
+  '/v1/servers/{id}/dns-history',
+  'get'
+>;
 
 // Mirrors the public enum from PlanFeaturesResponseDto / ServerProtocol.
 const protocolEnum = z.enum([
@@ -125,7 +145,7 @@ export function registerMonitorTools(server: McpServer, ctx: ToolContext): void 
       offset: z.number().int().min(0).optional(),
     },
     handler: async ({ limit, offset }, { client }) =>
-      client.call({
+      client.call<MonitorListResponse>({
         method: 'GET',
         path: '/v1/servers',
         query: { limit, offset },
@@ -141,7 +161,10 @@ export function registerMonitorTools(server: McpServer, ctx: ToolContext): void 
       id: z.number().int().positive(),
     },
     handler: async ({ id }, { client }) =>
-      client.call({ method: 'GET', path: `/v1/servers/${id}` }),
+      client.call<MonitorResponse>({
+        method: 'GET',
+        path: `/v1/servers/${id}`,
+      }),
   });
 
   registerTool(server, ctx, {
@@ -153,7 +176,11 @@ export function registerMonitorTools(server: McpServer, ctx: ToolContext): void 
     inputSchema: baseMonitorFields,
     handler: async (args, { client }) => {
       const body: CreateMonitorBody = args;
-      return client.call({ method: 'POST', path: '/v1/servers', body });
+      return client.call<MonitorCreateResponse>({
+        method: 'POST',
+        path: '/v1/servers',
+        body,
+      });
     },
   });
 
@@ -174,7 +201,7 @@ export function registerMonitorTools(server: McpServer, ctx: ToolContext): void 
     },
     handler: async ({ id, ...patch }, { client }) => {
       const body: UpdateMonitorBody = patch;
-      return client.call({
+      return client.call<MonitorUpdateResponse>({
         method: 'PATCH',
         path: `/v1/servers/${id}`,
         body,
@@ -193,7 +220,10 @@ export function registerMonitorTools(server: McpServer, ctx: ToolContext): void 
       action: z.enum(['pause', 'unpause']),
     },
     handler: async ({ id, action }, { client }) =>
-      client.call({ method: 'PATCH', path: `/v1/servers/${id}/${action}` }),
+      client.call<MonitorPauseResponse>({
+        method: 'PATCH',
+        path: `/v1/servers/${id}/${action}`,
+      }),
   });
 
   registerTool(server, ctx, {
@@ -246,7 +276,7 @@ export function registerMonitorTools(server: McpServer, ctx: ToolContext): void 
         .describe('ISO 8601 timestamp (exclusive). Default: now.'),
     },
     handler: async ({ id, start_date, end_date }, { client }) =>
-      client.call({
+      client.call<MonitorChecksResponse>({
         method: 'GET',
         path: `/v1/servers/${id}/checks`,
         query: { startDate: start_date, endDate: end_date },
@@ -264,7 +294,7 @@ export function registerMonitorTools(server: McpServer, ctx: ToolContext): void 
       end_date: z.string().optional(),
     },
     handler: async ({ id, start_date, end_date }, { client }) =>
-      client.call({
+      client.call<MonitorHeartbeatResponse>({
         method: 'GET',
         path: `/v1/servers/${id}/heartbeat/events`,
         query: { startDate: start_date, endDate: end_date },
@@ -280,6 +310,9 @@ export function registerMonitorTools(server: McpServer, ctx: ToolContext): void 
       id: z.number().int().positive(),
     },
     handler: async ({ id }, { client }) =>
-      client.call({ method: 'GET', path: `/v1/servers/${id}/dns-history` }),
+      client.call<MonitorDnsHistoryResponse>({
+        method: 'GET',
+        path: `/v1/servers/${id}/dns-history`,
+      }),
   });
 }

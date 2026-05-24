@@ -1,9 +1,32 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { RequestBody } from '../generated/helpers.js';
+import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
 
 type IncidentRateAiSummaryBody = RequestBody<
+  '/v1/incidents/{incidentId}/ai-summary/rating',
+  'post'
+>;
+
+type IncidentsByServerResponse = OkResponseBody<
+  '/v1/servers/{serverId}/incidents',
+  'get'
+>;
+type IncidentsListResponse = OkResponseBody<'/v1/incidents', 'get'>;
+type IncidentResponse = OkResponseBody<'/v1/incidents/{incidentId}', 'get'>;
+type IncidentEventsResponse = OkResponseBody<
+  '/v1/incidents/{incidentId}/events',
+  'get'
+>;
+type IncidentServerResponse = OkResponseBody<
+  '/v1/incidents/{incidentId}/server',
+  'get'
+>;
+type IncidentAiSummaryResponse = OkResponseBody<
+  '/v1/incidents/{incidentId}/ai-summary',
+  'post'
+>;
+type IncidentRateAiSummaryResponse = OkResponseBody<
   '/v1/incidents/{incidentId}/ai-summary/rating',
   'post'
 >;
@@ -43,12 +66,12 @@ export function registerIncidentTools(
     },
     handler: async ({ server_id, status }, { client }) => {
       if (server_id !== undefined) {
-        return client.call({
+        return client.call<IncidentsByServerResponse>({
           method: 'GET',
           path: `/v1/servers/${server_id}/incidents`,
         });
       }
-      return client.call({
+      return client.call<IncidentsListResponse>({
         method: 'GET',
         path: '/v1/incidents',
         query: { status },
@@ -65,7 +88,10 @@ export function registerIncidentTools(
       id: z.number().int().positive(),
     },
     handler: async ({ id }, { client }) =>
-      client.call({ method: 'GET', path: `/v1/incidents/${id}` }),
+      client.call<IncidentResponse>({
+        method: 'GET',
+        path: `/v1/incidents/${id}`,
+      }),
   });
 
   registerTool(server, ctx, {
@@ -77,7 +103,10 @@ export function registerIncidentTools(
       id: z.number().int().positive(),
     },
     handler: async ({ id }, { client }) =>
-      client.call({ method: 'GET', path: `/v1/incidents/${id}/events` }),
+      client.call<IncidentEventsResponse>({
+        method: 'GET',
+        path: `/v1/incidents/${id}/events`,
+      }),
   });
 
   registerTool(server, ctx, {
@@ -89,7 +118,10 @@ export function registerIncidentTools(
       id: z.number().int().positive(),
     },
     handler: async ({ id }, { client }) =>
-      client.call({ method: 'GET', path: `/v1/incidents/${id}/server` }),
+      client.call<IncidentServerResponse>({
+        method: 'GET',
+        path: `/v1/incidents/${id}/server`,
+      }),
   });
 
   registerTool(server, ctx, {
@@ -102,7 +134,7 @@ export function registerIncidentTools(
       id: z.number().int().positive(),
     },
     handler: async ({ id }, { client }) =>
-      client.call({
+      client.call<IncidentAiSummaryResponse>({
         method: 'POST',
         path: `/v1/incidents/${id}/ai-summary`,
       }),
@@ -120,7 +152,7 @@ export function registerIncidentTools(
     },
     handler: async ({ id, rating }, { client }) => {
       const body: IncidentRateAiSummaryBody = { rating };
-      return client.call({
+      return client.call<IncidentRateAiSummaryResponse>({
         method: 'POST',
         path: `/v1/incidents/${id}/ai-summary/rating`,
         body,

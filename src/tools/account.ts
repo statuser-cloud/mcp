@@ -1,13 +1,24 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { RequestBody } from '../generated/helpers.js';
+import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
 
 type AccountUpdateBody = RequestBody<'/v1/account', 'patch'>;
 type HolidayModeSetBody = RequestBody<'/v1/holiday-mode', 'post'>;
 type TelegramSetTopicBody = RequestBody<'/v1/telegram/set-topic', 'patch'>;
 type MaxUnlinkBody = RequestBody<'/v1/max/unlink', 'delete'>;
 type MaxSet2faBody = RequestBody<'/v1/max/2fa-account', 'patch'>;
+
+type AccountResponse = OkResponseBody<'/v1/account', 'get'>;
+type AccountUpdateResponse = OkResponseBody<'/v1/account', 'patch'>;
+type CurrentPlanResponse = OkResponseBody<'/v1/billing/current-plan', 'get'>;
+type PlanListResponse = OkResponseBody<'/v1/billing/plans', 'get'>;
+type HolidayModeGetResponse = OkResponseBody<'/v1/holiday-mode', 'get'>;
+type HolidayModeSetResponse = OkResponseBody<'/v1/holiday-mode', 'post'>;
+type TwoFactorInfoResponse = OkResponseBody<'/v1/2fa', 'get'>;
+type TelegramLinkedListResponse = OkResponseBody<'/v1/telegram/linked', 'get'>;
+type MaxLinkedListResponse = OkResponseBody<'/v1/max/linked', 'get'>;
+type MaxLinksResponse = OkResponseBody<'/v1/max/links', 'get'>;
 
 export function registerAccountTools(
   server: McpServer,
@@ -20,7 +31,7 @@ export function registerAccountTools(
       'Returns the profile of the current account: `id`, email, name, status, avatar, creation date, password-change date, timezone and the AI-assistant flag. Plan/limit info is not here — use `current_plan_get`.',
     inputSchema: {},
     handler: async (_args, { client }) =>
-      client.call({ method: 'GET', path: '/v1/account' }),
+      client.call<AccountResponse>({ method: 'GET', path: '/v1/account' }),
   });
 
   registerTool(server, ctx, {
@@ -36,7 +47,11 @@ export function registerAccountTools(
     },
     handler: async (args, { client }) => {
       const body: AccountUpdateBody = args;
-      return client.call({ method: 'PATCH', path: '/v1/account', body });
+      return client.call<AccountUpdateResponse>({
+        method: 'PATCH',
+        path: '/v1/account',
+        body,
+      });
     },
   });
 
@@ -47,7 +62,10 @@ export function registerAccountTools(
       'Returns the active plan with its price, full `features` object (limits and feature flags), and subscription metadata (`valid_until`, `current_billing_period`, `pending_plan`). Useful to check gates before calling feature-restricted endpoints.',
     inputSchema: {},
     handler: async (_args, { client }) =>
-      client.call({ method: 'GET', path: '/v1/billing/current-plan' }),
+      client.call<CurrentPlanResponse>({
+        method: 'GET',
+        path: '/v1/billing/current-plan',
+      }),
   });
 
   registerTool(server, ctx, {
@@ -57,7 +75,10 @@ export function registerAccountTools(
       'Returns the public Statuser plan catalog with prices, limits and features. No authentication required.',
     inputSchema: {},
     handler: async (_args, { client }) =>
-      client.call({ method: 'GET', path: '/v1/billing/plans' }),
+      client.call<PlanListResponse>({
+        method: 'GET',
+        path: '/v1/billing/plans',
+      }),
   });
 
   registerTool(server, ctx, {
@@ -67,7 +88,10 @@ export function registerAccountTools(
       'Returns the current state of "holiday/vacation" mode: if active, `holiday_until` contains the end timestamp; otherwise `null`. While active, Statuser does not send personal incident notifications (checks still run and incidents are still recorded).',
     inputSchema: {},
     handler: async (_args, { client }) =>
-      client.call({ method: 'GET', path: '/v1/holiday-mode' }),
+      client.call<HolidayModeGetResponse>({
+        method: 'GET',
+        path: '/v1/holiday-mode',
+      }),
   });
 
   registerTool(server, ctx, {
@@ -86,7 +110,11 @@ export function registerAccountTools(
     },
     handler: async (args, { client }) => {
       const body: HolidayModeSetBody = args;
-      return client.call({ method: 'POST', path: '/v1/holiday-mode', body });
+      return client.call<HolidayModeSetResponse>({
+        method: 'POST',
+        path: '/v1/holiday-mode',
+        body,
+      });
     },
   });
 
@@ -97,7 +125,7 @@ export function registerAccountTools(
       'Returns the current state of two-factor authentication: `preferred_method` (active second factor, may be `null`) and `allowed_methods` (which methods are selectable). Allowed values: `email` (always), `totp` (when TOTP is configured), `telegram` (when a Telegram chat is linked), `max` (when a MAX chat is linked).',
     inputSchema: {},
     handler: async (_args, { client }) =>
-      client.call({ method: 'GET', path: '/v1/2fa' }),
+      client.call<TwoFactorInfoResponse>({ method: 'GET', path: '/v1/2fa' }),
   });
 
   registerTool(server, ctx, {
@@ -107,7 +135,10 @@ export function registerAccountTools(
       'Returns all Telegram personal accounts and group chats linked to the Statuser account with their settings: chat id, type, username, avatar, 2FA flag, selected topic and available topics for supergroup-forum groups.',
     inputSchema: {},
     handler: async (_args, { client }) =>
-      client.call({ method: 'GET', path: '/v1/telegram/linked' }),
+      client.call<TelegramLinkedListResponse>({
+        method: 'GET',
+        path: '/v1/telegram/linked',
+      }),
   });
 
   registerTool(server, ctx, {
@@ -137,7 +168,10 @@ export function registerAccountTools(
       'Returns all MAX accounts and group chats linked to the Statuser account, with status and the "used for 2FA" flag. Available as a notification channel in notification rules.',
     inputSchema: {},
     handler: async (_args, { client }) =>
-      client.call({ method: 'GET', path: '/v1/max/linked' }),
+      client.call<MaxLinkedListResponse>({
+        method: 'GET',
+        path: '/v1/max/linked',
+      }),
   });
 
   registerTool(server, ctx, {
@@ -147,7 +181,10 @@ export function registerAccountTools(
       'Returns a pair of deeplinks: `link_user` (open in personal MAX chat with the bot) and `link_group` (add the bot to a group and follow the link). After confirmation, the MAX chat/account becomes available as a notifications channel. Repeated calls before the link is consumed are idempotent — same links are returned.',
     inputSchema: {},
     handler: async (_args, { client }) =>
-      client.call({ method: 'GET', path: '/v1/max/links' }),
+      client.call<MaxLinksResponse>({
+        method: 'GET',
+        path: '/v1/max/links',
+      }),
   });
 
   registerTool(server, ctx, {

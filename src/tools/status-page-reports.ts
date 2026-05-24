@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { RequestBody } from '../generated/helpers.js';
+import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
 
 type IncidentReportPublishBody = RequestBody<
   '/v1/status-pages/{id}/incident-reports',
@@ -32,6 +32,47 @@ type MaintenanceUpdateAddBody = RequestBody<
   'post'
 >;
 type MaintenanceUpdateEditBody = RequestBody<
+  '/v1/status-pages/{id}/planned-maintenances/{maintenanceId}/updates/{updateId}',
+  'patch'
+>;
+
+type IncidentReportListResponse = OkResponseBody<
+  '/v1/status-pages/{id}/incident-reports',
+  'get'
+>;
+type IncidentReportPublishResponse = OkResponseBody<
+  '/v1/status-pages/{id}/incident-reports',
+  'post'
+>;
+type IncidentReportUpdateResponse = OkResponseBody<
+  '/v1/status-pages/{id}/incident-reports/{reportId}',
+  'patch'
+>;
+type IncidentReportUpdateAddResponse = OkResponseBody<
+  '/v1/status-pages/{id}/incident-reports/{reportId}/updates',
+  'post'
+>;
+type IncidentReportUpdateEditResponse = OkResponseBody<
+  '/v1/status-pages/{id}/incident-reports/{reportId}/updates/{updateId}',
+  'patch'
+>;
+type MaintenanceListResponse = OkResponseBody<
+  '/v1/status-pages/{id}/planned-maintenances',
+  'get'
+>;
+type MaintenanceScheduleResponse = OkResponseBody<
+  '/v1/status-pages/{id}/planned-maintenances',
+  'post'
+>;
+type MaintenanceUpdateResponse = OkResponseBody<
+  '/v1/status-pages/{id}/planned-maintenances/{maintenanceId}',
+  'patch'
+>;
+type MaintenanceUpdateAddResponse = OkResponseBody<
+  '/v1/status-pages/{id}/planned-maintenances/{maintenanceId}/updates',
+  'post'
+>;
+type MaintenanceUpdateEditResponse = OkResponseBody<
   '/v1/status-pages/{id}/planned-maintenances/{maintenanceId}/updates/{updateId}',
   'patch'
 >;
@@ -74,7 +115,7 @@ export function registerStatusPageReportTools(
       status_page_id: z.number().int().positive(),
     },
     handler: async ({ status_page_id }, { client }) =>
-      client.call({
+      client.call<IncidentReportListResponse>({
         method: 'GET',
         path: `/v1/status-pages/${status_page_id}/incident-reports`,
       }),
@@ -126,7 +167,7 @@ export function registerStatusPageReportTools(
         servers,
         incident_ids,
       };
-      return client.call({
+      return client.call<IncidentReportPublishResponse>({
         method: 'POST',
         path: `/v1/status-pages/${status_page_id}/incident-reports`,
         body,
@@ -151,7 +192,7 @@ export function registerStatusPageReportTools(
       { client },
     ) => {
       const body: IncidentReportUpdateBody = patch;
-      return client.call({
+      return client.call<IncidentReportUpdateResponse>({
         method: 'PATCH',
         path: `/v1/status-pages/${status_page_id}/incident-reports/${report_id}`,
         body,
@@ -182,7 +223,7 @@ export function registerStatusPageReportTools(
       { client },
     ) => {
       const body: IncidentReportUpdateAddBody = rest;
-      return client.call({
+      return client.call<IncidentReportUpdateAddResponse>({
         method: 'POST',
         path: `/v1/status-pages/${status_page_id}/incident-reports/${report_id}/updates`,
         body,
@@ -207,7 +248,7 @@ export function registerStatusPageReportTools(
       { client },
     ) => {
       const body: IncidentReportUpdateEditBody = { message };
-      return client.call({
+      return client.call<IncidentReportUpdateEditResponse>({
         method: 'PATCH',
         path: `/v1/status-pages/${status_page_id}/incident-reports/${report_id}/updates/${update_id}`,
         body,
@@ -268,7 +309,7 @@ export function registerStatusPageReportTools(
       status_page_id: z.number().int().positive(),
     },
     handler: async ({ status_page_id }, { client }) =>
-      client.call({
+      client.call<MaintenanceListResponse>({
         method: 'GET',
         path: `/v1/status-pages/${status_page_id}/planned-maintenances`,
       }),
@@ -294,7 +335,7 @@ export function registerStatusPageReportTools(
     },
     handler: async ({ status_page_id, ...rest }, { client }) => {
       const body: MaintenanceScheduleBody = rest;
-      return client.call({
+      return client.call<MaintenanceScheduleResponse>({
         method: 'POST',
         path: `/v1/status-pages/${status_page_id}/planned-maintenances`,
         body,
@@ -322,7 +363,7 @@ export function registerStatusPageReportTools(
       { client },
     ) => {
       const body: MaintenanceUpdateBody = patch;
-      return client.call({
+      return client.call<MaintenanceUpdateResponse>({
         method: 'PATCH',
         path: `/v1/status-pages/${status_page_id}/planned-maintenances/${maintenance_id}`,
         body,
@@ -347,7 +388,7 @@ export function registerStatusPageReportTools(
       { client },
     ) => {
       const body: MaintenanceUpdateAddBody = rest;
-      return client.call({
+      return client.call<MaintenanceUpdateAddResponse>({
         method: 'POST',
         path: `/v1/status-pages/${status_page_id}/planned-maintenances/${maintenance_id}/updates`,
         body,
@@ -372,7 +413,7 @@ export function registerStatusPageReportTools(
       { client },
     ) => {
       const body: MaintenanceUpdateEditBody = { message };
-      return client.call({
+      return client.call<MaintenanceUpdateEditResponse>({
         method: 'PATCH',
         path: `/v1/status-pages/${status_page_id}/planned-maintenances/${maintenance_id}/updates/${update_id}`,
         body,

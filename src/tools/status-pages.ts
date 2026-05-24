@@ -1,11 +1,35 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { RequestBody } from '../generated/helpers.js';
+import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
 
 type StatusPageCreateBody = RequestBody<'/v1/status-pages', 'post'>;
 type StatusPageUpdateBody = RequestBody<'/v1/status-pages/{id}', 'patch'>;
 type StatusPageSetGroupsBody = RequestBody<
+  '/v1/status-pages/{id}/servers',
+  'patch'
+>;
+
+type StatusPageListResponse = OkResponseBody<'/v1/status-pages', 'get'>;
+type StatusPageResponse = OkResponseBody<'/v1/status-pages/{id}', 'get'>;
+type StatusPageCheckSlugResponse = OkResponseBody<
+  '/v1/status-pages/check-slug/{slug}',
+  'get'
+>;
+type StatusPageCheckDomainResponse = OkResponseBody<
+  '/v1/status-pages/check-domain/{domain}',
+  'get'
+>;
+type StatusPageCreateResponse = OkResponseBody<'/v1/status-pages', 'post'>;
+type StatusPageUpdateResponse = OkResponseBody<
+  '/v1/status-pages/{id}',
+  'patch'
+>;
+type StatusPagePublishResponse = OkResponseBody<
+  '/v1/status-pages/{id}/{action}',
+  'patch'
+>;
+type StatusPageSetGroupsResponse = OkResponseBody<
   '/v1/status-pages/{id}/servers',
   'patch'
 >;
@@ -141,7 +165,10 @@ export function registerStatusPageTools(
       'Lists all status pages on the account with their full configuration: domain/slug, groups and linked monitors, theme, white-label, password protection, etc.',
     inputSchema: {},
     handler: async (_args, { client }) =>
-      client.call({ method: 'GET', path: '/v1/status-pages' }),
+      client.call<StatusPageListResponse>({
+        method: 'GET',
+        path: '/v1/status-pages',
+      }),
   });
 
   registerTool(server, ctx, {
@@ -153,7 +180,10 @@ export function registerStatusPageTools(
       id: z.number().int().positive(),
     },
     handler: async ({ id }, { client }) =>
-      client.call({ method: 'GET', path: `/v1/status-pages/${id}` }),
+      client.call<StatusPageResponse>({
+        method: 'GET',
+        path: `/v1/status-pages/${id}`,
+      }),
   });
 
   registerTool(server, ctx, {
@@ -165,7 +195,7 @@ export function registerStatusPageTools(
       slug: z.string().min(1),
     },
     handler: async ({ slug }, { client }) =>
-      client.call({
+      client.call<StatusPageCheckSlugResponse>({
         method: 'GET',
         path: `/v1/status-pages/check-slug/${encodeURIComponent(slug)}`,
       }),
@@ -180,7 +210,7 @@ export function registerStatusPageTools(
       domain: z.string().min(1),
     },
     handler: async ({ domain }, { client }) =>
-      client.call({
+      client.call<StatusPageCheckDomainResponse>({
         method: 'GET',
         path: `/v1/status-pages/check-domain/${encodeURIComponent(domain)}`,
       }),
@@ -195,7 +225,11 @@ export function registerStatusPageTools(
     inputSchema: createStatusPageFields,
     handler: async (args, { client }) => {
       const body: StatusPageCreateBody = args;
-      return client.call({ method: 'POST', path: '/v1/status-pages', body });
+      return client.call<StatusPageCreateResponse>({
+        method: 'POST',
+        path: '/v1/status-pages',
+        body,
+      });
     },
   });
 
@@ -211,7 +245,7 @@ export function registerStatusPageTools(
     },
     handler: async ({ id, ...patch }, { client }) => {
       const body: StatusPageUpdateBody = patch;
-      return client.call({
+      return client.call<StatusPageUpdateResponse>({
         method: 'PATCH',
         path: `/v1/status-pages/${id}`,
         body,
@@ -230,7 +264,7 @@ export function registerStatusPageTools(
       action: z.enum(['published', 'unpublished']),
     },
     handler: async ({ id, action }, { client }) =>
-      client.call({
+      client.call<StatusPagePublishResponse>({
         method: 'PATCH',
         path: `/v1/status-pages/${id}/${action}`,
       }),
@@ -248,7 +282,7 @@ export function registerStatusPageTools(
     },
     handler: async ({ id, groups }, { client }) => {
       const body: StatusPageSetGroupsBody = { groups };
-      return client.call({
+      return client.call<StatusPageSetGroupsResponse>({
         method: 'PATCH',
         path: `/v1/status-pages/${id}/servers`,
         body,
