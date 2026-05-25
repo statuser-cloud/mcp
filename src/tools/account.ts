@@ -98,18 +98,20 @@ export function registerAccountTools(
     name: 'holiday_mode_set',
     title: 'Enable or disable holiday mode',
     description:
-      'Enables holiday mode until the given timestamp (`holiday_until` in ISO 8601) or disables it if `null` is passed. While active, personal notifications are suppressed; monitors keep running and incidents are still recorded.',
+      'Enables holiday mode until the given timestamp (`holiday_until` in ISO 8601) or disables it if `holiday_until` is omitted. While active, personal notifications are suppressed; monitors keep running and incidents are still recorded.',
     write: true,
     inputSchema: {
       holiday_until: z
         .string()
-        .nullable()
+        .optional()
         .describe(
-          'ISO 8601 timestamp at which holiday mode ends, or `null` to disable.',
+          'ISO 8601 timestamp (must be in the future) at which holiday mode ends. Omit to disable holiday mode.',
         ),
     },
     handler: async (args, { client }) => {
-      const body: HolidayModeSetBody = args;
+      const body: HolidayModeSetBody = {
+        holiday_until: args.holiday_until ?? null,
+      };
       return client.call<HolidayModeSetResponse>({
         method: 'POST',
         path: '/v1/holiday-mode',

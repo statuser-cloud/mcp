@@ -68,18 +68,15 @@ const baseMonitorFields = {
     .describe('HTTP method, applies to `http` and `keyword` protocols.'),
   body: z
     .string()
-    .nullable()
     .optional()
-    .describe('Request body for `http`/`keyword`.'),
+    .describe('Request body for `http`/`keyword`. Omit to leave empty.'),
   keyword: z
     .string()
     .max(256)
-    .nullable()
     .optional()
     .describe('Substring to look for on the page (for `keyword` protocol).'),
   keyword_mode: z
     .enum(['present', 'absent'])
-    .nullable()
     .optional()
     .describe('Whether the keyword should be present or absent.'),
   headers: z.array(headerSchema).optional(),
@@ -111,7 +108,6 @@ const baseMonitorFields = {
     .number()
     .int()
     .min(0)
-    .nullable()
     .optional()
     .describe(
       'Additional grace period (in seconds) past `check_interval` for `heartbeat` monitors.',
