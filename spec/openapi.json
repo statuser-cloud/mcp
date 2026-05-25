@@ -3392,7 +3392,7 @@
           },
           "headers": {
             "example": [],
-            "description": "Собственные заголовки запроса. Применимо к `protocol = http` или `keyword`.",
+            "description": "Собственные заголовки запроса. Применимо к `protocol = http` или `keyword`. Если не задано — будет пустой массив.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ServerHeader"
@@ -3407,7 +3407,7 @@
             "example": [
               "2xx"
             ],
-            "description": "HTTP-коды, которые считаются успешными. Поддерживаются конкретные коды (200, 301) и маски (2xx, 5xx). Применимо к `protocol = http` или `keyword`.",
+            "description": "HTTP-коды, которые считаются успешными. Поддерживаются конкретные коды (200, 301) и маски (2xx, 5xx). Применимо к `protocol = http` или `keyword`. Если не задано — используется дефолт `[\"2xx\"]`.",
             "type": "array",
             "items": {
               "type": "string"
