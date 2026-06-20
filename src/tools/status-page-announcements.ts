@@ -7,6 +7,10 @@ type AnnouncementCreateBody = RequestBody<
   '/v1/status-pages/{id}/announcements',
   'post'
 >;
+type AnnouncementUpdateBody = RequestBody<
+  '/v1/status-pages/{id}/announcements/{announcementId}',
+  'patch'
+>;
 
 type AnnouncementListResponse = OkResponseBody<
   '/v1/status-pages/{id}/announcements',
@@ -101,13 +105,11 @@ export function registerStatusPageAnnouncementTools(
       { status_page_id, announcement_id, ...patch },
       { client },
     ) => {
-      // started_at/ended_at/link в OpenAPI-спеке update-эндпоинта пришли без явного
-      // типа (огрех swagger-аннотаций в UpdateStatusPageAnnouncementDto), поэтому тело
-      // передаём без строгого generated-типа — рантайм принимает ISO-строки и null.
+      const body: AnnouncementUpdateBody = patch;
       return client.call<AnnouncementUpdateResponse>({
         method: 'PATCH',
         path: `/v1/status-pages/${status_page_id}/announcements/${announcement_id}`,
-        body: patch,
+        body,
       });
     },
   });

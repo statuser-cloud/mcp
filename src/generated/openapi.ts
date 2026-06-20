@@ -1256,9 +1256,9 @@ export interface components {
             title: string;
             body: string;
             type: "info" | "warning" | "critical";
-            started_at: Record<string, never> | null;
-            ended_at: Record<string, never> | null;
-            link: Record<string, never> | null;
+            started_at: string | null;
+            ended_at: string | null;
+            link: string | null;
             created_at: string;
         };
         StatusPageResponseDto: {
@@ -1411,9 +1411,9 @@ export interface components {
             title?: string;
             body?: string;
             type?: "info" | "warning" | "critical";
-            started_at?: Record<string, never> | null;
-            ended_at?: Record<string, never> | null;
-            link?: Record<string, never> | null;
+            started_at?: string | null;
+            ended_at?: string | null;
+            link?: string | null;
         };
         Info2faResponseDto: {
             preferred_method: "telegram" | "max" | "email" | "totp" | null;
