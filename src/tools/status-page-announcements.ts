@@ -117,8 +117,7 @@ export function registerStatusPageAnnouncementTools(
   registerTool(server, ctx, {
     name: 'status_page_announcement_delete',
     title: 'Delete an announcement from status page',
-    description:
-      'Removes an announcement from the status page. Irreversible.',
+    description: 'Removes an announcement from the status page. Irreversible.',
     write: true,
     inputSchema: {
       status_page_id: z.number().int().positive(),
