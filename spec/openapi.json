@@ -2861,6 +2861,182 @@
         ]
       }
     },
+    "/v1/status-pages/{id}/announcements": {
+      "get": {
+        "operationId": "StatusPageAnnouncementsController_getAnnouncements",
+        "summary": "Получить объявления для страницы статуса",
+        "description": "Возвращает все объявления (баннеры) страницы статуса: заголовок, текст, тип/важность, опциональное окно показа `started_at`/`ended_at` и ссылку. Включает как активные, так и ещё не начавшиеся или уже завершённые — фильтровать по времени надо на стороне клиента.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StatusPageAnnouncementResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "StatusPageAnnouncementsController_createAnnouncement",
+        "summary": "Создать объявление для страницы статуса",
+        "description": "Публикует на странице статуса объявление-баннер: заголовок, текст, тип/важность (info/warning/critical), опциональное окно показа и ссылку. Объявления доступны только на тарифах с включённой фичей (`status_page_announcements_enabled`) — иначе возвращается 403 `status_page_announcement_not_allowed`.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStatusPageAnnouncementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPageAnnouncementResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/announcements/{announcementId}": {
+      "patch": {
+        "operationId": "StatusPageAnnouncementsController_updateAnnouncement",
+        "summary": "Обновить объявление для страницы статуса",
+        "description": "Изменяет параметры объявления: заголовок, текст, тип/важность, окно показа, ссылку.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "announcementId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusPageAnnouncementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPageAnnouncementResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "StatusPageAnnouncementsController_deleteAnnouncement",
+        "summary": "Удалить объявление для страницы статуса",
+        "description": "Полностью удаляет объявление со страницы статуса. Операция необратима.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "announcementId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/v1/2fa": {
       "get": {
         "operationId": "TwoFactorController_get2faInfo",
@@ -3169,6 +3345,11 @@
             "type": "number",
             "example": 1,
             "description": "Лимит количества записей о плановых работах для страниц статуса в месяц"
+          },
+          "status_page_announcements_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Доступность объявлений для страниц статуса"
           }
         },
         "required": [
@@ -3197,7 +3378,8 @@
           "white_label_enabled",
           "status_page_minimum_incident_duration_enabled",
           "status_page_incident_reports_per_month_limit",
-          "status_page_planned_maintenances_per_month_limit"
+          "status_page_planned_maintenances_per_month_limit",
+          "status_page_announcements_enabled"
         ],
         "title": "PlanFeaturesResponseDto"
       },
@@ -5408,6 +5590,71 @@
         ],
         "title": "StatusPagePlannedMaintenanceResponseDto"
       },
+      "StatusPageAnnouncementResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 10100,
+            "description": "ID объявления"
+          },
+          "title": {
+            "type": "string",
+            "example": "Плановое обслуживание базы данных",
+            "description": "Заголовок объявления"
+          },
+          "body": {
+            "type": "string",
+            "example": "Возможны кратковременные перебои в работе панели управления в течение часа.",
+            "description": "Текст объявления"
+          },
+          "type": {
+            "type": "string",
+            "example": "info",
+            "enum": [
+              "info",
+              "warning",
+              "critical"
+            ],
+            "description": "Тип/важность объявления"
+          },
+          "started_at": {
+            "type": "object",
+            "example": "2026-03-20T01:00:00.000Z",
+            "description": "Начало периода показа объявления",
+            "nullable": true
+          },
+          "ended_at": {
+            "type": "object",
+            "example": "2026-03-20T03:00:00.000Z",
+            "description": "Конец периода показа объявления",
+            "nullable": true
+          },
+          "link": {
+            "type": "object",
+            "example": "https://example.com/maintenance",
+            "description": "Ссылка с подробной информацией",
+            "nullable": true
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-18T12:00:00.000Z",
+            "description": "Дата создания записи"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body",
+          "type",
+          "started_at",
+          "ended_at",
+          "link",
+          "created_at"
+        ],
+        "title": "StatusPageAnnouncementResponseDto"
+      },
       "StatusPageResponseDto": {
         "type": "object",
         "properties": {
@@ -5551,6 +5798,13 @@
               "$ref": "#/components/schemas/StatusPagePlannedMaintenanceResponseDto"
             }
           },
+          "announcements": {
+            "description": "Объявления на странице статуса",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusPageAnnouncementResponseDto"
+            }
+          },
           "created_at": {
             "format": "date-time",
             "type": "string",
@@ -5583,6 +5837,7 @@
           "groups",
           "incident_reports",
           "planned_maintenances",
+          "announcements",
           "created_at"
         ],
         "title": "StatusPageResponseDto"
@@ -6222,6 +6477,97 @@
           "message"
         ],
         "title": "UpdateStatusPagePlannedMaintenanceUpdateDto"
+      },
+      "CreateStatusPageAnnouncementDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Плановое обслуживание базы данных",
+            "description": "Заголовок объявления"
+          },
+          "body": {
+            "type": "string",
+            "example": "Возможны кратковременные перебои в работе панели управления в течение часа.",
+            "description": "Текст объявления"
+          },
+          "type": {
+            "type": "string",
+            "example": "info",
+            "enum": [
+              "info",
+              "warning",
+              "critical"
+            ],
+            "description": "Тип/важность объявления"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-20T01:00:00.000Z",
+            "description": "Начало периода показа объявления"
+          },
+          "ended_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-20T03:00:00.000Z",
+            "description": "Конец периода показа объявления"
+          },
+          "link": {
+            "type": "string",
+            "example": "https://example.com/maintenance",
+            "description": "Ссылка с подробной информацией"
+          }
+        },
+        "required": [
+          "title",
+          "body"
+        ],
+        "title": "CreateStatusPageAnnouncementDto"
+      },
+      "UpdateStatusPageAnnouncementDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Плановое обслуживание базы данных",
+            "description": "Заголовок объявления"
+          },
+          "body": {
+            "type": "string",
+            "example": "Возможны кратковременные перебои в работе панели управления в течение часа.",
+            "description": "Текст объявления"
+          },
+          "type": {
+            "type": "string",
+            "example": "info",
+            "enum": [
+              "info",
+              "warning",
+              "critical"
+            ],
+            "description": "Тип/важность объявления"
+          },
+          "started_at": {
+            "type": "object",
+            "example": "2026-03-20T01:00:00.000Z",
+            "description": "Начало периода показа объявления (null — сбросить)",
+            "nullable": true
+          },
+          "ended_at": {
+            "type": "object",
+            "example": "2026-03-20T03:00:00.000Z",
+            "description": "Конец периода показа объявления (null — сбросить)",
+            "nullable": true
+          },
+          "link": {
+            "type": "object",
+            "example": "https://example.com/maintenance",
+            "description": "Ссылка с подробной информацией (null/\"\" — сбросить)",
+            "nullable": true
+          }
+        },
+        "title": "UpdateStatusPageAnnouncementDto"
       },
       "Info2faResponseDto": {
         "type": "object",

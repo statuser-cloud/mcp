@@ -820,6 +820,38 @@ export interface paths {
         patch: operations["StatusPagePlannedMaintenancesController_updateMaintenanceUpdate"];
         trace?: never;
     };
+    "/v1/status-pages/{id}/announcements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StatusPageAnnouncementsController_getAnnouncements"];
+        put?: never;
+        post: operations["StatusPageAnnouncementsController_createAnnouncement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/status-pages/{id}/announcements/{announcementId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["StatusPageAnnouncementsController_deleteAnnouncement"];
+        options?: never;
+        head?: never;
+        patch: operations["StatusPageAnnouncementsController_updateAnnouncement"];
+        trace?: never;
+    };
     "/v1/2fa": {
         parameters: {
             query?: never;
@@ -883,6 +915,7 @@ export interface components {
             status_page_minimum_incident_duration_enabled: boolean;
             status_page_incident_reports_per_month_limit: number;
             status_page_planned_maintenances_per_month_limit: number;
+            status_page_announcements_enabled: boolean;
         };
         PlanResponseDto: {
             id: number;
@@ -1218,6 +1251,16 @@ export interface components {
             updates: components["schemas"]["StatusPagePlannedMaintenanceUpdateResponseDto"][];
             created_at: string;
         };
+        StatusPageAnnouncementResponseDto: {
+            id: number;
+            title: string;
+            body: string;
+            type: "info" | "warning" | "critical";
+            started_at: Record<string, never> | null;
+            ended_at: Record<string, never> | null;
+            link: Record<string, never> | null;
+            created_at: string;
+        };
         StatusPageResponseDto: {
             id: number;
             name: string;
@@ -1243,6 +1286,7 @@ export interface components {
             groups: components["schemas"]["ReportServerGroupStatusPage"][];
             incident_reports: components["schemas"]["StatusPageIncidentReportResponseDto"][];
             planned_maintenances: components["schemas"]["StatusPagePlannedMaintenanceResponseDto"][];
+            announcements: components["schemas"]["StatusPageAnnouncementResponseDto"][];
             created_at: string;
         };
         CreateStatusPageDto: {
@@ -1354,6 +1398,22 @@ export interface components {
         };
         UpdateStatusPagePlannedMaintenanceUpdateDto: {
             message: string;
+        };
+        CreateStatusPageAnnouncementDto: {
+            title: string;
+            body: string;
+            type?: "info" | "warning" | "critical";
+            started_at?: string;
+            ended_at?: string;
+            link?: string;
+        };
+        UpdateStatusPageAnnouncementDto: {
+            title?: string;
+            body?: string;
+            type?: "info" | "warning" | "critical";
+            started_at?: Record<string, never> | null;
+            ended_at?: Record<string, never> | null;
+            link?: Record<string, never> | null;
         };
         Info2faResponseDto: {
             preferred_method: "telegram" | "max" | "email" | "totp" | null;
@@ -3080,6 +3140,98 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StatusPagePlannedMaintenanceResponseDto"];
+                };
+            };
+        };
+    };
+    StatusPageAnnouncementsController_getAnnouncements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusPageAnnouncementResponseDto"][];
+                };
+            };
+        };
+    };
+    StatusPageAnnouncementsController_createAnnouncement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStatusPageAnnouncementDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusPageAnnouncementResponseDto"];
+                };
+            };
+        };
+    };
+    StatusPageAnnouncementsController_deleteAnnouncement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                announcementId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StatusPageAnnouncementsController_updateAnnouncement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                announcementId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStatusPageAnnouncementDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusPageAnnouncementResponseDto"];
                 };
             };
         };
