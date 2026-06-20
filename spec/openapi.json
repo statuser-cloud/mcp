@@ -5619,19 +5619,21 @@
             "description": "Тип/важность объявления"
           },
           "started_at": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "example": "2026-03-20T01:00:00.000Z",
             "description": "Начало периода показа объявления",
             "nullable": true
           },
           "ended_at": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "example": "2026-03-20T03:00:00.000Z",
             "description": "Конец периода показа объявления",
             "nullable": true
           },
           "link": {
-            "type": "object",
+            "type": "string",
             "example": "https://example.com/maintenance",
             "description": "Ссылка с подробной информацией",
             "nullable": true
@@ -6502,14 +6504,14 @@
             "description": "Тип/важность объявления"
           },
           "started_at": {
-            "format": "date-time",
             "type": "string",
+            "format": "date-time",
             "example": "2026-03-20T01:00:00.000Z",
             "description": "Начало периода показа объявления"
           },
           "ended_at": {
-            "format": "date-time",
             "type": "string",
+            "format": "date-time",
             "example": "2026-03-20T03:00:00.000Z",
             "description": "Конец периода показа объявления"
           },
@@ -6549,19 +6551,21 @@
             "description": "Тип/важность объявления"
           },
           "started_at": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "example": "2026-03-20T01:00:00.000Z",
             "description": "Начало периода показа объявления (null — сбросить)",
             "nullable": true
           },
           "ended_at": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "example": "2026-03-20T03:00:00.000Z",
             "description": "Конец периода показа объявления (null — сбросить)",
             "nullable": true
           },
           "link": {
-            "type": "object",
+            "type": "string",
             "example": "https://example.com/maintenance",
             "description": "Ссылка с подробной информацией (null/\"\" — сбросить)",
             "nullable": true
