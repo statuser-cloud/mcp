@@ -9,6 +9,7 @@ import { registerIncidentCommentTools } from './tools/incident-comments.js';
 import { registerStatusPageTools } from './tools/status-pages.js';
 import { registerStatusPageReportTools } from './tools/status-page-reports.js';
 import { registerStatusPageAnnouncementTools } from './tools/status-page-announcements.js';
+import { registerStatusPageSubscriberTools } from './tools/status-page-subscribers.js';
 import { registerNotificationTools } from './tools/notifications.js';
 import { registerAccountTools } from './tools/account.js';
 
@@ -38,7 +39,10 @@ async function main(): Promise<void> {
   if (toolsets.has('incidents')) registerIncidentTools(server, ctx);
   if (toolsets.has('incident-comments'))
     registerIncidentCommentTools(server, ctx);
-  if (toolsets.has('status-pages')) registerStatusPageTools(server, ctx);
+  if (toolsets.has('status-pages')) {
+    registerStatusPageTools(server, ctx);
+    registerStatusPageSubscriberTools(server, ctx);
+  }
   if (toolsets.has('status-page-reports')) {
     registerStatusPageReportTools(server, ctx);
     registerStatusPageAnnouncementTools(server, ctx);

@@ -172,7 +172,7 @@ claude mcp add statuser --env STATUSER_API_KEY=ваш_ключ -- npx -y @status
 | `monitors`              | Серверы, их проверки, heartbeat-события, история изменений DNS              | `monitor_list`, `monitor_create`, `monitor_pause`, `monitor_get_checks`, `monitor_get_dns_history`              |
 | `incidents`             | Инциденты, события, AI-саммари, PDF-отчёт                                   | `incident_list`, `incident_get`, `incident_get_events`, `incident_generate_ai_summary`, `incident_get_report_pdf` |
 | `incident-comments`     | Комментарии к инцидентам с вложениями                                       | `incident_comment_create`, `incident_comment_upload_file`, `incident_comment_delete`                            |
-| `status-pages`          | Страницы статуса, группы, серверы, домены, slug                             | `status_page_list`, `status_page_create`, `status_page_set_groups`, `status_page_publish`                       |
+| `status-pages`          | Страницы статуса, группы, серверы, домены, slug, подписчики                 | `status_page_list`, `status_page_create`, `status_page_set_groups`, `status_page_subscriber_list`               |
 | `status-page-reports`   | Публикация инцидент-отчётов и плановых работ с таймлайном обновлений        | `status_page_incident_report_publish`, `status_page_maintenance_schedule`, `..._update_add`                     |
 | `notifications`         | Правила нотификаций, вебхуки, email-каналы                                  | `notification_rule_set`, `webhook_create`, `notification_email_add`, `notification_email_confirm`               |
 
@@ -283,19 +283,22 @@ API-ключ Statuser даёт полный доступ к аккаунту, п
 </details>
 
 <details>
-<summary><b>status-pages</b> — 9 инструментов</summary>
+<summary><b>status-pages</b> — 12 инструментов</summary>
 
-| Инструмент                     | Что делает                                                                                       | Изменяет данные |
-| ------------------------------ | ------------------------------------------------------------------------------------------------ | :-------------: |
-| `status_page_list`             | Все страницы статуса аккаунта                                                                    |                 |
-| `status_page_get`              | Полная конфигурация одной страницы                                                               |                 |
-| `status_page_check_slug`       | Проверка, свободен ли slug                                                                       |                 |
-| `status_page_check_domain`     | Проверка свободного кастомного домена и правильности CNAME-записи                                |                 |
-| `status_page_create`           | Создать страницу статуса                                                                         |       ✏️        |
-| `status_page_update`           | Частично обновить настройки                                                                      |       ✏️        |
-| `status_page_set_groups`       | Полностью заменить структуру групп и список серверов на странице                                 |       ✏️        |
-| `status_page_publish`          | Опубликовать (`published`) или скрыть (`unpublished`) страницу                                   |       ✏️        |
-| `status_page_delete`           | Удалить страницу                                                                                 |       ⚠️        |
+| Инструмент                       | Что делает                                                                                       | Изменяет данные |
+| -------------------------------- | ------------------------------------------------------------------------------------------------ | :-------------: |
+| `status_page_list`               | Все страницы статуса аккаунта                                                                    |                 |
+| `status_page_get`                | Полная конфигурация одной страницы                                                               |                 |
+| `status_page_check_slug`         | Проверка, свободен ли slug                                                                       |                 |
+| `status_page_check_domain`       | Проверка свободного кастомного домена и правильности CNAME-записи                                |                 |
+| `status_page_create`             | Создать страницу статуса                                                                         |       ✏️        |
+| `status_page_update`             | Частично обновить настройки                                                                      |       ✏️        |
+| `status_page_set_groups`         | Полностью заменить структуру групп и список серверов на странице                                 |       ✏️        |
+| `status_page_publish`            | Опубликовать (`published`) или скрыть (`unpublished`) страницу                                   |       ✏️        |
+| `status_page_delete`             | Удалить страницу                                                                                 |       ⚠️        |
+| `status_page_subscriber_list`    | Подписчики страницы (емейл, статус, даты) и сводка с лимитом                                     |                 |
+| `status_page_subscriber_export`  | Экспорт подписчиков в CSV                                                                        |                 |
+| `status_page_subscriber_delete`  | Удалить подписчика                                                                               |       ⚠️        |
 
 </details>
 

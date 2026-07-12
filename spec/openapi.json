@@ -6045,14 +6045,16 @@
             "description": "Приём подписчиков на обновления (кнопка подписки на странице)"
           },
           "subscribers_from_name": {
-            "type": "object",
+            "type": "string",
             "example": "Acme Status",
-            "description": "Отображаемое имя отправителя писем подписчикам (From-адрес не меняется)"
+            "description": "Отображаемое имя отправителя писем подписчикам (From-адрес не меняется)",
+            "nullable": true
           },
           "subscribers_reply_to": {
-            "type": "object",
+            "type": "string",
             "example": "status@acme.com",
-            "description": "Адрес для ответов (Reply-To) в письмах подписчикам"
+            "description": "Адрес для ответов (Reply-To) в письмах подписчикам",
+            "nullable": true
           },
           "timeline_days": {
             "type": "number",
@@ -6183,14 +6185,16 @@
             "description": "Приём подписчиков на обновления"
           },
           "subscribers_from_name": {
-            "type": "object",
+            "type": "string",
             "example": "Acme Status",
-            "description": "Отображаемое имя отправителя писем подписчикам (From-адрес не меняется)"
+            "description": "Отображаемое имя отправителя писем подписчикам (From-адрес не меняется)",
+            "nullable": true
           },
           "subscribers_reply_to": {
-            "type": "object",
+            "type": "string",
             "example": "status@acme.com",
-            "description": "Адрес для ответов (Reply-To) в письмах подписчикам"
+            "description": "Адрес для ответов (Reply-To) в письмах подписчикам",
+            "nullable": true
           },
           "timeline_days": {
             "type": "number",

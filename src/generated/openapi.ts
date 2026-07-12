@@ -1354,8 +1354,8 @@ export interface components {
             is_published?: boolean;
             is_white_labeled?: boolean;
             subscribers_enabled?: boolean;
-            subscribers_from_name?: Record<string, never>;
-            subscribers_reply_to?: Record<string, never>;
+            subscribers_from_name?: string | null;
+            subscribers_reply_to?: string | null;
             timeline_days?: 7 | 14 | 30 | 60 | 90 | 180;
             timezone?: string;
             uptime_decimal_places?: number;
@@ -1377,8 +1377,8 @@ export interface components {
             is_published?: boolean;
             is_white_labeled?: boolean;
             subscribers_enabled?: boolean;
-            subscribers_from_name?: Record<string, never>;
-            subscribers_reply_to?: Record<string, never>;
+            subscribers_from_name?: string | null;
+            subscribers_reply_to?: string | null;
             timeline_days?: number;
             timezone?: string;
             uptime_decimal_places?: number;
