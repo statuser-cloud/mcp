@@ -144,6 +144,29 @@ const optionalStatusPageFields = {
   favicon_url: z.string().nullable().optional(),
   company_url: z.string().nullable().optional(),
   support_url: z.string().nullable().optional(),
+  subscribers_enabled: z
+    .boolean()
+    .optional()
+    .describe(
+      'Show the subscribe button on the public page so visitors can get emails about incident reports and planned maintenances (plus RSS/Atom feeds). Requires a plan with `status_page_subscribers_limit > 0`.',
+    ),
+  subscribers_from_name: z
+    .string()
+    .max(64)
+    .nullable()
+    .optional()
+    .describe(
+      'Display name of the sender in subscriber emails (the From address itself stays on the shared sending domain). Defaults to the status page name. Pass `null` to reset.',
+    ),
+  subscribers_reply_to: z
+    .string()
+    .email()
+    .max(255)
+    .nullable()
+    .optional()
+    .describe(
+      'Reply-To address for subscriber emails — where subscriber replies will arrive. Pass `null` to clear.',
+    ),
 };
 
 const createStatusPageFields = {
