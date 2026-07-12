@@ -3037,6 +3037,111 @@
         ]
       }
     },
+    "/v1/status-pages/{id}/subscribers": {
+      "get": {
+        "operationId": "StatusPageSubscribersController_getSubscribers",
+        "summary": "Получить подписчиков страницы статуса",
+        "description": "Возвращает список подписчиков (email, статус, дата) и сводку: сколько подтверждённых и ожидающих подтверждения.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPageSubscribersResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/subscribers/export": {
+      "get": {
+        "operationId": "StatusPageSubscribersController_exportSubscribers",
+        "summary": "Экспортировать подписчиков в CSV",
+        "description": "Возвращает CSV-файл со списком подписчиков (email, статус, даты подтверждения и подписки).",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/status-pages/{id}/subscribers/{subscriberId}": {
+      "delete": {
+        "operationId": "StatusPageSubscribersController_deleteSubscriber",
+        "summary": "Удалить подписчика страницы статуса",
+        "description": "Удаляет подписчика. Операция необратима.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "subscriberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Страницы статуса"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/v1/2fa": {
       "get": {
         "operationId": "TwoFactorController_get2faInfo",
@@ -3350,6 +3455,11 @@
             "type": "boolean",
             "example": true,
             "description": "Доступность объявлений для страниц статуса"
+          },
+          "status_page_subscribers_limit": {
+            "type": "number",
+            "example": 500,
+            "description": "Лимит активных подписчиков на страницу статуса. 0 — фича недоступна по тарифу"
           }
         },
         "required": [
@@ -3379,7 +3489,8 @@
           "status_page_minimum_incident_duration_enabled",
           "status_page_incident_reports_per_month_limit",
           "status_page_planned_maintenances_per_month_limit",
-          "status_page_announcements_enabled"
+          "status_page_announcements_enabled",
+          "status_page_subscribers_limit"
         ],
         "title": "PlanFeaturesResponseDto"
       },
@@ -5807,6 +5918,23 @@
               "$ref": "#/components/schemas/StatusPageAnnouncementResponseDto"
             }
           },
+          "subscribers_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Доступна ли подписка на обновления (зависит от тарифа владельца). Если false — публичная форма подписки скрывается."
+          },
+          "subscribers_from_name": {
+            "type": "object",
+            "example": "Acme Status",
+            "nullable": true,
+            "description": "Отображаемое имя отправителя писем подписчикам"
+          },
+          "subscribers_reply_to": {
+            "type": "object",
+            "example": "status@acme.com",
+            "nullable": true,
+            "description": "Адрес для ответов (Reply-To) в письмах подписчикам"
+          },
           "created_at": {
             "format": "date-time",
             "type": "string",
@@ -5840,6 +5968,9 @@
           "incident_reports",
           "planned_maintenances",
           "announcements",
+          "subscribers_enabled",
+          "subscribers_from_name",
+          "subscribers_reply_to",
           "created_at"
         ],
         "title": "StatusPageResponseDto"
@@ -5907,6 +6038,21 @@
             "type": "boolean",
             "example": false,
             "description": "Вайт-лейблинг: скрыть бренд Statuser"
+          },
+          "subscribers_enabled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Приём подписчиков на обновления (кнопка подписки на странице)"
+          },
+          "subscribers_from_name": {
+            "type": "object",
+            "example": "Acme Status",
+            "description": "Отображаемое имя отправителя писем подписчикам (From-адрес не меняется)"
+          },
+          "subscribers_reply_to": {
+            "type": "object",
+            "example": "status@acme.com",
+            "description": "Адрес для ответов (Reply-To) в письмах подписчикам"
           },
           "timeline_days": {
             "type": "number",
@@ -6030,6 +6176,21 @@
             "type": "boolean",
             "example": false,
             "description": "Вайт-лейблинг: скрыть бренд Statuser"
+          },
+          "subscribers_enabled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Приём подписчиков на обновления"
+          },
+          "subscribers_from_name": {
+            "type": "object",
+            "example": "Acme Status",
+            "description": "Отображаемое имя отправителя писем подписчикам (From-адрес не меняется)"
+          },
+          "subscribers_reply_to": {
+            "type": "object",
+            "example": "status@acme.com",
+            "description": "Адрес для ответов (Reply-To) в письмах подписчикам"
           },
           "timeline_days": {
             "type": "number",
@@ -6572,6 +6733,110 @@
           }
         },
         "title": "UpdateStatusPageAnnouncementDto"
+      },
+      "StatusPageSubscriberResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 10100,
+            "description": "ID подписчика"
+          },
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "Емейл подписчика"
+          },
+          "status": {
+            "type": "string",
+            "example": "confirmed",
+            "enum": [
+              "pending",
+              "confirmed",
+              "unsubscribed",
+              "expired"
+            ],
+            "description": "Статус подписки"
+          },
+          "confirmed_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-03-18T12:00:00.000Z",
+            "description": "Дата подтверждения подписки",
+            "nullable": true
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-18T12:00:00.000Z",
+            "description": "Дата подписки"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "status",
+          "confirmed_at",
+          "created_at"
+        ],
+        "title": "StatusPageSubscriberResponseDto"
+      },
+      "StatusPageSubscribersStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "confirmed": {
+            "type": "number",
+            "example": 42,
+            "description": "Подтверждённых подписчиков"
+          },
+          "pending": {
+            "type": "number",
+            "example": 7,
+            "description": "Ожидают подтверждения"
+          },
+          "total": {
+            "type": "number",
+            "example": 49,
+            "description": "Всего записей без отписавшихся"
+          },
+          "limit": {
+            "type": "number",
+            "example": 500,
+            "description": "Лимит активных подписчиков на страницу"
+          }
+        },
+        "required": [
+          "confirmed",
+          "pending",
+          "total",
+          "limit"
+        ],
+        "title": "StatusPageSubscribersStatsResponseDto"
+      },
+      "StatusPageSubscribersResponseDto": {
+        "type": "object",
+        "properties": {
+          "subscribers": {
+            "description": "Список подписчиков страницы статуса",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusPageSubscriberResponseDto"
+            }
+          },
+          "stats": {
+            "description": "Сводка по подписчикам",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StatusPageSubscribersStatsResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "subscribers",
+          "stats"
+        ],
+        "title": "StatusPageSubscribersResponseDto"
       },
       "Info2faResponseDto": {
         "type": "object",

@@ -852,6 +852,54 @@ export interface paths {
         patch: operations["StatusPageAnnouncementsController_updateAnnouncement"];
         trace?: never;
     };
+    "/v1/status-pages/{id}/subscribers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StatusPageSubscribersController_getSubscribers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/status-pages/{id}/subscribers/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StatusPageSubscribersController_exportSubscribers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/status-pages/{id}/subscribers/{subscriberId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["StatusPageSubscribersController_deleteSubscriber"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/2fa": {
         parameters: {
             query?: never;
@@ -916,6 +964,7 @@ export interface components {
             status_page_incident_reports_per_month_limit: number;
             status_page_planned_maintenances_per_month_limit: number;
             status_page_announcements_enabled: boolean;
+            status_page_subscribers_limit: number;
         };
         PlanResponseDto: {
             id: number;
@@ -1287,6 +1336,9 @@ export interface components {
             incident_reports: components["schemas"]["StatusPageIncidentReportResponseDto"][];
             planned_maintenances: components["schemas"]["StatusPagePlannedMaintenanceResponseDto"][];
             announcements: components["schemas"]["StatusPageAnnouncementResponseDto"][];
+            subscribers_enabled: boolean;
+            subscribers_from_name: Record<string, never> | null;
+            subscribers_reply_to: Record<string, never> | null;
             created_at: string;
         };
         CreateStatusPageDto: {
@@ -1301,6 +1353,9 @@ export interface components {
             is_indexed?: boolean;
             is_published?: boolean;
             is_white_labeled?: boolean;
+            subscribers_enabled?: boolean;
+            subscribers_from_name?: Record<string, never>;
+            subscribers_reply_to?: Record<string, never>;
             timeline_days?: 7 | 14 | 30 | 60 | 90 | 180;
             timezone?: string;
             uptime_decimal_places?: number;
@@ -1321,6 +1376,9 @@ export interface components {
             is_indexed?: boolean;
             is_published?: boolean;
             is_white_labeled?: boolean;
+            subscribers_enabled?: boolean;
+            subscribers_from_name?: Record<string, never>;
+            subscribers_reply_to?: Record<string, never>;
             timeline_days?: number;
             timezone?: string;
             uptime_decimal_places?: number;
@@ -1414,6 +1472,23 @@ export interface components {
             started_at?: string | null;
             ended_at?: string | null;
             link?: string | null;
+        };
+        StatusPageSubscriberResponseDto: {
+            id: number;
+            email: string;
+            status: "pending" | "confirmed" | "unsubscribed" | "expired";
+            confirmed_at: string | null;
+            created_at: string;
+        };
+        StatusPageSubscribersStatsResponseDto: {
+            confirmed: number;
+            pending: number;
+            total: number;
+            limit: number;
+        };
+        StatusPageSubscribersResponseDto: {
+            subscribers: components["schemas"]["StatusPageSubscriberResponseDto"][];
+            stats: components["schemas"]["StatusPageSubscribersStatsResponseDto"];
         };
         Info2faResponseDto: {
             preferred_method: "telegram" | "max" | "email" | "totp" | null;
@@ -3233,6 +3308,66 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["StatusPageAnnouncementResponseDto"];
                 };
+            };
+        };
+    };
+    StatusPageSubscribersController_getSubscribers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusPageSubscribersResponseDto"];
+                };
+            };
+        };
+    };
+    StatusPageSubscribersController_exportSubscribers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StatusPageSubscribersController_deleteSubscriber: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                subscriberId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
