@@ -6046,15 +6046,15 @@
           },
           "subscribers_from_name": {
             "type": "string",
+            "nullable": true,
             "example": "Acme Status",
-            "description": "Отображаемое имя отправителя писем подписчикам (From-адрес не меняется)",
-            "nullable": true
+            "description": "Отображаемое имя отправителя писем подписчикам (From-адрес не меняется)"
           },
           "subscribers_reply_to": {
             "type": "string",
+            "nullable": true,
             "example": "status@acme.com",
-            "description": "Адрес для ответов (Reply-To) в письмах подписчикам",
-            "nullable": true
+            "description": "Адрес для ответов (Reply-To) в письмах подписчикам"
           },
           "timeline_days": {
             "type": "number",
@@ -6186,15 +6186,15 @@
           },
           "subscribers_from_name": {
             "type": "string",
+            "nullable": true,
             "example": "Acme Status",
-            "description": "Отображаемое имя отправителя писем подписчикам (From-адрес не меняется)",
-            "nullable": true
+            "description": "Отображаемое имя отправителя писем подписчикам (From-адрес не меняется)"
           },
           "subscribers_reply_to": {
             "type": "string",
+            "nullable": true,
             "example": "status@acme.com",
-            "description": "Адрес для ответов (Reply-To) в письмах подписчикам",
-            "nullable": true
+            "description": "Адрес для ответов (Reply-To) в письмах подписчикам"
           },
           "timeline_days": {
             "type": "number",
