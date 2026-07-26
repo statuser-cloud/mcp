@@ -3341,6 +3341,16 @@
             "example": 60,
             "description": "Минимальный интервал проверок (в секундах)"
           },
+          "fast_checking_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Учащённый мониторинг после сбоя"
+          },
+          "incident_debounce_enabled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Настраиваемая задержка подтверждения сбоя перед открытием инцидента"
+          },
           "ssl_monitoring_enabled": {
             "type": "boolean",
             "example": true,
@@ -3350,6 +3360,11 @@
             "type": "boolean",
             "example": true,
             "description": "Поддержка мониторинга доменов"
+          },
+          "blocklist_monitoring_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Поддержка мониторинга реестра блокировок"
           },
           "dns_monitoring_enabled": {
             "type": "boolean",
@@ -3467,8 +3482,11 @@
           "available_locations",
           "allow_location_selection",
           "min_check_interval_seconds",
+          "fast_checking_enabled",
+          "incident_debounce_enabled",
           "ssl_monitoring_enabled",
           "domain_monitoring_enabled",
+          "blocklist_monitoring_enabled",
           "dns_monitoring_enabled",
           "dns_history_retention_days",
           "keyword_monitoring_enabled",
@@ -3718,6 +3736,13 @@
             "minimum": 10,
             "maximum": 3600
           },
+          "incident_confirm_delay": {
+            "type": "number",
+            "example": 0,
+            "description": "Задержка подтверждения сбоя в секундах перед открытием инцидента. 0 — открывать сразу. До 3600 (1 час)",
+            "minimum": 0,
+            "maximum": 3600
+          },
           "heartbeat_grace_interval": {
             "type": "number",
             "example": 300,
@@ -3743,6 +3768,11 @@
             "type": "boolean",
             "example": true,
             "description": "Требуется ли выполнять проверку домена"
+          },
+          "is_blocklist_check": {
+            "type": "boolean",
+            "example": true,
+            "description": "Требуется ли проверять домен в реестре блокировок РКН"
           },
           "is_latency_alert_enabled": {
             "type": "boolean",
@@ -3923,6 +3953,11 @@
             "example": 60,
             "description": "Интервал проверки сервера в секундах"
           },
+          "incident_confirm_delay": {
+            "type": "number",
+            "example": 0,
+            "description": "Задержка подтверждения сбоя в секундах перед открытием инцидента (0 — сразу)"
+          },
           "name": {
             "type": "object",
             "example": "Восхитительный сервер",
@@ -3945,6 +3980,11 @@
               "paused",
               "failed"
             ]
+          },
+          "is_fast_checking": {
+            "type": "boolean",
+            "example": false,
+            "description": "Признак учащённого мониторинга"
           },
           "body": {
             "type": "object",
@@ -4029,6 +4069,15 @@
             "type": "object",
             "description": "Информация о домене"
           },
+          "is_blocklist_check": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включена ли проверка домена в реестре блокировок"
+          },
+          "blocklist": {
+            "type": "object",
+            "description": "Статус домена в реестре блокировок"
+          },
           "is_latency_alert_enabled": {
             "type": "boolean",
             "example": true,
@@ -4102,9 +4151,11 @@
           "http_method",
           "request_timeout",
           "check_interval",
+          "incident_confirm_delay",
           "name",
           "description",
           "status",
+          "is_fast_checking",
           "body",
           "keyword",
           "keyword_mode",
@@ -4118,6 +4169,8 @@
           "ssl",
           "is_domain_check",
           "domain",
+          "is_blocklist_check",
+          "blocklist",
           "is_latency_alert_enabled",
           "latency_trigger_ms",
           "locations",
@@ -4229,6 +4282,13 @@
             "minimum": 10,
             "maximum": 3600
           },
+          "incident_confirm_delay": {
+            "type": "number",
+            "example": 0,
+            "description": "Задержка подтверждения сбоя в секундах перед открытием инцидента. 0 — открывать сразу. До 3600 (1 час)",
+            "minimum": 0,
+            "maximum": 3600
+          },
           "heartbeat_grace_interval": {
             "type": "number",
             "example": 300,
@@ -4254,6 +4314,11 @@
             "type": "boolean",
             "example": true,
             "description": "Требуется ли выполнять проверку домена"
+          },
+          "is_blocklist_check": {
+            "type": "boolean",
+            "example": true,
+            "description": "Требуется ли проверять домен в реестре блокировок"
           },
           "is_latency_alert_enabled": {
             "type": "boolean",
@@ -4402,6 +4467,7 @@
               "ssl_alerts",
               "domain_alerts",
               "dns_alerts",
+              "blocklist_alerts",
               "ideas",
               "billing_alerts",
               "holiday_mode",
@@ -4453,6 +4519,7 @@
               "ssl_alerts",
               "domain_alerts",
               "dns_alerts",
+              "blocklist_alerts",
               "ideas",
               "billing_alerts",
               "holiday_mode",
@@ -4520,6 +4587,7 @@
                 "ssl_alerts",
                 "domain_alerts",
                 "dns_alerts",
+                "blocklist_alerts",
                 "ideas",
                 "billing_alerts",
                 "holiday_mode",
@@ -4585,6 +4653,7 @@
                 "ssl_alerts",
                 "domain_alerts",
                 "dns_alerts",
+                "blocklist_alerts",
                 "ideas",
                 "billing_alerts",
                 "holiday_mode",
@@ -4636,6 +4705,7 @@
                 "ssl_alerts",
                 "domain_alerts",
                 "dns_alerts",
+                "blocklist_alerts",
                 "ideas",
                 "billing_alerts",
                 "holiday_mode",
@@ -4754,13 +4824,25 @@
             "format": "date-time",
             "type": "string",
             "description": "Дата создания"
+          },
+          "disabled_reason": {
+            "type": "string",
+            "enum": [
+              "hard_bounce",
+              "soft_bounce",
+              "complaint",
+              "manual"
+            ],
+            "nullable": true,
+            "description": "Причина отключения адреса из-за недоставки (bounce/жалоба), либо null — адрес активен. Непустое значение = письма на адрес не уходят"
           }
         },
         "required": [
           "id",
           "email",
           "status",
-          "created_at"
+          "created_at",
+          "disabled_reason"
         ],
         "title": "NotificationEmailResponseDto"
       },
