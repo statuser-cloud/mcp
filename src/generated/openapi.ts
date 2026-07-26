@@ -941,8 +941,11 @@ export interface components {
             available_locations: string[];
             allow_location_selection: boolean;
             min_check_interval_seconds: number;
+            fast_checking_enabled: boolean;
+            incident_debounce_enabled: boolean;
             ssl_monitoring_enabled: boolean;
             domain_monitoring_enabled: boolean;
+            blocklist_monitoring_enabled: boolean;
             dns_monitoring_enabled: boolean;
             dns_history_retention_days: number;
             keyword_monitoring_enabled: boolean;
@@ -1001,11 +1004,13 @@ export interface components {
             success_http_codes?: string[];
             request_timeout: number;
             check_interval: number;
+            incident_confirm_delay?: number;
             heartbeat_grace_interval?: number | null;
             name?: string;
             description?: string;
             is_ssl_check: boolean;
             is_domain_check: boolean;
+            is_blocklist_check?: boolean;
             is_latency_alert_enabled?: boolean;
             latency_trigger_ms?: number;
             locations?: ("msk-1" | "spb-1" | "ala-1" | "nyc-1" | "ams-1")[];
@@ -1026,9 +1031,11 @@ export interface components {
             http_method: "head" | "get" | "options" | "post" | "put" | "patch";
             request_timeout: number;
             check_interval: number;
+            incident_confirm_delay: number;
             name: Record<string, never>;
             description: Record<string, never> | null;
             status: "online" | "offline" | "pending" | "paused" | "failed";
+            is_fast_checking: boolean;
             body: Record<string, never> | null;
             keyword: Record<string, never> | null;
             keyword_mode: "present" | "absent" | null;
@@ -1042,6 +1049,8 @@ export interface components {
             ssl: Record<string, never>;
             is_domain_check: boolean;
             domain: Record<string, never>;
+            is_blocklist_check: boolean;
+            blocklist: Record<string, never>;
             is_latency_alert_enabled: boolean;
             latency_trigger_ms: number;
             locations: string[];
@@ -1063,11 +1072,13 @@ export interface components {
             success_http_codes?: string[];
             request_timeout?: number;
             check_interval?: number;
+            incident_confirm_delay?: number;
             heartbeat_grace_interval?: number | null;
             name?: string;
             description?: string;
             is_ssl_check?: boolean;
             is_domain_check?: boolean;
+            is_blocklist_check?: boolean;
             is_latency_alert_enabled?: boolean;
             latency_trigger_ms?: number;
             locations?: ("msk-1" | "spb-1" | "ala-1" | "nyc-1" | "ams-1")[];
@@ -1083,7 +1094,7 @@ export interface components {
             changed_at: string;
         };
         NotificationRuleResponseDto: {
-            type: "updates" | "weekly_reports" | "service_alerts" | "test_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts" | "receipt";
+            type: "updates" | "weekly_reports" | "service_alerts" | "test_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "blocklist_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts" | "receipt";
             channels: {
                 email?: boolean;
                 telegram?: boolean;
@@ -1091,7 +1102,7 @@ export interface components {
             };
         };
         CreateNotificationRuleDto: {
-            type: "updates" | "weekly_reports" | "service_alerts" | "test_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts" | "receipt";
+            type: "updates" | "weekly_reports" | "service_alerts" | "test_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "blocklist_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts" | "receipt";
             email: boolean;
             telegram: boolean;
             max: boolean;
@@ -1100,7 +1111,7 @@ export interface components {
             id: number;
             name: string;
             url: string;
-            subscriptions: ("updates" | "weekly_reports" | "service_alerts" | "test_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts" | "receipt")[];
+            subscriptions: ("updates" | "weekly_reports" | "service_alerts" | "test_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "blocklist_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts" | "receipt")[];
             is_secret_set: boolean;
             created_at: string;
         };
@@ -1108,13 +1119,13 @@ export interface components {
             name: string;
             url: string;
             secret: string | null;
-            subscriptions: ("weekly_reports" | "service_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts")[];
+            subscriptions: ("weekly_reports" | "service_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "blocklist_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts")[];
         };
         UpdateWebhookEndpointDto: {
             name?: string;
             url?: string;
             secret?: string | null;
-            subscriptions?: ("weekly_reports" | "service_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts")[];
+            subscriptions?: ("weekly_reports" | "service_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "blocklist_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts")[];
         };
         CreateMaxLinkDto: {
             link_user: string;
@@ -1136,6 +1147,7 @@ export interface components {
             email: string;
             status: "pending" | "confirmed";
             created_at: string;
+            disabled_reason: "hard_bounce" | "soft_bounce" | "complaint" | "manual" | null;
         };
         AddNotificationEmailDto: {
             email: string;
