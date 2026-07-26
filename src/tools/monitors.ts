@@ -112,10 +112,25 @@ const baseMonitorFields = {
     .describe(
       'Additional grace period (in seconds) past `check_interval` for `heartbeat` monitors.',
     ),
+  incident_confirm_delay: z
+    .number()
+    .int()
+    .min(0)
+    .max(3600)
+    .optional()
+    .describe(
+      'Delay (in seconds, up to 1 hour) before an incident is opened: the service must stay down continuously for longer than this, otherwise short blips raise no incident and no alert. 0 (default) opens the incident on the first failed check. Requires `incident_debounce_enabled` on the current plan (Team).',
+    ),
   name: z.string().max(150).optional(),
   description: z.string().max(500).optional(),
   is_ssl_check: z.boolean(),
   is_domain_check: z.boolean(),
+  is_blocklist_check: z
+    .boolean()
+    .optional()
+    .describe(
+      'Watch whether the domain appears in the Roskomnadzor (RKN) blocklist registry. Applies to `http`/`keyword`/`dns`. Requires `blocklist_monitoring_enabled` on the current plan.',
+    ),
   is_latency_alert_enabled: z.boolean().optional(),
   latency_trigger_ms: z.number().int().min(50).max(60000).optional(),
   locations: z
@@ -172,7 +187,7 @@ export function registerMonitorTools(
     name: 'monitor_create',
     title: 'Create monitor',
     description:
-      'Creates a new monitor. Returns 403 if the account is over the servers limit or if a requested feature is not on the current plan (DNS/keyword/heartbeat, latency alerts, custom success codes, non-default locations).',
+      'Creates a new monitor. Returns 403 if the account is over the servers limit or if a requested feature is not on the current plan (DNS/keyword/heartbeat, latency alerts, custom success codes, non-default locations, blocklist monitoring, incident confirmation delay).',
     write: true,
     inputSchema: baseMonitorFields,
     handler: async (args, { client }) => {
