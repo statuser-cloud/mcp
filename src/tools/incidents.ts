@@ -98,7 +98,7 @@ export function registerIncidentTools(
     name: 'incident_get_events',
     title: 'Get incident event timeline',
     description:
-      'Returns the chronological event log of an incident: status changes, notifications sent (email/Telegram/MAX/webhooks), confirmations, auto-recoveries, etc. Useful for audits and timeline rendering.',
+      'Returns the chronological event log of an incident: status changes, notifications sent (email/Telegram/MAX/webhooks), comments, page screenshots and network diagnostics. Useful for audits and timeline rendering. Every event has a `type` and a matching `meta`: `start`/`end` — no meta; `error`/`resolved` — check location and error code; `notification` — channel, recipient, delivery status; `comment` — text and attachments; `screenshot` — public URL of the page snapshot captured during the outage; `diagnostics` — the location diagnostics ran from and which blocks were collected (`headers`, `body`, `timing`, `resolved_ips`, `ping`, `traceroute`, `mtr`, `nmap`, `openssl`). `screenshot` and `diagnostics` events are only returned on plans with `screenshots_enabled` / `network_diagnostics_enabled`; `screenshot` also requires an HTTP monitor and only exists for incidents started after 2026-08-09.',
     inputSchema: {
       id: z.number().int().positive(),
     },
