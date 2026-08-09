@@ -9,7 +9,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Возвращает список привязанных аккаунтов Телеграм"
+            "description": "Возвращает список привязанных аккаунтов Телеграм",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TelegramResponseDto"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -230,7 +240,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Список серверов успешно получен"
+            "description": "Список серверов успешно получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ServerResponseDto"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -397,7 +417,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Список проверок сервера успешно получен"
+            "description": "Список проверок сервера успешно получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ServerCheckResponseDto"
+                  }
+                }
+              }
+            }
           },
           "404": {
             "description": "Сервер не найден"
@@ -448,7 +478,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Список heartbeat событий успешно получен"
+            "description": "Список heartbeat событий успешно получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ServerHeartbeatAggregatedResponseDto"
+                  }
+                }
+              }
+            }
           },
           "404": {
             "description": "Сервер не найден"
@@ -632,7 +672,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NotificationRuleResponseDto"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationRuleResponseDto"
+                  }
                 }
               }
             }
@@ -1234,7 +1277,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IncidentResponseDto"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IncidentResponseDto"
+                  }
                 }
               }
             }
@@ -1291,6 +1337,40 @@
             "bearer": []
           }
         ]
+      },
+      "delete": {
+        "operationId": "IncidentsController_deleteIncident",
+        "summary": "Удалить инцидент",
+        "description": "Полностью удаляет инцидент вместе с сетевой диагностикой, скриншотом, комментариями, AI-саммари и историей отправленных уведомлений. Операция необратима. Аптайм и SLA считаются по инцидентам, поэтому после удаления процент доступности сервера пересчитается вверх — на статус-страницах и во всех отчётах, сформированных после удаления (уже выпущенные отчёты сохраняют прежние цифры). Удалить можно только закрытый инцидент: для активного (`ongoing`) вернётся 409 — дождитесь восстановления сервера, иначе следующая проверка создаст инцидент заново.",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Инцидент успешно удален"
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          },
+          "409": {
+            "description": "Нельзя удалить активный инцидент"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/v1/incidents": {
@@ -1322,7 +1402,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IncidentResponseDto"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IncidentResponseDto"
+                  }
                 }
               }
             }
@@ -1342,7 +1425,7 @@
       "get": {
         "operationId": "IncidentsController_getIncidentEventsByServer",
         "summary": "Получить события инцидента",
-        "description": "Возвращает хронологическую ленту событий инцидента: смены статуса, отправленные уведомления (email/Telegram/MAX/вебхуки), подтверждения, авто-восстановления и т.п. Используется для отображения таймлайна на странице инцидента и для аудита, в какие каналы и когда уходили нотификации.",
+        "description": "Возвращает хронологическую ленту событий инцидента: смены статуса, отправленные уведомления (email/Telegram/MAX/вебхуки), подтверждения, авто-восстановления и т.п. Используется для отображения таймлайна на странице инцидента и для аудита, в какие каналы и когда уходили нотификации. События `screenshot` и `diagnostics` отдаются только на тарифах с включёнными `screenshots_enabled` и `network_diagnostics_enabled` соответственно.",
         "parameters": [
           {
             "name": "incidentId",
@@ -1359,7 +1442,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IncidentEventResponseDto"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IncidentEventResponseDto"
+                  }
                 }
               }
             }
@@ -3225,6 +3311,94 @@
       }
     },
     "schemas": {
+      "TelegramTopic": {
+        "type": "object",
+        "properties": {
+          "message_thread_id": {
+            "type": "number",
+            "description": "ID топика (message thread ID)",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "description": "Название топика",
+            "example": "Уведомления о серверах"
+          }
+        },
+        "required": [
+          "message_thread_id",
+          "name"
+        ],
+        "title": "TelegramTopic"
+      },
+      "TelegramResponseDto": {
+        "type": "object",
+        "properties": {
+          "telegram_id": {
+            "type": "string",
+            "description": "ID Телеграм аккаунта или чата",
+            "example": "123456789"
+          },
+          "telegram_username": {
+            "type": "string",
+            "description": "Username пользователя или название группы (если есть)",
+            "example": "my_username",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "description": "Тип Телеграм аккаунта: пользователь или группа",
+            "enum": [
+              "user",
+              "group",
+              "supergroup"
+            ],
+            "example": "user"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Дата привязки Телеграм аккаунта",
+            "example": "2024-11-30T14:48:00.000Z"
+          },
+          "is_2fa_account": {
+            "type": "boolean",
+            "description": "Используется ли аккаунт для двухфакторной аутентификации",
+            "example": true
+          },
+          "avatar_url": {
+            "type": "string",
+            "description": "Прямая ссылка на аватарку пользователя или группы в S3",
+            "example": "https://s3.statuser.cloud/avatars/avatar_a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg",
+            "nullable": true
+          },
+          "message_thread_id": {
+            "type": "number",
+            "description": "ID топика для форум групп",
+            "example": 123,
+            "nullable": true
+          },
+          "available_topics": {
+            "description": "Список доступных топиков для форум групп",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TelegramTopic"
+            }
+          }
+        },
+        "required": [
+          "telegram_id",
+          "telegram_username",
+          "type",
+          "created_at",
+          "is_2fa_account",
+          "avatar_url",
+          "message_thread_id",
+          "available_topics"
+        ],
+        "title": "TelegramResponseDto"
+      },
       "AccountResponseDto": {
         "type": "object",
         "properties": {
@@ -3249,7 +3423,7 @@
             "description": "Статус аккаунта"
           },
           "avatar_url": {
-            "type": "object",
+            "type": "string",
             "example": "https://example.com/avatar.jpg",
             "description": "URL аватара пользователя",
             "nullable": true
@@ -3261,7 +3435,8 @@
             "description": "Дата создания аккаунта"
           },
           "password_changed_at": {
-            "type": "object",
+            "format": "date-time",
+            "type": "string",
             "example": "2023-01-05T00:00:00.000Z",
             "description": "Дата последней смены пароля",
             "nullable": true
@@ -3585,9 +3760,10 @@
             ]
           },
           "valid_until": {
-            "type": "object",
+            "type": "string",
             "example": "2025-12-31T23:59:59.000Z",
-            "description": "Срок действия текущего тарифа"
+            "description": "Срок действия текущего тарифа",
+            "nullable": true
           },
           "current_billing_period": {
             "type": "string",
@@ -3609,7 +3785,7 @@
             ]
           },
           "pending_plan_effective_at": {
-            "type": "object",
+            "type": "string",
             "example": "2025-12-31T23:59:59.000Z",
             "description": "Дата применения запланированного даунгрейда",
             "nullable": true
@@ -3838,6 +4014,181 @@
         ],
         "title": "CreateServerDto"
       },
+      "SslInfo": {
+        "type": "object",
+        "properties": {
+          "valid_to": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-12-31T23:59:59.000Z",
+            "description": "Дата окончания действия SSL-сертификата"
+          },
+          "valid_from": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-12-31T00:00:00.000Z",
+            "description": "Дата начала действия SSL-сертификата"
+          },
+          "errors": {
+            "example": [
+              "certificate has expired"
+            ],
+            "description": "Ошибки, обнаруженные при проверке SSL-сертификата",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "issuer": {
+            "type": "string",
+            "example": "R3",
+            "description": "Организация, выдавшая сертификат (issuer)"
+          },
+          "subject": {
+            "type": "string",
+            "example": "CN=statuser.cloud",
+            "description": "Субъект сертификата (subject)"
+          },
+          "san": {
+            "example": [
+              "statuser.cloud",
+              "www.statuser.cloud"
+            ],
+            "description": "Список альтернативных доменных имён (SAN)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "chain_valid": {
+            "type": "boolean",
+            "example": true,
+            "description": "Цепочка сертификатов валидна"
+          },
+          "last_checked_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-07-05T12:00:00.000Z",
+            "description": "Дата последней проверки SSL-сертификата"
+          }
+        },
+        "required": [
+          "valid_to",
+          "valid_from",
+          "errors",
+          "issuer",
+          "subject",
+          "san",
+          "chain_valid",
+          "last_checked_at"
+        ],
+        "title": "SslInfo"
+      },
+      "DomainInfo": {
+        "type": "object",
+        "properties": {
+          "register_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Дата регистрации домена",
+            "nullable": true
+          },
+          "expire_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-01-01T00:00:00.000Z",
+            "description": "Дата окончания регистрации домена",
+            "nullable": true
+          },
+          "domain": {
+            "type": "string",
+            "example": "statuser.cloud",
+            "description": "Доменное имя"
+          },
+          "registrar": {
+            "type": "string",
+            "example": "PDR Ltd.",
+            "description": "Регистратор домена"
+          },
+          "registrant_org": {
+            "type": "string",
+            "example": "Statuser Cloud LLC",
+            "description": "Организация, владеющая доменом",
+            "nullable": true
+          },
+          "ns": {
+            "example": [
+              "ns1.statuser.cloud",
+              "ns2.statuser.cloud"
+            ],
+            "description": "Список DNS-серверов, указанных для домена (NS-записи)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "last_checked_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-07-05T12:00:00.000Z",
+            "description": "Дата последней проверки доменной информации"
+          }
+        },
+        "required": [
+          "register_at",
+          "expire_at",
+          "domain",
+          "registrar",
+          "registrant_org",
+          "ns",
+          "last_checked_at"
+        ],
+        "title": "DomainInfo"
+      },
+      "BlocklistInfo": {
+        "type": "object",
+        "properties": {
+          "is_blocked": {
+            "type": "boolean",
+            "example": false,
+            "description": "Находится ли домен в реестре блокировок"
+          },
+          "registry": {
+            "type": "string",
+            "example": "rkn",
+            "description": "Реестр, в котором обнаружен домен"
+          },
+          "matched_domain": {
+            "type": "string",
+            "example": "example.com",
+            "description": "Запись реестра, по которой сматчился домен (реестр покрывает домен вместе с поддоменами)",
+            "nullable": true
+          },
+          "first_blocked_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-07-14T00:00:00.000Z",
+            "description": "Когда домен впервые обнаружен в реестре",
+            "nullable": true
+          },
+          "last_checked_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-07-14T06:27:00.000Z",
+            "description": "Дата последней сверки с реестром",
+            "nullable": true
+          }
+        },
+        "required": [
+          "is_blocked",
+          "registry",
+          "matched_domain",
+          "first_blocked_at",
+          "last_checked_at"
+        ],
+        "title": "BlocklistInfo"
+      },
       "DnsRecord": {
         "type": "object",
         "properties": {
@@ -3908,27 +4259,29 @@
             "description": "Протокол сервера"
           },
           "heartbeat_token": {
-            "type": "object",
+            "type": "string",
             "example": "550e8400-e29b-41d4-a716-446655440000",
             "description": "Токен для heartbeat URL (только для protocol=heartbeat)",
             "nullable": true
           },
           "last_heartbeat_at": {
-            "type": "object",
+            "format": "date-time",
+            "type": "string",
             "example": "2025-12-31T23:59:59.000Z",
             "description": "Время последнего полученного heartbeat (только для protocol=heartbeat)",
             "nullable": true
           },
           "heartbeat_grace_interval": {
-            "type": "object",
+            "type": "number",
             "example": 300,
             "description": "Допустимое опоздание в секундах для heartbeat: сколько ждать сверх check_interval",
             "nullable": true
           },
           "port": {
-            "type": "object",
-            "example": "22",
-            "description": "Порт для проверки tcp"
+            "type": "number",
+            "example": 22,
+            "description": "Порт для проверки tcp",
+            "nullable": true
           },
           "http_method": {
             "type": "string",
@@ -3941,7 +4294,8 @@
               "post",
               "put",
               "patch"
-            ]
+            ],
+            "nullable": true
           },
           "request_timeout": {
             "type": "number",
@@ -3959,12 +4313,13 @@
             "description": "Задержка подтверждения сбоя в секундах перед открытием инцидента (0 — сразу)"
           },
           "name": {
-            "type": "object",
+            "type": "string",
             "example": "Восхитительный сервер",
-            "description": "Название сервиса"
+            "description": "Название сервиса",
+            "nullable": true
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "example": "Восхитительный сервер для проверки статуса",
             "description": "Описание сервиса",
             "nullable": true
@@ -3987,13 +4342,13 @@
             "description": "Признак учащённого мониторинга"
           },
           "body": {
-            "type": "object",
+            "type": "string",
             "example": "{\"key\": \"value\"}",
             "description": "Тело запроса для проверки",
             "nullable": true
           },
           "keyword": {
-            "type": "object",
+            "type": "string",
             "example": "Welcome",
             "description": "Ключевое слово для мониторинга",
             "nullable": true
@@ -4037,19 +4392,25 @@
             }
           },
           "last_unavailable_at": {
-            "type": "object",
+            "format": "date-time",
+            "type": "string",
             "example": "2023-01-02T00:00:00.000Z",
-            "description": "Время, когда сервер в последний раз стал недоступен (начало текущего или последнего инцидента)"
+            "description": "Время, когда сервер в последний раз стал недоступен (начало текущего или последнего инцидента)",
+            "nullable": true
           },
           "last_available_at": {
-            "type": "object",
+            "format": "date-time",
+            "type": "string",
             "example": "2023-01-03T12:34:56.000Z",
-            "description": "Время, когда сервер в последний раз восстановил доступность (завершение последнего инцидента или последняя успешная проверка)"
+            "description": "Время, когда сервер в последний раз восстановил доступность (завершение последнего инцидента или последняя успешная проверка)",
+            "nullable": true
           },
           "last_checked_at": {
-            "type": "object",
+            "format": "date-time",
+            "type": "string",
             "example": "2023-01-02T00:00:00.000Z",
-            "description": "Время последней проверки сервера"
+            "description": "Время последней проверки сервера",
+            "nullable": true
           },
           "is_ssl_check": {
             "type": "boolean",
@@ -4057,8 +4418,13 @@
             "description": "Включены ли проверки SSL-сертификата"
           },
           "ssl": {
-            "type": "object",
-            "description": "Информация о SSL-сертификате"
+            "description": "Информация о SSL-сертификате",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SslInfo"
+              }
+            ]
           },
           "is_domain_check": {
             "type": "boolean",
@@ -4066,8 +4432,13 @@
             "description": "Включены ли проверки времени окончания домена"
           },
           "domain": {
-            "type": "object",
-            "description": "Информация о домене"
+            "description": "Информация о домене",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DomainInfo"
+              }
+            ]
           },
           "is_blocklist_check": {
             "type": "boolean",
@@ -4075,8 +4446,13 @@
             "description": "Включена ли проверка домена в реестре блокировок"
           },
           "blocklist": {
-            "type": "object",
-            "description": "Статус домена в реестре блокировок"
+            "description": "Статус домена в реестре блокировок",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BlocklistInfo"
+              }
+            ]
           },
           "is_latency_alert_enabled": {
             "type": "boolean",
@@ -4101,14 +4477,28 @@
             }
           },
           "dns_record_types": {
-            "type": "object",
+            "type": "array",
             "example": [
               "A",
               "AAAA",
               "MX"
             ],
             "description": "Типы DNS записей для мониторинга",
-            "nullable": true
+            "nullable": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "A",
+                "AAAA",
+                "CNAME",
+                "MX",
+                "TXT",
+                "NS",
+                "SOA",
+                "PTR",
+                "SRV"
+              ]
+            }
           },
           "dns_records": {
             "description": "Текущие DNS записи домена",
@@ -4375,6 +4765,229 @@
         },
         "title": "UpdateServerDto"
       },
+      "ServerCheckResponseDto": {
+        "type": "object",
+        "properties": {},
+        "title": "ServerCheckResponseDto"
+      },
+      "ServerHeartbeatAggregatedResponseDto": {
+        "type": "object",
+        "properties": {
+          "occurred_at": {
+            "type": "string",
+            "example": "2026-08-09T18:00:00.000Z",
+            "description": "Начало интервала агрегации"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "online",
+              "offline",
+              "pending",
+              "paused",
+              "failed"
+            ],
+            "example": "online",
+            "description": "Статус сервера в интервале"
+          },
+          "error": {
+            "type": "string",
+            "enum": [
+              "host_is_missing",
+              "port_is_missing",
+              "check_function_not_found",
+              "unsupported_protocol",
+              "connection_timeout",
+              "heartbeat_timeout",
+              "heartbeat_failure",
+              "unknown_ping_error",
+              "unknown_tcp_error",
+              "unknown_http_error",
+              "status_code_mismatch",
+              "keyword_not_found",
+              "keyword_found",
+              "unknown_error",
+              "host_not_found",
+              "dns_temporary_failure",
+              "address_not_available",
+              "self_signed_cert",
+              "self_signed_cert_chain",
+              "invalid_tls_cert",
+              "unable_to_verify_cert",
+              "cert_expired",
+              "cert_not_yet_valid",
+              "dh_param_size_too_small",
+              "tls_renegotiation_disabled",
+              "connection_refused",
+              "connection_reset",
+              "network_unreachable",
+              "broken_pipe",
+              "access_denied",
+              "host_unreachable",
+              "socket_closed",
+              "connection_timed_out",
+              "multiple_choices",
+              "moved_permanently",
+              "found",
+              "see_other",
+              "not_modified",
+              "use_proxy",
+              "switch_proxy",
+              "temporary_redirect",
+              "permanent_redirect",
+              "bad_request",
+              "unauthorized",
+              "payment_required",
+              "forbidden",
+              "not_found",
+              "method_not_allowed",
+              "not_acceptable",
+              "proxy_auth_required",
+              "request_timeout",
+              "conflict",
+              "gone",
+              "length_required",
+              "precondition_failed",
+              "payload_too_large",
+              "uri_too_long",
+              "unsupported_media_type",
+              "range_not_satisfiable",
+              "expectation_failed",
+              "im_a_teapot",
+              "misdirected_request",
+              "unprocessable_entity",
+              "locked",
+              "failed_dependency",
+              "too_early",
+              "upgrade_required",
+              "precondition_required",
+              "too_many_requests",
+              "header_fields_too_large",
+              "legal_block",
+              "internal_server_error",
+              "not_implemented",
+              "bad_gateway",
+              "service_unavailable",
+              "gateway_timeout",
+              "http_version_not_supported",
+              "variant_negotiates",
+              "insufficient_storage",
+              "loop_detected",
+              "not_extended",
+              "network_auth_required",
+              "nginx_no_response",
+              "nginx_header_too_large",
+              "nginx_ssl_certificate_error",
+              "nginx_ssl_certificate_required",
+              "nginx_http_to_https",
+              "nginx_client_closed_request",
+              "cloudflare_unknown_error",
+              "cloudflare_server_down",
+              "cloudflare_connection_timeout",
+              "cloudflare_origin_unreachable",
+              "cloudflare_timeout_occurred",
+              "cloudflare_ssl_handshake_failed",
+              "cloudflare_invalid_ssl_certificate",
+              "aws_client_timeout",
+              "aws_x_forwarded_too_many_ips",
+              "aws_protocol_mismatch",
+              "aws_unauthorized",
+              "curl_unsupported_protocol",
+              "curl_failed_init",
+              "curl_url_malformed",
+              "curl_not_built_in",
+              "curl_couldnt_resolve_proxy",
+              "curl_couldnt_resolve_host",
+              "curl_couldnt_connect",
+              "curl_weird_server_reply",
+              "curl_ftp_access_denied",
+              "curl_ftp_accept_failed",
+              "curl_ftp_weird_pass_reply",
+              "curl_ftp_accept_timeout",
+              "curl_ftp_weird_pasv_reply",
+              "curl_ftp_weird_227_format",
+              "curl_ftp_cant_get_host",
+              "curl_http2_error",
+              "curl_ftp_couldnt_set_binary",
+              "curl_partial_file",
+              "curl_ftp_couldnt_retr_file",
+              "curl_ftp_quote_error",
+              "curl_http_returned_error",
+              "curl_write_error",
+              "curl_ftp_couldnt_stor_file",
+              "curl_read_error",
+              "curl_out_of_memory",
+              "curl_operation_timedout",
+              "curl_ftp_port_failed",
+              "curl_ftp_couldnt_use_rest",
+              "curl_http_range_error",
+              "curl_http_post_error",
+              "curl_ssl_connect_error",
+              "curl_bad_download_resume",
+              "curl_file_couldnt_read_file",
+              "curl_ldap_cannot_bind",
+              "curl_ldap_search_failed",
+              "curl_function_not_found",
+              "curl_aborted_by_callback",
+              "curl_bad_function_argument",
+              "curl_interface_failed",
+              "curl_too_many_redirects",
+              "curl_unknown_option",
+              "curl_telnet_option_syntax",
+              "curl_peer_failed_verification",
+              "curl_got_nothing",
+              "curl_ssl_engine_notfound",
+              "curl_ssl_engine_setfailed",
+              "curl_send_error",
+              "curl_recv_error",
+              "curl_ssl_certproblem",
+              "curl_ssl_cipher",
+              "curl_ssl_cacert",
+              "curl_bad_content_encoding",
+              "curl_ldap_invalid_url",
+              "curl_filesize_exceeded",
+              "curl_use_ssl_failed",
+              "curl_send_fail_rewind",
+              "curl_ssl_engine_initfailed",
+              "curl_login_denied",
+              "curl_tftp_notfound",
+              "curl_tftp_perm",
+              "curl_remote_disk_full",
+              "curl_tftp_illegal",
+              "curl_tftp_unknownid",
+              "curl_remote_file_exists",
+              "curl_tftp_nosuchuser",
+              "curl_conv_failed",
+              "curl_conv_reqd",
+              "curl_ssl_cacert_badfile",
+              "curl_remote_file_not_found",
+              "curl_ssh",
+              "curl_ssl_shutdown_failed",
+              "curl_again",
+              "curl_ssl_crl_badfile",
+              "curl_ssl_issuer_error",
+              "curl_ftp_pret_failed",
+              "curl_rtsp_cseq_error",
+              "curl_rtsp_session_error",
+              "curl_ftp_bad_file_list",
+              "curl_chunk_failed",
+              "curl_no_connection_available",
+              "curl_ssl_pinnedpubkeynotmatch",
+              "curl_ssl_invalidcertstatus",
+              "curl_http2_stream"
+            ],
+            "example": null,
+            "description": "Ошибка проверки, если в интервале сервер был недоступен",
+            "nullable": true
+          }
+        },
+        "required": [
+          "occurred_at",
+          "status",
+          "error"
+        ],
+        "title": "ServerHeartbeatAggregatedResponseDto"
+      },
       "DnsRecordDiffResponseDto": {
         "type": "object",
         "properties": {
@@ -4405,7 +5018,11 @@
             ]
           },
           "added_records": {
-            "type": "object",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
             "example": [
               {
                 "value": "new-record.example.com"
@@ -4415,7 +5032,11 @@
             "nullable": true
           },
           "removed_records": {
-            "type": "object",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
             "example": [
               {
                 "value": "old-record.example.com"
@@ -4746,13 +5367,13 @@
             "example": "1234567890"
           },
           "max_name": {
-            "type": "object",
+            "type": "string",
             "description": "Название чата или имя пользователя",
             "example": "My Team Chat",
             "nullable": true
           },
           "avatar_url": {
-            "type": "object",
+            "type": "string",
             "description": "Прямая ссылка на аватар в S3",
             "example": "https://s3.statuser.cloud/avatars/avatar_a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg",
             "nullable": true
@@ -4900,6 +5521,196 @@
         },
         "title": "CreateHolidayModeDto"
       },
+      "TimingDetails": {
+        "type": "object",
+        "properties": {
+          "effective_url": {
+            "type": "string",
+            "example": "https://example.com",
+            "description": "Финальный URL после всех редиректов"
+          },
+          "redirect_count": {
+            "type": "number",
+            "example": 0,
+            "description": "Количество редиректов"
+          },
+          "name_lookup_time": {
+            "type": "string",
+            "example": "0.001",
+            "description": "Время разрешения имени хоста"
+          },
+          "connect_time": {
+            "type": "string",
+            "example": "0.002",
+            "description": "Время установления соединения"
+          },
+          "pre_transfer_time": {
+            "type": "string",
+            "example": "0.003",
+            "description": "Время до начала передачи данных"
+          },
+          "start_transfer_time": {
+            "type": "string",
+            "example": "0.004",
+            "description": "Время начала передачи данных"
+          },
+          "app_connect_time": {
+            "type": "string",
+            "example": "0.005",
+            "description": "Время установления SSL-соединения"
+          },
+          "redirect_time": {
+            "type": "string",
+            "example": "0.006",
+            "description": "Общее время редиректов"
+          },
+          "total_time": {
+            "type": "string",
+            "example": "0.007",
+            "description": "Общее время выполнения запроса"
+          },
+          "response_code": {
+            "type": "string",
+            "example": "200",
+            "description": "Код ответа сервера"
+          }
+        },
+        "required": [
+          "effective_url",
+          "redirect_count",
+          "name_lookup_time",
+          "connect_time",
+          "pre_transfer_time",
+          "start_transfer_time",
+          "app_connect_time",
+          "redirect_time",
+          "total_time",
+          "response_code"
+        ],
+        "title": "TimingDetails"
+      },
+      "ServerCheckDetailsResponseDto": {
+        "type": "object",
+        "properties": {
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "content-type": "text/html"
+            },
+            "description": "Заголовки ответа",
+            "nullable": true
+          },
+          "body": {
+            "type": "string",
+            "example": "https://s3.statuser.cloud/responses/body.txt",
+            "description": "Ссылка на сохранённое тело ответа",
+            "nullable": true
+          },
+          "openssl": {
+            "example": [
+              "line 1",
+              "line 2"
+            ],
+            "description": "Результаты выполнения OpenSSL",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mtr": {
+            "example": [
+              "mtr line 1",
+              "mtr line 2"
+            ],
+            "description": "Результаты выполнения MTR",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "traceroute": {
+            "example": [
+              "traceroute line 1",
+              "traceroute line 2"
+            ],
+            "description": "Результаты выполнения traceroute",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ping": {
+            "example": [
+              "ping line 1",
+              "ping line 2"
+            ],
+            "description": "Результаты выполнения ping",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nmap": {
+            "example": [
+              "nmap line 1",
+              "nmap line 2"
+            ],
+            "description": "Результаты выполнения nmap",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "resolved_ips": {
+            "example": [
+              "192.168.1.1",
+              "8.8.8.8"
+            ],
+            "description": "Зарезолвленные IP",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timing": {
+            "description": "Детали тайминга запроса",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TimingDetails"
+              }
+            ]
+          },
+          "location": {
+            "type": "string",
+            "example": "msk-1",
+            "description": "Регион проверки",
+            "enum": [
+              "msk-1",
+              "spb-1",
+              "ala-1",
+              "nyc-1",
+              "ams-1"
+            ]
+          }
+        },
+        "required": [
+          "headers",
+          "body",
+          "openssl",
+          "mtr",
+          "traceroute",
+          "ping",
+          "nmap",
+          "resolved_ips",
+          "timing",
+          "location"
+        ],
+        "title": "ServerCheckDetailsResponseDto"
+      },
       "IncidentResponseDto": {
         "type": "object",
         "properties": {
@@ -4920,7 +5731,8 @@
             "description": "Время начала инцидента"
           },
           "ended_at": {
-            "type": "object",
+            "format": "date-time",
+            "type": "string",
             "example": "2023-01-02T00:00:00.000Z",
             "description": "Время окончания инцидента",
             "nullable": true
@@ -4942,24 +5754,30 @@
             "description": "Основная ошибка проверки сервера"
           },
           "keyword": {
-            "type": "object",
+            "type": "string",
             "description": "Ключевое слово, которое искали при типе проверки keyword",
             "nullable": true,
             "example": "simple"
           },
           "screenshot": {
-            "type": "object",
+            "type": "string",
             "example": "https://s3.statuser.cloud/sreenshots/img.png",
-            "description": "Ссылка на скриншот страницы"
+            "description": "Ссылка на скриншот страницы",
+            "nullable": true
           },
           "replay": {
-            "type": "object",
+            "type": "string",
             "example": "curl -X GET 1.1.1.1",
-            "description": "Команда для повтора запроса"
+            "description": "Команда для повтора запроса",
+            "nullable": true
           },
           "details": {
-            "type": "object",
-            "description": "Детали проваленной проверки"
+            "description": "Детали проваленной проверки",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServerCheckDetailsResponseDto"
+            }
           }
         },
         "required": [
@@ -5068,6 +5886,58 @@
         ],
         "title": "CommentMeta"
       },
+      "ScreenshotMeta": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "https://s3.statuser.cloud/screenshots/img.png",
+            "description": "Ссылка на скриншот страницы",
+            "nullable": true
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "ScreenshotMeta"
+      },
+      "DiagnosticsMeta": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "Регион, из которого выполнялась диагностика"
+          },
+          "tools": {
+            "type": "array",
+            "description": "Блоки диагностики, которые удалось собрать",
+            "example": [
+              "ping",
+              "mtr",
+              "traceroute"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "headers",
+                "body",
+                "timing",
+                "resolved_ips",
+                "ping",
+                "traceroute",
+                "mtr",
+                "nmap",
+                "openssl"
+              ]
+            }
+          }
+        },
+        "required": [
+          "location",
+          "tools"
+        ],
+        "title": "DiagnosticsMeta"
+      },
       "IncidentEventResponseDto": {
         "type": "object",
         "properties": {
@@ -5087,7 +5957,9 @@
               "notification",
               "comment",
               "start",
-              "end"
+              "end",
+              "screenshot",
+              "diagnostics"
             ]
           },
           "meta": {
@@ -5104,6 +5976,12 @@
               },
               {
                 "$ref": "#/components/schemas/CommentMeta"
+              },
+              {
+                "$ref": "#/components/schemas/ScreenshotMeta"
+              },
+              {
+                "$ref": "#/components/schemas/DiagnosticsMeta"
               }
             ],
             "nullable": true
@@ -5120,9 +5998,10 @@
         "type": "object",
         "properties": {
           "summary": {
-            "type": "object",
+            "type": "string",
             "description": "Сгенерированное ИИ саммари диагностики инцидента",
-            "example": "Сервер недоступен из-за сетевого таймаута..."
+            "example": "Сервер недоступен из-за сетевого таймаута...",
+            "nullable": true
           },
           "rating": {
             "type": "string",
@@ -5507,7 +6386,8 @@
             "description": "Время начала инцидента"
           },
           "ended_at": {
-            "type": "object",
+            "format": "date-time",
+            "type": "string",
             "example": "2026-03-06T16:45:00.000Z",
             "nullable": true,
             "description": "Время окончания инцидента"
@@ -5874,31 +6754,31 @@
             "description": "Уникальный путь страницы статуса"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "example": "Описание страницы статуса",
             "description": "Описание страницы статуса",
             "nullable": true
           },
           "logo_url": {
-            "type": "object",
+            "type": "string",
             "example": "https://example.com/logo.png",
             "description": "URL логотипа",
             "nullable": true
           },
           "favicon_url": {
-            "type": "object",
+            "type": "string",
             "example": "https://example.com/favicon.png",
             "description": "URL фавикона",
             "nullable": true
           },
           "company_url": {
-            "type": "object",
+            "type": "string",
             "example": "https://example.com",
             "description": "URL сайта компании",
             "nullable": true
           },
           "support_url": {
-            "type": "object",
+            "type": "string",
             "example": "support@example.com",
             "description": "Email службы поддержки",
             "nullable": true
@@ -6006,13 +6886,13 @@
             "description": "Доступна ли подписка на обновления (зависит от тарифа владельца). Если false — публичная форма подписки скрывается."
           },
           "subscribers_from_name": {
-            "type": "object",
+            "type": "string",
             "example": "Acme Status",
             "nullable": true,
             "description": "Отображаемое имя отправителя писем подписчикам"
           },
           "subscribers_reply_to": {
-            "type": "object",
+            "type": "string",
             "example": "status@acme.com",
             "nullable": true,
             "description": "Адрес для ответов (Reply-To) в письмах подписчикам"
