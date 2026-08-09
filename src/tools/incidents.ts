@@ -98,7 +98,7 @@ export function registerIncidentTools(
     name: 'incident_get_events',
     title: 'Get incident event timeline',
     description:
-      'Returns the chronological event log of an incident: status changes, notifications sent (email/Telegram/MAX/webhooks), confirmations, auto-recoveries, etc. Useful for audits and timeline rendering.',
+      'Returns the chronological event log of an incident: status changes, notifications sent (email/Telegram/MAX/webhooks), comments, page screenshots and network diagnostics. Useful for audits and timeline rendering. Every event has a `type` and a matching `meta`: `start`/`end` — no meta; `error`/`resolved` — check location and error code; `notification` — channel, recipient, delivery status; `comment` — text and attachments; `screenshot` — public URL of the page snapshot captured during the outage; `diagnostics` — the location diagnostics ran from and which blocks were collected (`headers`, `body`, `timing`, `resolved_ips`, `ping`, `traceroute`, `mtr`, `nmap`, `openssl`). `screenshot` and `diagnostics` events are only returned on plans with `screenshots_enabled` / `network_diagnostics_enabled`; `screenshot` also requires an HTTP monitor and only exists for incidents started after 2026-08-09.',
     inputSchema: {
       id: z.number().int().positive(),
     },
@@ -186,6 +186,21 @@ export function registerIncidentTools(
         size_bytes: res.bytes.byteLength,
         pdf_base64: res.bytes.toString('base64'),
       };
+    },
+  });
+
+  registerTool(server, ctx, {
+    name: 'incident_delete',
+    title: 'Delete incident',
+    description:
+      'Permanently deletes an incident together with its network diagnostics, screenshot, comments, AI summary and notification history. Irreversible — always confirm with the user before calling. Uptime and SLA are computed from incidents, so deleting one raises the reported availability of the monitor on status pages and in every report generated afterwards (already issued reports keep their numbers). Only a closed incident can be deleted: an `ongoing` one returns 409 — wait for recovery first, otherwise the next failed check reopens it.',
+    write: true,
+    inputSchema: {
+      id: z.number().int().positive(),
+    },
+    handler: async ({ id }, { client }) => {
+      await client.call({ method: 'DELETE', path: `/v1/incidents/${id}` });
+      return { deleted: true, id };
     },
   });
 }

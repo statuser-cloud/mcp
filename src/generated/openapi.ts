@@ -430,7 +430,7 @@ export interface paths {
         get: operations["IncidentsController_getIncident"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["IncidentsController_deleteIncident"];
         options?: never;
         head?: never;
         patch?: never;
@@ -920,14 +920,28 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        TelegramTopic: {
+            message_thread_id: number;
+            name: string;
+        };
+        TelegramResponseDto: {
+            telegram_id: string;
+            telegram_username: string | null;
+            type: "user" | "group" | "supergroup";
+            created_at: string;
+            is_2fa_account: boolean;
+            avatar_url: string | null;
+            message_thread_id: number | null;
+            available_topics: components["schemas"]["TelegramTopic"][] | null;
+        };
         AccountResponseDto: {
             id: number;
             email: string;
             name: string;
             status: string;
-            avatar_url: Record<string, never> | null;
+            avatar_url: string | null;
             created_at: string;
-            password_changed_at: Record<string, never> | null;
+            password_changed_at: string | null;
             timezone: string;
             is_ai_assistant_enabled: boolean;
         };
@@ -982,10 +996,10 @@ export interface components {
             price_per_month: number;
             price_per_year: number;
             features: components["schemas"]["PlanFeaturesResponseDto"];
-            valid_until: Record<string, never>;
+            valid_until: string | null;
             current_billing_period: "month" | "year" | null;
             pending_plan: components["schemas"]["PlanResponseDto"] | null;
-            pending_plan_effective_at: Record<string, never> | null;
+            pending_plan_effective_at: string | null;
         };
         ServerHeader: {
             key: string;
@@ -1016,6 +1030,32 @@ export interface components {
             locations?: ("msk-1" | "spb-1" | "ala-1" | "nyc-1" | "ams-1")[];
             dns_record_types?: ("A" | "AAAA" | "CNAME" | "MX" | "TXT" | "NS" | "SOA" | "PTR" | "SRV")[];
         };
+        SslInfo: {
+            valid_to: string;
+            valid_from: string;
+            errors: string[];
+            issuer: string;
+            subject: string;
+            san: string[];
+            chain_valid: boolean;
+            last_checked_at: string;
+        };
+        DomainInfo: {
+            register_at: string | null;
+            expire_at: string | null;
+            domain: string;
+            registrar: string;
+            registrant_org: string | null;
+            ns: string[];
+            last_checked_at: string;
+        };
+        BlocklistInfo: {
+            is_blocked: boolean;
+            registry: string;
+            matched_domain: string | null;
+            first_blocked_at: string | null;
+            last_checked_at: string | null;
+        };
         DnsRecord: {
             record_type: "A" | "AAAA" | "CNAME" | "MX" | "TXT" | "NS" | "SOA" | "PTR" | "SRV";
             records: string[];
@@ -1024,37 +1064,37 @@ export interface components {
             id: number;
             host: string;
             protocol: string;
-            heartbeat_token: Record<string, never> | null;
-            last_heartbeat_at: Record<string, never> | null;
-            heartbeat_grace_interval: Record<string, never> | null;
-            port: Record<string, never>;
-            http_method: "head" | "get" | "options" | "post" | "put" | "patch";
+            heartbeat_token: string | null;
+            last_heartbeat_at: string | null;
+            heartbeat_grace_interval: number | null;
+            port: number | null;
+            http_method: "head" | "get" | "options" | "post" | "put" | "patch" | null;
             request_timeout: number;
             check_interval: number;
             incident_confirm_delay: number;
-            name: Record<string, never>;
-            description: Record<string, never> | null;
+            name: string | null;
+            description: string | null;
             status: "online" | "offline" | "pending" | "paused" | "failed";
             is_fast_checking: boolean;
-            body: Record<string, never> | null;
-            keyword: Record<string, never> | null;
+            body: string | null;
+            keyword: string | null;
             keyword_mode: "present" | "absent" | null;
             headers: components["schemas"]["ServerHeader"][];
             is_follow_redirects: boolean;
             success_http_codes: string[];
-            last_unavailable_at: Record<string, never>;
-            last_available_at: Record<string, never>;
-            last_checked_at: Record<string, never>;
+            last_unavailable_at: string | null;
+            last_available_at: string | null;
+            last_checked_at: string | null;
             is_ssl_check: boolean;
-            ssl: Record<string, never>;
+            ssl: components["schemas"]["SslInfo"] | null;
             is_domain_check: boolean;
-            domain: Record<string, never>;
+            domain: components["schemas"]["DomainInfo"] | null;
             is_blocklist_check: boolean;
-            blocklist: Record<string, never>;
+            blocklist: components["schemas"]["BlocklistInfo"] | null;
             is_latency_alert_enabled: boolean;
             latency_trigger_ms: number;
             locations: string[];
-            dns_record_types: Record<string, never> | null;
+            dns_record_types: ("A" | "AAAA" | "CNAME" | "MX" | "TXT" | "NS" | "SOA" | "PTR" | "SRV")[] | null;
             dns_records: components["schemas"]["DnsRecord"][] | null;
             dns_error_code: "NODATA" | "NXDOMAIN" | "SERVFAIL" | "REFUSED" | "FORMERR" | "NOTIMP" | "UNKNOWN" | null;
             created_at: string;
@@ -1084,12 +1124,22 @@ export interface components {
             locations?: ("msk-1" | "spb-1" | "ala-1" | "nyc-1" | "ams-1")[];
             dns_record_types?: ("A" | "AAAA" | "CNAME" | "MX" | "TXT" | "NS" | "SOA" | "PTR" | "SRV")[];
         };
+        ServerCheckResponseDto: Record<string, never>;
+        ServerHeartbeatAggregatedResponseDto: {
+            occurred_at: string;
+            status: "online" | "offline" | "pending" | "paused" | "failed";
+            error: "host_is_missing" | "port_is_missing" | "check_function_not_found" | "unsupported_protocol" | "connection_timeout" | "heartbeat_timeout" | "heartbeat_failure" | "unknown_ping_error" | "unknown_tcp_error" | "unknown_http_error" | "status_code_mismatch" | "keyword_not_found" | "keyword_found" | "unknown_error" | "host_not_found" | "dns_temporary_failure" | "address_not_available" | "self_signed_cert" | "self_signed_cert_chain" | "invalid_tls_cert" | "unable_to_verify_cert" | "cert_expired" | "cert_not_yet_valid" | "dh_param_size_too_small" | "tls_renegotiation_disabled" | "connection_refused" | "connection_reset" | "network_unreachable" | "broken_pipe" | "access_denied" | "host_unreachable" | "socket_closed" | "connection_timed_out" | "multiple_choices" | "moved_permanently" | "found" | "see_other" | "not_modified" | "use_proxy" | "switch_proxy" | "temporary_redirect" | "permanent_redirect" | "bad_request" | "unauthorized" | "payment_required" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "proxy_auth_required" | "request_timeout" | "conflict" | "gone" | "length_required" | "precondition_failed" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "range_not_satisfiable" | "expectation_failed" | "im_a_teapot" | "misdirected_request" | "unprocessable_entity" | "locked" | "failed_dependency" | "too_early" | "upgrade_required" | "precondition_required" | "too_many_requests" | "header_fields_too_large" | "legal_block" | "internal_server_error" | "not_implemented" | "bad_gateway" | "service_unavailable" | "gateway_timeout" | "http_version_not_supported" | "variant_negotiates" | "insufficient_storage" | "loop_detected" | "not_extended" | "network_auth_required" | "nginx_no_response" | "nginx_header_too_large" | "nginx_ssl_certificate_error" | "nginx_ssl_certificate_required" | "nginx_http_to_https" | "nginx_client_closed_request" | "cloudflare_unknown_error" | "cloudflare_server_down" | "cloudflare_connection_timeout" | "cloudflare_origin_unreachable" | "cloudflare_timeout_occurred" | "cloudflare_ssl_handshake_failed" | "cloudflare_invalid_ssl_certificate" | "aws_client_timeout" | "aws_x_forwarded_too_many_ips" | "aws_protocol_mismatch" | "aws_unauthorized" | "curl_unsupported_protocol" | "curl_failed_init" | "curl_url_malformed" | "curl_not_built_in" | "curl_couldnt_resolve_proxy" | "curl_couldnt_resolve_host" | "curl_couldnt_connect" | "curl_weird_server_reply" | "curl_ftp_access_denied" | "curl_ftp_accept_failed" | "curl_ftp_weird_pass_reply" | "curl_ftp_accept_timeout" | "curl_ftp_weird_pasv_reply" | "curl_ftp_weird_227_format" | "curl_ftp_cant_get_host" | "curl_http2_error" | "curl_ftp_couldnt_set_binary" | "curl_partial_file" | "curl_ftp_couldnt_retr_file" | "curl_ftp_quote_error" | "curl_http_returned_error" | "curl_write_error" | "curl_ftp_couldnt_stor_file" | "curl_read_error" | "curl_out_of_memory" | "curl_operation_timedout" | "curl_ftp_port_failed" | "curl_ftp_couldnt_use_rest" | "curl_http_range_error" | "curl_http_post_error" | "curl_ssl_connect_error" | "curl_bad_download_resume" | "curl_file_couldnt_read_file" | "curl_ldap_cannot_bind" | "curl_ldap_search_failed" | "curl_function_not_found" | "curl_aborted_by_callback" | "curl_bad_function_argument" | "curl_interface_failed" | "curl_too_many_redirects" | "curl_unknown_option" | "curl_telnet_option_syntax" | "curl_peer_failed_verification" | "curl_got_nothing" | "curl_ssl_engine_notfound" | "curl_ssl_engine_setfailed" | "curl_send_error" | "curl_recv_error" | "curl_ssl_certproblem" | "curl_ssl_cipher" | "curl_ssl_cacert" | "curl_bad_content_encoding" | "curl_ldap_invalid_url" | "curl_filesize_exceeded" | "curl_use_ssl_failed" | "curl_send_fail_rewind" | "curl_ssl_engine_initfailed" | "curl_login_denied" | "curl_tftp_notfound" | "curl_tftp_perm" | "curl_remote_disk_full" | "curl_tftp_illegal" | "curl_tftp_unknownid" | "curl_remote_file_exists" | "curl_tftp_nosuchuser" | "curl_conv_failed" | "curl_conv_reqd" | "curl_ssl_cacert_badfile" | "curl_remote_file_not_found" | "curl_ssh" | "curl_ssl_shutdown_failed" | "curl_again" | "curl_ssl_crl_badfile" | "curl_ssl_issuer_error" | "curl_ftp_pret_failed" | "curl_rtsp_cseq_error" | "curl_rtsp_session_error" | "curl_ftp_bad_file_list" | "curl_chunk_failed" | "curl_no_connection_available" | "curl_ssl_pinnedpubkeynotmatch" | "curl_ssl_invalidcertstatus" | "curl_http2_stream" | null;
+        };
         DnsRecordDiffResponseDto: {
             id: number;
             domain: string;
             record_type: "A" | "AAAA" | "CNAME" | "MX" | "TXT" | "NS" | "SOA" | "PTR" | "SRV";
-            added_records: Record<string, never> | null;
-            removed_records: Record<string, never> | null;
+            added_records: {
+                [key: string]: unknown;
+            }[] | null;
+            removed_records: {
+                [key: string]: unknown;
+            }[] | null;
             change_type: "added" | "modified" | "removed";
             changed_at: string;
         };
@@ -1133,8 +1183,8 @@ export interface components {
         };
         MaxResponseDto: {
             max_id: string;
-            max_name: Record<string, never> | null;
-            avatar_url: Record<string, never> | null;
+            max_name: string | null;
+            avatar_url: string | null;
             type: "user" | "chat";
             created_at: string;
             is_2fa_account: boolean;
@@ -1161,17 +1211,43 @@ export interface components {
         CreateHolidayModeDto: {
             holiday_until?: string | null;
         };
+        TimingDetails: {
+            effective_url: string;
+            redirect_count: number;
+            name_lookup_time: string;
+            connect_time: string;
+            pre_transfer_time: string;
+            start_transfer_time: string;
+            app_connect_time: string;
+            redirect_time: string;
+            total_time: string;
+            response_code: string;
+        };
+        ServerCheckDetailsResponseDto: {
+            headers: {
+                [key: string]: string;
+            } | null;
+            body: string | null;
+            openssl: string[];
+            mtr: string[];
+            traceroute: string[];
+            ping: string[];
+            nmap: string[];
+            resolved_ips: string[];
+            timing: components["schemas"]["TimingDetails"] | null;
+            location: "msk-1" | "spb-1" | "ala-1" | "nyc-1" | "ams-1";
+        };
         IncidentResponseDto: {
             id: number;
             server_id: number;
             started_at: string;
-            ended_at: Record<string, never> | null;
+            ended_at: string | null;
             status: "ongoing" | "resolved" | "dismissed" | "auto_closed_changed" | "auto_closed_timeout";
             root_error: string;
-            keyword: Record<string, never> | null;
-            screenshot: Record<string, never>;
-            replay: Record<string, never>;
-            details: Record<string, never>;
+            keyword: string | null;
+            screenshot: string | null;
+            replay: string | null;
+            details: components["schemas"]["ServerCheckDetailsResponseDto"][] | null;
         };
         ErrorMeta: {
             error: string;
@@ -1192,13 +1268,20 @@ export interface components {
             attached_files: string[];
             updated_at: string;
         };
+        ScreenshotMeta: {
+            url: string | null;
+        };
+        DiagnosticsMeta: {
+            location: string;
+            tools: ("headers" | "body" | "timing" | "resolved_ips" | "ping" | "traceroute" | "mtr" | "nmap" | "openssl")[];
+        };
         IncidentEventResponseDto: {
             created_at: string;
-            type: "error" | "resolved" | "notification" | "comment" | "start" | "end";
-            meta: (components["schemas"]["ErrorMeta"] | components["schemas"]["ResolvedMeta"] | components["schemas"]["NotificationMeta"] | components["schemas"]["CommentMeta"]) | null;
+            type: "error" | "resolved" | "notification" | "comment" | "start" | "end" | "screenshot" | "diagnostics";
+            meta: (components["schemas"]["ErrorMeta"] | components["schemas"]["ResolvedMeta"] | components["schemas"]["NotificationMeta"] | components["schemas"]["CommentMeta"] | components["schemas"]["ScreenshotMeta"] | components["schemas"]["DiagnosticsMeta"]) | null;
         };
         IncidentSummaryResponseDto: {
-            summary: Record<string, never>;
+            summary: string | null;
             rating: "positive" | "negative" | null;
         };
         IncidentSummaryRatingDto: {
@@ -1268,7 +1351,7 @@ export interface components {
             server_name: string;
             status: "ongoing" | "resolved" | "dismissed" | "auto_closed_changed" | "auto_closed_timeout";
             started_at: string;
-            ended_at: Record<string, never> | null;
+            ended_at: string | null;
         };
         StatusPageIncidentReportServerDto: {
             id: number;
@@ -1327,11 +1410,11 @@ export interface components {
             name: string;
             status: string;
             slug: string;
-            description: Record<string, never> | null;
-            logo_url: Record<string, never> | null;
-            favicon_url: Record<string, never> | null;
-            company_url: Record<string, never> | null;
-            support_url: Record<string, never> | null;
+            description: string | null;
+            logo_url: string | null;
+            favicon_url: string | null;
+            company_url: string | null;
+            support_url: string | null;
             domains: components["schemas"]["StatusPageDomain"][];
             is_indexed: boolean;
             is_published: boolean;
@@ -1349,8 +1432,8 @@ export interface components {
             planned_maintenances: components["schemas"]["StatusPagePlannedMaintenanceResponseDto"][];
             announcements: components["schemas"]["StatusPageAnnouncementResponseDto"][];
             subscribers_enabled: boolean;
-            subscribers_from_name: Record<string, never> | null;
-            subscribers_reply_to: Record<string, never> | null;
+            subscribers_from_name: string | null;
+            subscribers_reply_to: string | null;
             created_at: string;
         };
         CreateStatusPageDto: {
@@ -1528,7 +1611,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TelegramResponseDto"][];
+                };
             };
         };
     };
@@ -1657,7 +1742,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ServerResponseDto"][];
+                };
             };
         };
     };
@@ -1785,7 +1872,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ServerCheckResponseDto"][];
+                };
             };
             404: {
                 headers: {
@@ -1813,7 +1902,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ServerHeartbeatAggregatedResponseDto"][];
+                };
             };
             404: {
                 headers: {
@@ -1938,7 +2029,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NotificationRuleResponseDto"];
+                    "application/json": components["schemas"]["NotificationRuleResponseDto"][];
                 };
             };
         };
@@ -2319,7 +2410,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IncidentResponseDto"];
+                    "application/json": components["schemas"]["IncidentResponseDto"][];
                 };
             };
             404: {
@@ -2357,6 +2448,37 @@ export interface operations {
             };
         };
     };
+    IncidentsController_deleteIncident: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incidentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     IncidentsController_getIncidentsByAccount: {
         parameters: {
             query?: {
@@ -2373,7 +2495,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IncidentResponseDto"];
+                    "application/json": components["schemas"]["IncidentResponseDto"][];
                 };
             };
         };
@@ -2394,7 +2516,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IncidentEventResponseDto"];
+                    "application/json": components["schemas"]["IncidentEventResponseDto"][];
                 };
             };
             404: {

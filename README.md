@@ -170,7 +170,7 @@ claude mcp add statuser --env STATUSER_API_KEY=ваш_ключ -- npx -y @status
 | ----------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `account`               | Профиль, тариф, режим отпуска, 2FA, привязки Telegram и MAX                 | `account_get`, `current_plan_get`, `holiday_mode_set`, `telegram_linked_list`, `max_get_link`                   |
 | `monitors`              | Серверы, их проверки, heartbeat-события, история изменений DNS              | `monitor_list`, `monitor_create`, `monitor_pause`, `monitor_get_checks`, `monitor_get_dns_history`              |
-| `incidents`             | Инциденты, события, AI-саммари, PDF-отчёт                                   | `incident_list`, `incident_get`, `incident_get_events`, `incident_generate_ai_summary`, `incident_get_report_pdf` |
+| `incidents`             | Инциденты, события, AI-саммари, PDF-отчёт, удаление                         | `incident_list`, `incident_get`, `incident_get_events`, `incident_generate_ai_summary`, `incident_get_report_pdf`, `incident_delete` |
 | `incident-comments`     | Комментарии к инцидентам с вложениями                                       | `incident_comment_create`, `incident_comment_upload_file`, `incident_comment_delete`                            |
 | `status-pages`          | Страницы статуса, группы, серверы, домены, slug, подписчики                 | `status_page_list`, `status_page_create`, `status_page_set_groups`, `status_page_subscriber_list`               |
 | `status-page-reports`   | Публикация инцидент-отчётов и плановых работ с таймлайном обновлений        | `status_page_incident_report_publish`, `status_page_maintenance_schedule`, `..._update_add`                     |
@@ -261,11 +261,12 @@ API-ключ Statuser даёт полный доступ к аккаунту, п
 | -------------------------------- | --------------------------------------------------------------------------------------------------------- | :-------------: |
 | `incident_list`                  | Инциденты по всему аккаунту или по конкретному серверу                                                    |                 |
 | `incident_get`                   | Подробная карточка с диагностикой — скриншот, replay, `ping`/`nmap`/`mtr`/`traceroute`, тайминги          |                 |
-| `incident_get_events`            | Хронологическая лента событий — изменения статуса, отправленные уведомления, авто-восстановления          |                 |
+| `incident_get_events`            | Хронологическая лента событий — изменения статуса, уведомления, комментарии, скриншот и сетевая диагностика |                 |
 | `incident_get_server`            | Связанный с инцидентом сервер одним запросом                                                              |                 |
 | `incident_generate_ai_summary`   | Сгенерировать или вернуть закэшированное AI-саммари инцидента                                             |       ✏️        |
 | `incident_rate_ai_summary`       | Поставить оценку AI-саммари — `positive` или `negative`                                                   |       ✏️        |
 | `incident_get_report_pdf`        | Скачать PDF-отчёт по инциденту — возвращается в виде Base64                                               |                 |
+| `incident_delete`                | Безвозвратно удалить закрытый инцидент со всей диагностикой — аптайм пересчитается вверх                  |       ✏️        |
 
 </details>
 
