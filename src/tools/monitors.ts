@@ -39,6 +39,7 @@ const protocolEnum = z.enum([
   'tcp',
   'dns',
   'heartbeat',
+  'llm',
 ]);
 
 const headerSchema = z.object({
@@ -50,10 +51,10 @@ const baseMonitorFields = {
   host: z
     .string()
     .describe(
-      'Host to monitor: URL for http/keyword, hostname or IP for ping/tcp/dns, identifier for heartbeat.',
+      'Host to monitor: URL for http/keyword, hostname or IP for ping/tcp/dns, identifier for heartbeat, API endpoint for llm (domain, versioned base or a full method path — the method path is appended when missing).',
     ),
   protocol: protocolEnum.describe(
-    'Monitor type. SSL/domain checks are flags layered on top of `http`.',
+    'Monitor type. SSL/domain checks are flags layered on top of `http`. `llm` watches an AI endpoint and is configured by the `llm_*` fields.',
   ),
   port: z
     .number()
@@ -145,6 +146,27 @@ const baseMonitorFields = {
     )
     .optional()
     .describe('Required for `dns` protocol.'),
+  llm_provider: z
+    .enum(['openai_compatible', 'anthropic_compatible'])
+    .optional()
+    .describe(
+      'API dialect of the endpoint. Required for `llm`. It selects the method path, auth header, body format and success marker only — the address always comes from `host`. `openai_compatible` fits OpenAI itself and the gateways that copy its API.',
+    ),
+  llm_model: z
+    .string()
+    .max(128)
+    .optional()
+    .describe(
+      'Model identifier, for `llm`. Required together with `llm_api_key` and pointless without it: with no key the check probes only endpoint availability and no model is involved.',
+    ),
+  llm_api_key: z
+    .string()
+    .max(512)
+    .nullable()
+    .optional()
+    .describe(
+      'Provider API key, for `llm`. Its presence picks the check mode: with a key the monitor sends the model a real one-token request and verifies the answer (`inference` — billed by the provider, requires `ai_inference_enabled` on the plan); without a key only endpoint availability is checked (`availability`, spends no tokens). On update omit the field to keep the stored key, pass `null` to delete it and fall back to availability, pass a string to replace it. Stored encrypted and never returned: responses carry only `llm_api_key_masked`.',
+    ),
 };
 
 export function registerMonitorTools(
@@ -187,7 +209,7 @@ export function registerMonitorTools(
     name: 'monitor_create',
     title: 'Create monitor',
     description:
-      'Creates a new monitor. Returns 403 if the account is over the servers limit or if a requested feature is not on the current plan (DNS/keyword/heartbeat, latency alerts, custom success codes, non-default locations, blocklist monitoring, incident confirmation delay).',
+      'Creates a new monitor. Returns 403 if the account is over the servers limit or if a requested feature is not on the current plan (DNS/keyword/heartbeat, AI monitoring and its model response check as two separate gates, latency alerts, custom success codes, non-default locations, blocklist monitoring, incident confirmation delay).',
     write: true,
     inputSchema: baseMonitorFields,
     handler: async (args, { client }) => {
