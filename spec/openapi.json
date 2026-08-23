@@ -3561,6 +3561,16 @@
             "example": true,
             "description": "Поддержка мониторинга heartbeat"
           },
+          "ai_monitoring_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Поддержка мониторинга ИИ-моделей (protocol = llm)"
+          },
+          "ai_inference_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Поддержка проверки ответа модели (inference-режим LLM-монитора с API-ключом)"
+          },
           "latency_alerts_enabled": {
             "type": "boolean",
             "example": true,
@@ -3666,6 +3676,8 @@
           "dns_history_retention_days",
           "keyword_monitoring_enabled",
           "heartbeat_monitoring_enabled",
+          "ai_monitoring_enabled",
+          "ai_inference_enabled",
           "latency_alerts_enabled",
           "custom_success_http_codes_enabled",
           "incident_retention_days",
@@ -3830,7 +3842,7 @@
           "host": {
             "type": "string",
             "example": "192.168.1.1",
-            "description": "Адрес нового сервера"
+            "description": "Адрес нового сервера. При `protocol = llm` — эндпоинт LLM-API (домен, база с версией или готовый путь метода)"
           },
           "protocol": {
             "type": "string",
@@ -3986,7 +3998,7 @@
               "AAAA",
               "MX"
             ],
-            "description": "Типы DNS записей для мониторинга. Обязательно при `protocol = dns`.",
+            "description": "Типы DNS записей для мониторинга. Обязательно при `protocol = dns`",
             "items": {
               "type": "string",
               "enum": [
@@ -4001,6 +4013,26 @@
                 "SRV"
               ]
             }
+          },
+          "llm_provider": {
+            "type": "string",
+            "example": "openai_compatible",
+            "description": "Формат API эндпоинта. Обязателен при `protocol = llm`. Определяет только диалект запроса (путь метода, заголовок авторизации, формат тела и маркер успешного ответа) — адрес всегда задаётся полем `host`. `openai_compatible` подходит и самому OpenAI, и прокси-гейтвеям",
+            "enum": [
+              "openai_compatible",
+              "anthropic_compatible"
+            ]
+          },
+          "llm_model": {
+            "type": "string",
+            "example": "gpt-4o-mini",
+            "description": "Идентификатор модели. Обязателен только вместе с `llm_api_key`: без ключа проверяется доступность эндпоинта, и модель в проверке не участвует"
+          },
+          "llm_api_key": {
+            "type": "string",
+            "example": "sk-proj-…",
+            "description": "API-ключ провайдера. Необязателен — им определяется режим проверки: с ключом монитор отправляет модели настоящий запрос и проверяет ответ (режим `inference`), без ключа — только доступность эндпоинта (режим `availability`, токены не расходуются). Хранится в зашифрованном виде и никогда не возвращается в ответах — наружу отдаётся только маска `llm_api_key_masked`",
+            "nullable": true
           }
         },
         "required": [
@@ -4523,6 +4555,38 @@
             ],
             "nullable": true
           },
+          "llm_provider": {
+            "type": "string",
+            "example": "openai_compatible",
+            "description": "Формат API эндпоинта (только для protocol=llm)",
+            "enum": [
+              "openai_compatible",
+              "anthropic_compatible"
+            ],
+            "nullable": true
+          },
+          "llm_check_mode": {
+            "type": "string",
+            "example": "inference",
+            "description": "Что именно проверяется (только для protocol=llm). `inference` — монитору задан ключ, он отправляет модели настоящий запрос и проверяет ответ. `availability` — ключа нет, проверяется только доступность эндпоинта: это не гарантирует работоспособность самой модели. Режим определяется наличием сохранённого ключа и отдельным полем не задаётся",
+            "enum": [
+              "availability",
+              "inference"
+            ],
+            "nullable": true
+          },
+          "llm_model": {
+            "type": "string",
+            "example": "gpt-4o-mini",
+            "description": "Модель, которую дёргает проверка (только для protocol=llm в режиме inference)",
+            "nullable": true
+          },
+          "llm_api_key_masked": {
+            "type": "string",
+            "example": "sk-…x4Qb",
+            "description": "Маска сохранённого API-ключа (только для protocol=llm). Сам ключ не возвращается ни при каких условиях",
+            "nullable": true
+          },
           "created_at": {
             "format": "date-time",
             "type": "string",
@@ -4567,6 +4631,10 @@
           "dns_record_types",
           "dns_records",
           "dns_error_code",
+          "llm_provider",
+          "llm_check_mode",
+          "llm_model",
+          "llm_api_key_masked",
           "created_at"
         ],
         "title": "ServerResponseDto"
@@ -4589,7 +4657,8 @@
               "keyword",
               "tcp",
               "dns",
-              "heartbeat"
+              "heartbeat",
+              "llm"
             ]
           },
           "port": {
@@ -4761,6 +4830,26 @@
                 "SRV"
               ]
             }
+          },
+          "llm_provider": {
+            "type": "string",
+            "example": "openai_compatible",
+            "description": "Формат API эндпоинта (диалект запроса). Применимо к `protocol = llm`.",
+            "enum": [
+              "openai_compatible",
+              "anthropic_compatible"
+            ]
+          },
+          "llm_model": {
+            "type": "string",
+            "example": "gpt-4o-mini",
+            "description": "Идентификатор модели. Применимо к `protocol = llm`."
+          },
+          "llm_api_key": {
+            "type": "string",
+            "example": "sk-proj-…",
+            "description": "API-ключ провайдера. Применимо к `protocol = llm`. Поле не передано — сохранённый ключ остаётся прежним; `null` — ключ удаляется и монитор переходит в режим проверки доступности (`availability`); непустая строка — ключ заменяется, режим `inference`.",
+            "nullable": true
           }
         },
         "title": "UpdateServerDto"
@@ -4875,6 +4964,8 @@
               "loop_detected",
               "not_extended",
               "network_auth_required",
+              "overloaded",
+              "llm_insufficient_funds",
               "nginx_no_response",
               "nginx_header_too_large",
               "nginx_ssl_certificate_error",
