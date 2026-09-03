@@ -24,6 +24,8 @@ export interface BinaryResponse {
   contentType: string;
   filename: string | null;
   bytes: Buffer;
+  /** Response headers, lower-cased names. Lets tools read flags like `x-export-truncated`. */
+  headers: Record<string, string | undefined>;
 }
 
 export class StatuserClient {
@@ -82,6 +84,12 @@ export class StatuserClient {
               stringHeader(res.headers, 'content-disposition'),
             ),
             bytes: buf,
+            headers: Object.fromEntries(
+              Object.keys(res.headers).map((name) => [
+                name.toLowerCase(),
+                stringHeader(res.headers, name),
+              ]),
+            ),
           } satisfies BinaryResponse;
         }
         if (res.statusCode === 204) {

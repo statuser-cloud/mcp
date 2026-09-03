@@ -158,7 +158,7 @@ claude mcp add statuser --env STATUSER_API_KEY=ваш_ключ -- npx -y @status
 
 ## Группы инструментов
 
-Около 70 инструментов разбиты на **7** логических групп. По умолчанию включены все, но через `STATUSER_TOOLSETS=...` можно оставить только нужные.
+Более 70 инструментов разбиты на **7** логических групп. По умолчанию включены все, но через `STATUSER_TOOLSETS=...` можно оставить только нужные.
 
 Зачем это бывает удобно:
 
@@ -168,7 +168,7 @@ claude mcp add statuser --env STATUSER_API_KEY=ваш_ключ -- npx -y @status
 
 | Группа                  | Что включает                                                                | Примеры инструментов                                                                                            |
 | ----------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `account`               | Профиль, тариф, режим отпуска, 2FA, привязки Telegram и MAX                 | `account_get`, `current_plan_get`, `holiday_mode_set`, `telegram_linked_list`, `max_get_link`                   |
+| `account`               | Профиль, тариф, режим отпуска, 2FA, привязки Telegram и MAX, история действий | `account_get`, `current_plan_get`, `activity_log_list`, `holiday_mode_set`, `telegram_linked_list`, `max_get_link` |
 | `monitors`              | Серверы, их проверки, heartbeat-события, история изменений DNS              | `monitor_list`, `monitor_create`, `monitor_pause`, `monitor_get_checks`, `monitor_get_dns_history`              |
 | `incidents`             | Инциденты, события, AI-саммари, PDF-отчёт, удаление                         | `incident_list`, `incident_get`, `incident_get_events`, `incident_generate_ai_summary`, `incident_get_report_pdf`, `incident_delete` |
 | `incident-comments`     | Комментарии к инцидентам с вложениями                                       | `incident_comment_create`, `incident_comment_upload_file`, `incident_comment_delete`                            |
