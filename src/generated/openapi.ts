@@ -900,6 +900,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/activity-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ActivityLogController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/activity-log/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ActivityLogController_exportCsv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/2fa": {
         parameters: {
             query?: never;
@@ -984,6 +1016,8 @@ export interface components {
             status_page_planned_maintenances_per_month_limit: number;
             status_page_announcements_enabled: boolean;
             status_page_subscribers_limit: number;
+            activity_log_retention_days: number | null;
+            activity_log_export_enabled: boolean;
         };
         PlanResponseDto: {
             id: number;
@@ -1009,7 +1043,7 @@ export interface components {
         };
         CreateServerDto: {
             host: string;
-            protocol: string;
+            protocol: "ping" | "http" | "keyword" | "tcp" | "dns" | "heartbeat" | "llm";
             port?: number;
             http_method?: "head" | "get" | "options" | "post" | "put" | "patch";
             body?: string | null;
@@ -1257,6 +1291,7 @@ export interface components {
             status: "ongoing" | "resolved" | "dismissed" | "auto_closed_changed" | "auto_closed_timeout";
             root_error: string;
             keyword: string | null;
+            llm_model: Record<string, never> | null;
             screenshot: string | null;
             replay: string | null;
             details: components["schemas"]["ServerCheckDetailsResponseDto"][] | null;
@@ -1596,6 +1631,36 @@ export interface components {
         StatusPageSubscribersResponseDto: {
             subscribers: components["schemas"]["StatusPageSubscriberResponseDto"][];
             stats: components["schemas"]["StatusPageSubscribersStatsResponseDto"];
+        };
+        ActivityLogEntryResponseDto: {
+            id: string;
+            created_at: string;
+            action: "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed";
+            actor_type: "user" | "api_key" | "support" | "system";
+            actor_label: string | null;
+            source: "panel" | "api" | "mcp" | "telegram" | "max" | "ai_chat" | "system" | null;
+            target_type: "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer" | null;
+            target_id: string | null;
+            target_label: string | null;
+            changes: {
+                [key: string]: {
+                    from?: unknown;
+                    to?: unknown;
+                };
+            } | null;
+            details: {
+                [key: string]: unknown;
+            } | null;
+            ip: string | null;
+            user_agent: string | null;
+            location: Record<string, never> | null;
+        };
+        ActivityLogListResponseDto: {
+            items: components["schemas"]["ActivityLogEntryResponseDto"][];
+            total: number;
+            limit: number;
+            offset: number;
+            retention_days: number | null;
         };
         Info2faResponseDto: {
             preferred_method: "telegram" | "max" | "email" | "totp" | null;
@@ -3510,6 +3575,64 @@ export interface operations {
         requestBody?: never;
         responses: {
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ActivityLogController_list: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+                category?: ("monitoring" | "status_pages" | "security" | "billing")[];
+                actor_type?: ("user" | "api_key" | "support" | "system")[];
+                target_type?: "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer";
+                target_id?: string;
+                action?: ("server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
+                from?: string;
+                to?: string;
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityLogListResponseDto"];
+                };
+            };
+        };
+    };
+    ActivityLogController_exportCsv: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+                category?: ("monitoring" | "status_pages" | "security" | "billing")[];
+                actor_type?: ("user" | "api_key" | "support" | "system")[];
+                target_type?: "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer";
+                target_id?: string;
+                action?: ("server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
+                from?: string;
+                to?: string;
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
