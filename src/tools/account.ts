@@ -19,6 +19,85 @@ type TwoFactorInfoResponse = OkResponseBody<'/v1/2fa', 'get'>;
 type TelegramLinkedListResponse = OkResponseBody<'/v1/telegram/linked', 'get'>;
 type MaxLinkedListResponse = OkResponseBody<'/v1/max/linked', 'get'>;
 type MaxLinksResponse = OkResponseBody<'/v1/max/links', 'get'>;
+type ActivityLogListResponse = OkResponseBody<'/v1/activity-log', 'get'>;
+
+const ACTIVITY_LOG_CATEGORIES = [
+  'monitoring',
+  'status_pages',
+  'security',
+  'billing',
+] as const;
+const ACTIVITY_LOG_ACTOR_TYPES = ['user', 'api_key', 'system'] as const;
+const ACTIVITY_LOG_TARGET_TYPES = [
+  'server',
+  'notification_rule',
+  'notification_email',
+  'webhook',
+  'integration',
+  'account',
+  'session',
+  'api_key',
+  'passkey',
+  'status_page',
+  'status_page_report',
+  'status_page_maintenance',
+  'status_page_announcement',
+  'incident',
+  'plan',
+  'payment_card',
+  'payer',
+] as const;
+
+// Shared filter schema for the activity log list and export tools.
+const activityLogFilterSchema = {
+  category: z
+    .array(z.enum(ACTIVITY_LOG_CATEGORIES))
+    .optional()
+    .describe(
+      'Sections: `monitoring` (servers, notification channels, webhooks, holiday mode), `status_pages` (status pages, reports, maintenances, announcements, incidents), `security` (login, password, sessions, API keys, 2FA, account profile), `billing` (plan, payer, cards).',
+    ),
+  actor_type: z
+    .array(z.enum(ACTIVITY_LOG_ACTOR_TYPES))
+    .optional()
+    .describe(
+      'Who performed the action: `user` (account owner via panel, bots or Statuser AI), `api_key` (public API or MCP), `system` (schedulers and plan enforcement).',
+    ),
+  target_type: z
+    .enum(ACTIVITY_LOG_TARGET_TYPES)
+    .optional()
+    .describe('Type of the object the entry is about.'),
+  target_id: z
+    .string()
+    .optional()
+    .describe(
+      'Object id as a string (sessions use UUIDs). Together with `target_type` gives the history of one object.',
+    ),
+  action: z
+    .array(z.string())
+    .optional()
+    .describe(
+      'Action codes in `<object>.<verb>` form, e.g. `server.pause`, `status_page.delete`, `auth.login`. Combined with `search` as OR.',
+    ),
+  from: z
+    .string()
+    .datetime({ offset: true })
+    .optional()
+    .describe(
+      'Lower time bound (inclusive), ISO 8601. Cannot reach past the plan retention window.',
+    ),
+  to: z
+    .string()
+    .datetime({ offset: true })
+    .optional()
+    .describe('Upper time bound (inclusive), ISO 8601.'),
+  search: z
+    .string()
+    .max(200)
+    .optional()
+    .describe(
+      'Case-insensitive search by object label (server name or host, status page name) and actor label (API key name, email).',
+    ),
+};
 
 export function registerAccountTools(
   server: McpServer,
@@ -79,6 +158,58 @@ export function registerAccountTools(
         method: 'GET',
         path: '/v1/billing/plans',
       }),
+  });
+
+  registerTool(server, ctx, {
+    name: 'activity_log_list',
+    title: 'List account activity log',
+    description:
+      'Returns the account audit log newest first: who changed what and when — the owner (panel, bots, Statuser AI), API keys (public API, MCP) or the system (plan enforcement, autopay, expirations). Answers questions like "who paused this server", "when was the account logged into", "what did the system disable after a downgrade". Each entry has `action` (stable `<object>.<verb>` code), actor, source, target, masked `changes` (was → became), `details`, `ip` and geo `location`. Depth is limited by the plan window: `retention_days` in the response (`null` = unlimited). Support staff actions are never included.',
+    inputSchema: {
+      limit: z
+        .number()
+        .int()
+        .min(1)
+        .max(100)
+        .optional()
+        .describe('Page size, 1..100 (default 20).'),
+      offset: z
+        .number()
+        .int()
+        .min(0)
+        .optional()
+        .describe('Offset from the newest entry (default 0).'),
+      ...activityLogFilterSchema,
+    },
+    handler: async (args, { client }) =>
+      client.call<ActivityLogListResponse>({
+        method: 'GET',
+        path: '/v1/activity-log',
+        query: args,
+      }),
+  });
+
+  registerTool(server, ctx, {
+    name: 'activity_log_export',
+    title: 'Export account activity log as CSV',
+    description:
+      'Downloads the activity log as CSV under the same filters as `activity_log_list` (pagination is ignored). Columns: `id, created_at (UTC), action, actor_type, actor_label, source, target_type, target_id, target_label, ip, country, city, user_agent, changes (JSON), details (JSON)`. At most 50 000 newest rows per call; `truncated: true` in the result means the history is longer — narrow `from`/`to` or filters and repeat. Available on plans with `activity_log_export_enabled` (Team); otherwise fails with `activity_log_export_unavailable`. The export itself is recorded in the log as `activity_log.export`. Prefer `activity_log_list` for questions — use this tool only when the user explicitly wants a file or a full dump.',
+    inputSchema: { ...activityLogFilterSchema },
+    handler: async (args, { client }) => {
+      const res = await client.callBinary({
+        method: 'GET',
+        path: '/v1/activity-log/export',
+        query: args,
+      });
+      const csv = res.bytes.toString('utf8');
+      const rows = Math.max(0, csv.split('\n').filter(Boolean).length - 1);
+      return {
+        filename: res.filename ?? 'activity-log.csv',
+        rows,
+        truncated: res.headers['x-export-truncated'] === 'true',
+        csv,
+      };
+    },
   });
 
   registerTool(server, ctx, {
