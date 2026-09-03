@@ -86,7 +86,7 @@
       "patch": {
         "operationId": "AccountsController_updateAccount",
         "summary": "Обновить информацию об аккаунте",
-        "description": "Частичное обновление профиля аккаунта. Изменяемые поля: `name` (имя пользователя), `timezone` (часовой пояс для отображения времени в нотификациях) и `is_ai_assistant_enabled` (показывать ли чат с AI-ассистентом в панели). Передавайте только те поля, которые действительно меняются — остальные останутся как есть.",
+        "description": "Частичное обновление профиля аккаунта. Изменяемые поля: `name` (имя пользователя), `timezone` (часовой пояс для отображения времени в нотификациях и PDF-отчётах по инцидентам) и `is_ai_assistant_enabled` (показывать ли чат с AI-ассистентом в панели). Передавайте только те поля, которые действительно меняются — остальные останутся как есть.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1195,8 +1195,8 @@
     "/v1/holiday-mode": {
       "get": {
         "operationId": "HolidayModeController_getHolidayMode",
-        "summary": "Получить статус режима праздников",
-        "description": "Возвращает текущее состояние режима «отпуск/праздники»: если он активен — поле `holiday_until` содержит дату-время окончания, иначе `null`. Пока режим активен, Statuser не присылает уведомления об инцидентах — полезно на выходные/отпуска, когда не хочется получать алёрты лично.",
+        "summary": "Получить статус режима отпуска",
+        "description": "Возвращает текущее состояние режима отпуска: если он активен — поле `holiday_until` содержит дату-время окончания, иначе `null`. Пока режим активен, Statuser не присылает уведомления об инцидентах — полезно на выходных, в отпуске и на праздниках, когда не хочется получать алёрты лично.",
         "parameters": [],
         "responses": {
           "200": {
@@ -1221,8 +1221,8 @@
       },
       "post": {
         "operationId": "HolidayModeController_setHolidayMode",
-        "summary": "Изменить статус режима праздников",
-        "description": "Включает режим «отпуск/праздники» до указанной даты (`holiday_until` в ISO 8601) или отключает его, если передан `null`. Во время активного режима персональные уведомления об инцидентах не отправляются, но проверки серверов продолжают идти, и инциденты создаются как обычно — их можно посмотреть постфактум.",
+        "summary": "Изменить статус режима отпуска",
+        "description": "Включает режим отпуска до указанной даты (`holiday_until` в ISO 8601) или отключает его, если передан `null`. Во время активного режима персональные уведомления об инцидентах не отправляются, но проверки серверов продолжают идти, и инциденты создаются как обычно — их можно посмотреть постфактум.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3228,6 +3228,551 @@
         ]
       }
     },
+    "/v1/activity-log": {
+      "get": {
+        "operationId": "ActivityLogController_list",
+        "summary": "История действий в аккаунте",
+        "description": "Аудит-лог аккаунта: действия владельца, API-ключей, ботов и системы от новых к старым. Фильтры по разделу (`category`), актору (`actor_type`), объекту (`target_type` + `target_id`), кодам действий (`action`) и времени (`from`/`to`), поиск по подписям (`search`), пагинация через `limit` и `offset`. Глубина выдачи ограничена окном тарифа (`activity_log_retention_days` в `GET /v1/billing/current-plan`); ответ несёт `retention_days`. Контракт: коды `action` не переименовываются; набор ключей в `changes` и `details` открытый — новые появляются вместе с функциями, существующие не переименовываются. Время — UTC.",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Сколько записей вернуть",
+            "schema": {
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Смещение от начала списка (записи идут от новых к старым)",
+            "schema": {
+              "default": 0,
+              "example": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Разделы через запятую: `monitoring` — мониторинг и уведомления, `status_pages` — страницы статуса и инциденты, `security` — безопасность и доступ, `billing` — тариф и оплата",
+            "schema": {
+              "example": "monitoring,security",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "monitoring",
+                  "status_pages",
+                  "security",
+                  "billing"
+                ]
+              }
+            }
+          },
+          {
+            "name": "actor_type",
+            "required": false,
+            "in": "query",
+            "description": "Кто выполнил действие, через запятую: `user` — владелец аккаунта, `api_key` — API-ключ, `system` — система (шедулеры, ограничения тарифа)",
+            "schema": {
+              "example": "user,api_key",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "api_key",
+                  "support",
+                  "system"
+                ]
+              }
+            }
+          },
+          {
+            "name": "target_type",
+            "required": false,
+            "in": "query",
+            "description": "Тип объекта, к которому относится запись",
+            "schema": {
+              "example": "server",
+              "enum": [
+                "server",
+                "notification_rule",
+                "notification_email",
+                "webhook",
+                "integration",
+                "account",
+                "session",
+                "api_key",
+                "passkey",
+                "status_page",
+                "status_page_report",
+                "status_page_maintenance",
+                "status_page_announcement",
+                "incident",
+                "plan",
+                "payment_card",
+                "payer"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "target_id",
+            "required": false,
+            "in": "query",
+            "description": "ID объекта. Вместе с `target_type` даёт историю одного монитора или страницы статуса",
+            "schema": {
+              "example": "412",
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "description": "Коды действий через запятую. Вместе с `search` работает как ИЛИ: панель переводит текст запроса в коды по своему словарю и передаёт их сюда, чтобы «пауза» находила и монитор с таким именем, и все постановки на паузу",
+            "schema": {
+              "example": "server.pause,server.unpause",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "server.create",
+                  "server.update",
+                  "server.delete",
+                  "server.pause",
+                  "server.unpause",
+                  "server.test_notify",
+                  "notification_rule.update",
+                  "notification_email.add",
+                  "notification_email.confirm",
+                  "notification_email.resend",
+                  "notification_email.remove",
+                  "webhook.create",
+                  "webhook.update",
+                  "webhook.delete",
+                  "webhook.test",
+                  "telegram.link",
+                  "telegram.unlink",
+                  "telegram.set_topic",
+                  "telegram.set_2fa_account",
+                  "max.link",
+                  "max.unlink",
+                  "max.set_2fa_account",
+                  "holiday_mode.enable",
+                  "holiday_mode.disable",
+                  "status_page.create",
+                  "status_page.update",
+                  "status_page.delete",
+                  "status_page.publish",
+                  "status_page.unpublish",
+                  "status_page.groups_update",
+                  "status_page.domain_attach",
+                  "status_page.domain_detach",
+                  "status_page.subscriber_delete",
+                  "status_page.subscribers_export",
+                  "status_page_report.create",
+                  "status_page_report.update",
+                  "status_page_report.delete",
+                  "status_page_report.update_add",
+                  "status_page_report.update_edit",
+                  "status_page_report.update_delete",
+                  "status_page_maintenance.create",
+                  "status_page_maintenance.update",
+                  "status_page_maintenance.delete",
+                  "status_page_maintenance.update_add",
+                  "status_page_maintenance.update_edit",
+                  "status_page_maintenance.update_delete",
+                  "status_page_announcement.create",
+                  "status_page_announcement.update",
+                  "status_page_announcement.delete",
+                  "incident.delete",
+                  "incident.report_download",
+                  "incident.ai_summary_generate",
+                  "incident_comment.create",
+                  "incident_comment.update",
+                  "incident_comment.delete",
+                  "account.create",
+                  "auth.login",
+                  "auth.login_2fa_confirm",
+                  "auth.logout",
+                  "auth.password_reset_request",
+                  "auth.password_reset_complete",
+                  "account.password_change",
+                  "account.update",
+                  "account.avatar_update",
+                  "account.avatar_delete",
+                  "session.terminate",
+                  "session.terminate_others",
+                  "api_key.create",
+                  "api_key.update",
+                  "api_key.revoke",
+                  "passkey.register",
+                  "passkey.delete",
+                  "totp.bind",
+                  "totp.unbind",
+                  "two_factor.update",
+                  "support.impersonate",
+                  "activity_log.export",
+                  "plan.change",
+                  "plan.change_cancel",
+                  "plan.trial_activate",
+                  "payment_card.delete",
+                  "payer.create",
+                  "payer.update",
+                  "payer.delete",
+                  "plan.downgrade_enforced",
+                  "server.paused_by_limit",
+                  "server.feature_disabled_by_plan",
+                  "status_page.unpublished_by_limit",
+                  "status_page.feature_reset_by_plan",
+                  "status_page_announcement.deleted_by_limit",
+                  "webhook.disabled_by_limit",
+                  "plan.activate",
+                  "plan.expired",
+                  "plan.pending_downgrade_applied",
+                  "plan.autopay_charged",
+                  "plan.autopay_failed",
+                  "holiday_mode.expired",
+                  "api_key.expired",
+                  "status_page.domain_verified",
+                  "status_page.domain_verification_failed"
+                ]
+              }
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Нижняя граница времени действия (включительно), ISO 8601. Для инкрементальной выгрузки: передавайте время последней полученной записи",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-09-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Верхняя граница времени действия (включительно), ISO 8601",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-09-30T23:59:59Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Поиск по названию объекта и подписи актора (имя API-ключа, email) без учёта регистра",
+            "schema": {
+              "example": "Главный сайт",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Страница истории действий",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityLogListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "История действий"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/activity-log/export": {
+      "get": {
+        "operationId": "ActivityLogController_exportCsv",
+        "summary": "Выгрузить историю действий в CSV",
+        "description": "Те же записи и фильтры, что у списка (включая `from`/`to`), файлом CSV; `limit` и `offset` игнорируются, выгружается не более 50000 записей от новых к старым; если история длиннее, ответ несёт заголовок `X-Export-Truncated: true`. Доступно на тарифах с `activity_log_export_enabled`, иначе 403 `activity_log_export_unavailable`.",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Сколько записей вернуть",
+            "schema": {
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Смещение от начала списка (записи идут от новых к старым)",
+            "schema": {
+              "default": 0,
+              "example": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Разделы через запятую: `monitoring` — мониторинг и уведомления, `status_pages` — страницы статуса и инциденты, `security` — безопасность и доступ, `billing` — тариф и оплата",
+            "schema": {
+              "example": "monitoring,security",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "monitoring",
+                  "status_pages",
+                  "security",
+                  "billing"
+                ]
+              }
+            }
+          },
+          {
+            "name": "actor_type",
+            "required": false,
+            "in": "query",
+            "description": "Кто выполнил действие, через запятую: `user` — владелец аккаунта, `api_key` — API-ключ, `system` — система (шедулеры, ограничения тарифа)",
+            "schema": {
+              "example": "user,api_key",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "api_key",
+                  "support",
+                  "system"
+                ]
+              }
+            }
+          },
+          {
+            "name": "target_type",
+            "required": false,
+            "in": "query",
+            "description": "Тип объекта, к которому относится запись",
+            "schema": {
+              "example": "server",
+              "enum": [
+                "server",
+                "notification_rule",
+                "notification_email",
+                "webhook",
+                "integration",
+                "account",
+                "session",
+                "api_key",
+                "passkey",
+                "status_page",
+                "status_page_report",
+                "status_page_maintenance",
+                "status_page_announcement",
+                "incident",
+                "plan",
+                "payment_card",
+                "payer"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "target_id",
+            "required": false,
+            "in": "query",
+            "description": "ID объекта. Вместе с `target_type` даёт историю одного монитора или страницы статуса",
+            "schema": {
+              "example": "412",
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "description": "Коды действий через запятую. Вместе с `search` работает как ИЛИ: панель переводит текст запроса в коды по своему словарю и передаёт их сюда, чтобы «пауза» находила и монитор с таким именем, и все постановки на паузу",
+            "schema": {
+              "example": "server.pause,server.unpause",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "server.create",
+                  "server.update",
+                  "server.delete",
+                  "server.pause",
+                  "server.unpause",
+                  "server.test_notify",
+                  "notification_rule.update",
+                  "notification_email.add",
+                  "notification_email.confirm",
+                  "notification_email.resend",
+                  "notification_email.remove",
+                  "webhook.create",
+                  "webhook.update",
+                  "webhook.delete",
+                  "webhook.test",
+                  "telegram.link",
+                  "telegram.unlink",
+                  "telegram.set_topic",
+                  "telegram.set_2fa_account",
+                  "max.link",
+                  "max.unlink",
+                  "max.set_2fa_account",
+                  "holiday_mode.enable",
+                  "holiday_mode.disable",
+                  "status_page.create",
+                  "status_page.update",
+                  "status_page.delete",
+                  "status_page.publish",
+                  "status_page.unpublish",
+                  "status_page.groups_update",
+                  "status_page.domain_attach",
+                  "status_page.domain_detach",
+                  "status_page.subscriber_delete",
+                  "status_page.subscribers_export",
+                  "status_page_report.create",
+                  "status_page_report.update",
+                  "status_page_report.delete",
+                  "status_page_report.update_add",
+                  "status_page_report.update_edit",
+                  "status_page_report.update_delete",
+                  "status_page_maintenance.create",
+                  "status_page_maintenance.update",
+                  "status_page_maintenance.delete",
+                  "status_page_maintenance.update_add",
+                  "status_page_maintenance.update_edit",
+                  "status_page_maintenance.update_delete",
+                  "status_page_announcement.create",
+                  "status_page_announcement.update",
+                  "status_page_announcement.delete",
+                  "incident.delete",
+                  "incident.report_download",
+                  "incident.ai_summary_generate",
+                  "incident_comment.create",
+                  "incident_comment.update",
+                  "incident_comment.delete",
+                  "account.create",
+                  "auth.login",
+                  "auth.login_2fa_confirm",
+                  "auth.logout",
+                  "auth.password_reset_request",
+                  "auth.password_reset_complete",
+                  "account.password_change",
+                  "account.update",
+                  "account.avatar_update",
+                  "account.avatar_delete",
+                  "session.terminate",
+                  "session.terminate_others",
+                  "api_key.create",
+                  "api_key.update",
+                  "api_key.revoke",
+                  "passkey.register",
+                  "passkey.delete",
+                  "totp.bind",
+                  "totp.unbind",
+                  "two_factor.update",
+                  "support.impersonate",
+                  "activity_log.export",
+                  "plan.change",
+                  "plan.change_cancel",
+                  "plan.trial_activate",
+                  "payment_card.delete",
+                  "payer.create",
+                  "payer.update",
+                  "payer.delete",
+                  "plan.downgrade_enforced",
+                  "server.paused_by_limit",
+                  "server.feature_disabled_by_plan",
+                  "status_page.unpublished_by_limit",
+                  "status_page.feature_reset_by_plan",
+                  "status_page_announcement.deleted_by_limit",
+                  "webhook.disabled_by_limit",
+                  "plan.activate",
+                  "plan.expired",
+                  "plan.pending_downgrade_applied",
+                  "plan.autopay_charged",
+                  "plan.autopay_failed",
+                  "holiday_mode.expired",
+                  "api_key.expired",
+                  "status_page.domain_verified",
+                  "status_page.domain_verification_failed"
+                ]
+              }
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Нижняя граница времени действия (включительно), ISO 8601. Для инкрементальной выгрузки: передавайте время последней полученной записи",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-09-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Верхняя граница времени действия (включительно), ISO 8601",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-09-30T23:59:59Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Поиск по названию объекта и подписи актора (имя API-ключа, email) без учёта регистра",
+            "schema": {
+              "example": "Главный сайт",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV-файл"
+          }
+        },
+        "tags": [
+          "История действий"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/v1/2fa": {
       "get": {
         "operationId": "TwoFactorController_get2faInfo",
@@ -3444,7 +3989,7 @@
           "timezone": {
             "type": "string",
             "example": "Europe/Moscow",
-            "description": "Часовой пояс, который используется для отображения времени в нотификациях"
+            "description": "Часовой пояс, в котором отображается время в нотификациях и PDF-отчётах по инцидентам. В панели управления время показывается по часовому поясу устройства"
           },
           "is_ai_assistant_enabled": {
             "type": "boolean",
@@ -3476,7 +4021,7 @@
           "timezone": {
             "type": "string",
             "example": "Europe/Moscow",
-            "description": "Часовой пояс, который используется для отображения времени в нотификациях"
+            "description": "Часовой пояс, в котором отображается время в нотификациях и PDF-отчётах по инцидентам. В панели управления время показывается по часовому поясу устройства"
           },
           "is_ai_assistant_enabled": {
             "type": "boolean",
@@ -3660,6 +4205,17 @@
             "type": "number",
             "example": 500,
             "description": "Лимит активных подписчиков на страницу статуса. 0 — фича недоступна по тарифу"
+          },
+          "activity_log_retention_days": {
+            "type": "number",
+            "nullable": true,
+            "example": 30,
+            "description": "Глубина истории действий в днях. null — без ограничения. Записи старше окна не отдаются панелью и API"
+          },
+          "activity_log_export_enabled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Выгрузка истории действий в CSV"
           }
         },
         "required": [
@@ -3695,7 +4251,9 @@
           "status_page_incident_reports_per_month_limit",
           "status_page_planned_maintenances_per_month_limit",
           "status_page_announcements_enabled",
-          "status_page_subscribers_limit"
+          "status_page_subscribers_limit",
+          "activity_log_retention_days",
+          "activity_log_export_enabled"
         ],
         "title": "PlanFeaturesResponseDto"
       },
@@ -3847,7 +4405,16 @@
           "protocol": {
             "type": "string",
             "example": "http",
-            "description": "Протокол проверки"
+            "description": "Протокол проверки",
+            "enum": [
+              "ping",
+              "http",
+              "keyword",
+              "tcp",
+              "dns",
+              "heartbeat",
+              "llm"
+            ]
           },
           "port": {
             "type": "number",
@@ -3920,9 +4487,9 @@
           "check_interval": {
             "type": "number",
             "example": 60,
-            "description": "Интервал проверки сервера в секундах",
-            "minimum": 10,
-            "maximum": 3600
+            "description": "Интервал проверки сервера в секундах: 60–3600 для всех протоколов, кроме heartbeat — там до 31536000 (год)",
+            "minimum": 60,
+            "maximum": 31536000
           },
           "incident_confirm_delay": {
             "type": "number",
@@ -4737,9 +5304,9 @@
           "check_interval": {
             "type": "number",
             "example": 60,
-            "description": "Интервал проверки сервера в секундах",
-            "minimum": 10,
-            "maximum": 3600
+            "description": "Интервал проверки сервера в секундах: 60–3600 для всех протоколов, кроме heartbeat — там до 31536000 (год)",
+            "minimum": 60,
+            "maximum": 31536000
           },
           "incident_confirm_delay": {
             "type": "number",
@@ -5850,6 +6417,12 @@
             "nullable": true,
             "example": "simple"
           },
+          "llm_model": {
+            "type": "object",
+            "example": "deepseek/deepseek-v4-flash",
+            "description": "Модель, которую использовала проверка при `protocol = llm`. Снимок на момент создания инцидента; null в режиме проверки доступности и у остальных протоколов",
+            "nullable": true
+          },
           "screenshot": {
             "type": "string",
             "example": "https://s3.statuser.cloud/sreenshots/img.png",
@@ -5879,6 +6452,7 @@
           "status",
           "root_error",
           "keyword",
+          "llm_model",
           "screenshot",
           "replay",
           "details"
@@ -7894,6 +8468,297 @@
           "stats"
         ],
         "title": "StatusPageSubscribersResponseDto"
+      },
+      "ActivityLogEntryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "1024",
+            "description": "ID записи"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-03T10:15:30.000Z",
+            "description": "Когда выполнено действие, UTC"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "server.create",
+              "server.update",
+              "server.delete",
+              "server.pause",
+              "server.unpause",
+              "server.test_notify",
+              "notification_rule.update",
+              "notification_email.add",
+              "notification_email.confirm",
+              "notification_email.resend",
+              "notification_email.remove",
+              "webhook.create",
+              "webhook.update",
+              "webhook.delete",
+              "webhook.test",
+              "telegram.link",
+              "telegram.unlink",
+              "telegram.set_topic",
+              "telegram.set_2fa_account",
+              "max.link",
+              "max.unlink",
+              "max.set_2fa_account",
+              "holiday_mode.enable",
+              "holiday_mode.disable",
+              "status_page.create",
+              "status_page.update",
+              "status_page.delete",
+              "status_page.publish",
+              "status_page.unpublish",
+              "status_page.groups_update",
+              "status_page.domain_attach",
+              "status_page.domain_detach",
+              "status_page.subscriber_delete",
+              "status_page.subscribers_export",
+              "status_page_report.create",
+              "status_page_report.update",
+              "status_page_report.delete",
+              "status_page_report.update_add",
+              "status_page_report.update_edit",
+              "status_page_report.update_delete",
+              "status_page_maintenance.create",
+              "status_page_maintenance.update",
+              "status_page_maintenance.delete",
+              "status_page_maintenance.update_add",
+              "status_page_maintenance.update_edit",
+              "status_page_maintenance.update_delete",
+              "status_page_announcement.create",
+              "status_page_announcement.update",
+              "status_page_announcement.delete",
+              "incident.delete",
+              "incident.report_download",
+              "incident.ai_summary_generate",
+              "incident_comment.create",
+              "incident_comment.update",
+              "incident_comment.delete",
+              "account.create",
+              "auth.login",
+              "auth.login_2fa_confirm",
+              "auth.logout",
+              "auth.password_reset_request",
+              "auth.password_reset_complete",
+              "account.password_change",
+              "account.update",
+              "account.avatar_update",
+              "account.avatar_delete",
+              "session.terminate",
+              "session.terminate_others",
+              "api_key.create",
+              "api_key.update",
+              "api_key.revoke",
+              "passkey.register",
+              "passkey.delete",
+              "totp.bind",
+              "totp.unbind",
+              "two_factor.update",
+              "support.impersonate",
+              "activity_log.export",
+              "plan.change",
+              "plan.change_cancel",
+              "plan.trial_activate",
+              "payment_card.delete",
+              "payer.create",
+              "payer.update",
+              "payer.delete",
+              "plan.downgrade_enforced",
+              "server.paused_by_limit",
+              "server.feature_disabled_by_plan",
+              "status_page.unpublished_by_limit",
+              "status_page.feature_reset_by_plan",
+              "status_page_announcement.deleted_by_limit",
+              "webhook.disabled_by_limit",
+              "plan.activate",
+              "plan.expired",
+              "plan.pending_downgrade_applied",
+              "plan.autopay_charged",
+              "plan.autopay_failed",
+              "holiday_mode.expired",
+              "api_key.expired",
+              "status_page.domain_verified",
+              "status_page.domain_verification_failed"
+            ],
+            "example": "server.pause",
+            "description": "Действие в формате `<объект>.<глагол>`. Коды входят в контракт и не переименовываются; список открытый — новые коды добавляются вместе с функциями"
+          },
+          "actor_type": {
+            "type": "string",
+            "enum": [
+              "user",
+              "api_key",
+              "support",
+              "system"
+            ],
+            "example": "user",
+            "description": "Кто выполнил действие: `user` — владелец аккаунта, `api_key` — API-ключ, `system` — система"
+          },
+          "actor_label": {
+            "type": "string",
+            "nullable": true,
+            "example": "CI deploy",
+            "description": "Подпись актора на момент действия: имя API-ключа, email пользователя или имя системного процесса"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "panel",
+              "api",
+              "mcp",
+              "telegram",
+              "max",
+              "ai_chat",
+              "system"
+            ],
+            "nullable": true,
+            "example": "panel",
+            "description": "Откуда пришло действие: панель, API, MCP-сервер, бот Telegram или MAX, Statuser AI, система. Подсказка, а не доказательство: клиент представляется сам"
+          },
+          "target_type": {
+            "type": "string",
+            "enum": [
+              "server",
+              "notification_rule",
+              "notification_email",
+              "webhook",
+              "integration",
+              "account",
+              "session",
+              "api_key",
+              "passkey",
+              "status_page",
+              "status_page_report",
+              "status_page_maintenance",
+              "status_page_announcement",
+              "incident",
+              "plan",
+              "payment_card",
+              "payer"
+            ],
+            "nullable": true,
+            "example": "server",
+            "description": "Тип объекта, к которому относится запись"
+          },
+          "target_id": {
+            "type": "string",
+            "nullable": true,
+            "example": "412",
+            "description": "ID объекта строкой: у сессий это UUID"
+          },
+          "target_label": {
+            "type": "string",
+            "nullable": true,
+            "example": "Главный сайт",
+            "description": "Название объекта на момент действия. Сохраняется, чтобы запись читалась и после удаления объекта"
+          },
+          "changes": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "from": {},
+                "to": {}
+              }
+            },
+            "example": {
+              "checkInterval": {
+                "from": 300,
+                "to": 60
+              }
+            },
+            "description": "Изменённые поля: было → стало. Ключи — имена полей объекта (`checkInterval`, `isSslCheck`); набор открытый и расширяется вместе с функциями, существующие ключи не переименовываются. Секреты замаскированы (`sk-…a1b2` или `••••`)"
+          },
+          "details": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "example": {
+              "reason": "locations_restricted"
+            },
+            "description": "Подробности действия: причина системного ограничения, число затронутых объектов, состав отчёта. Набор ключей зависит от действия и открытый, существующие ключи не переименовываются"
+          },
+          "ip": {
+            "type": "string",
+            "nullable": true,
+            "example": "203.0.113.7",
+            "description": "IP, с которого выполнено действие. Пусто у системы и ботов"
+          },
+          "user_agent": {
+            "type": "string",
+            "nullable": true,
+            "example": "Mozilla/5.0 …",
+            "description": "User-agent клиента. Пусто у системы и ботов"
+          },
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "description": "Местоположение по IP на момент чтения (в лог не сохраняется). Тот же формат, что у сессий"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "action",
+          "actor_type",
+          "actor_label",
+          "source",
+          "target_type",
+          "target_id",
+          "target_label",
+          "changes",
+          "details",
+          "ip",
+          "user_agent",
+          "location"
+        ],
+        "title": "ActivityLogEntryResponseDto"
+      },
+      "ActivityLogListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityLogEntryResponseDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "example": 137,
+            "description": "Всего записей под текущими фильтрами"
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
+          },
+          "retention_days": {
+            "type": "number",
+            "nullable": true,
+            "example": 30,
+            "description": "Окно показа по тарифу в днях: записи старше не отдаются. null — без ограничения"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "retention_days"
+        ],
+        "title": "ActivityLogListResponseDto"
       },
       "Info2faResponseDto": {
         "type": "object",
