@@ -8616,7 +8616,8 @@
               "telegram",
               "max",
               "ai_chat",
-              "system"
+              "system",
+              "staff"
             ],
             "nullable": true,
             "example": "panel",
