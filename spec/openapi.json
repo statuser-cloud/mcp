@@ -336,7 +336,7 @@
       "patch": {
         "operationId": "ServersController_updateServer",
         "summary": "Обновить сервер",
-        "description": "Частичное обновление настроек существующего сервера: хост и протокол, порт, HTTP-метод и тело, заголовки, success-коды, интервал проверки, таймаут, набор локаций, keyword и keyword_mode, типы DNS-записей, флаги `is_ssl_check` / `is_domain_check`, `is_follow_redirects`, `is_latency_alert_enabled` и порог `latency_trigger_ms`, имя и описание. Передавайте только те поля, которые меняются. Поля, требующие фич тарифа (DNS-мониторинг, keyword, heartbeat, latency-alerts, кастомные success-коды, неосновные локации, малые `check_interval`), валидируются на стороне сервера — при недоступности возвращается 403.",
+        "description": "Частичное обновление настроек существующего сервера: хост и протокол, порт, HTTP-метод и тело, заголовки, success-коды, интервал проверки, таймаут, набор локаций, keyword и keyword_mode, типы DNS-записей, флаги `is_ssl_check` / `is_domain_check`, `is_follow_redirects`, `is_latency_alert_enabled` и порог `latency_trigger_ms`, имя и описание. Передавайте только те поля, которые меняются: непереданное поле остаётся прежним. Чтобы очистить заголовки, передайте `headers: []` — опускать поле для этого недостаточно. Поля, требующие фич тарифа (DNS-мониторинг, keyword, heartbeat, latency-alerts, кастомные success-коды, неосновные локации, малые `check_interval`), валидируются на стороне сервера — при недоступности возвращается 403.",
         "parameters": [
           {
             "name": "id",
@@ -1299,6 +1299,85 @@
         ]
       }
     },
+    "/v1/incidents/export": {
+      "get": {
+        "operationId": "IncidentsController_exportIncidentsCsv",
+        "summary": "Выгрузить инциденты аккаунта в CSV",
+        "description": "Те же инциденты, что у `GET /v1/incidents`, файлом CSV: фильтры `status` и `server_ids` (один или несколько через запятую), `from`/`to`; выгружается не более 50000 инцидентов от новых к старым, при обрезке ответ несёт заголовок `X-Export-Truncated: true`. Глубина ограничена окном тарифа `incident_retention_days`; без явного `from` идущие инциденты попадают в файл, даже если начались раньше окна. Колонки: id, server_id, server_name, server_host, protocol, status, started_at, ended_at, duration_seconds, error_code, error_description, keyword, failed_regions, incident_url; время — UTC (ISO 8601), `duration_seconds` пустая у открытого инцидента, `error_description` — подпись кода ошибки как в интерфейсе, `failed_regions` — города, из которых проверка провалилась за время инцидента (пусто у `heartbeat`: сигнал присылает сам сервис). Контракт: имена колонок не переименовываются, новые добавляются в конец.",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Статусы инцидентов, один или несколько через запятую (`status=resolved,ongoing`). Без параметра — все",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ongoing",
+                  "resolved",
+                  "dismissed",
+                  "auto_closed_changed",
+                  "auto_closed_timeout"
+                ]
+              }
+            }
+          },
+          {
+            "name": "server_ids",
+            "required": false,
+            "in": "query",
+            "description": "Только инциденты этих серверов, один или несколько через запятую (`server_ids=563,564`). Без параметра — все серверы аккаунта. Если какой-то из идентификаторов в аккаунте не найден — 404",
+            "schema": {
+              "example": [
+                563,
+                564
+              ],
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Инциденты, начавшиеся не раньше этого момента (ISO 8601, UTC). Не глубже окна тарифа `incident_retention_days`",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-08-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Инциденты, начавшиеся не позже этого момента (ISO 8601, UTC)",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-09-01T00:00:00.000Z",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV-файл"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/v1/incidents/{incidentId}": {
       "get": {
         "operationId": "IncidentsController_getIncident",
@@ -1377,21 +1456,62 @@
       "get": {
         "operationId": "IncidentsController_getIncidentsByAccount",
         "summary": "Получить все инциденты на аккаунте",
-        "description": "Возвращает плоский список инцидентов по всем серверам аккаунта, отсортированный по дате начала по убыванию. Можно отфильтровать по статусу через query-параметр `status` (`ongoing`, `resolved`, `dismissed`, `auto_closed_changed`, `auto_closed_timeout`). Глубина выборки ограничена `incident_retention_days` текущего тарифа.",
+        "description": "Возвращает плоский список инцидентов по всем серверам аккаунта, отсортированный по дате начала по убыванию. Фильтры: `status` — один или несколько через запятую (`ongoing`, `resolved`, `dismissed`, `auto_closed_changed`, `auto_closed_timeout`), `server_ids` — идентификаторы серверов через запятую (404, если какой-то из них в аккаунте не найден), `from`/`to` — окно по времени начала. Глубина выборки ограничена `incident_retention_days` текущего тарифа; идущие инциденты отдаются независимо от неё, даже если начались раньше окна. Явно заданный `from` соблюдается как есть.",
         "parameters": [
           {
             "name": "status",
             "required": false,
             "in": "query",
-            "description": "Статус инцидента (опционально)",
+            "description": "Статусы инцидентов, один или несколько через запятую (`status=resolved,ongoing`). Без параметра — все",
             "schema": {
-              "enum": [
-                "ongoing",
-                "resolved",
-                "dismissed",
-                "auto_closed_changed",
-                "auto_closed_timeout"
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ongoing",
+                  "resolved",
+                  "dismissed",
+                  "auto_closed_changed",
+                  "auto_closed_timeout"
+                ]
+              }
+            }
+          },
+          {
+            "name": "server_ids",
+            "required": false,
+            "in": "query",
+            "description": "Только инциденты этих серверов, один или несколько через запятую (`server_ids=563,564`). Без параметра — все серверы аккаунта. Если какой-то из идентификаторов в аккаунте не найден — 404",
+            "schema": {
+              "example": [
+                563,
+                564
               ],
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Инциденты, начавшиеся не раньше этого момента (ISO 8601, UTC). Не глубже окна тарифа `incident_retention_days`",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-08-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Инциденты, начавшиеся не позже этого момента (ISO 8601, UTC)",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-09-01T00:00:00.000Z",
               "type": "string"
             }
           }
@@ -3396,6 +3516,7 @@
                   "status_page_announcement.delete",
                   "incident.delete",
                   "incident.report_download",
+                  "incident.export",
                   "incident.ai_summary_generate",
                   "incident_comment.create",
                   "incident_comment.update",
@@ -3407,6 +3528,9 @@
                   "auth.password_reset_request",
                   "auth.password_reset_complete",
                   "account.password_change",
+                  "account.email_change_request",
+                  "account.email_change_confirm",
+                  "account.email_change_cancel",
                   "account.update",
                   "account.avatar_update",
                   "account.avatar_delete",
@@ -3415,6 +3539,7 @@
                   "api_key.create",
                   "api_key.update",
                   "api_key.revoke",
+                  "api_key.rotate",
                   "passkey.register",
                   "passkey.delete",
                   "totp.bind",
@@ -3672,6 +3797,7 @@
                   "status_page_announcement.delete",
                   "incident.delete",
                   "incident.report_download",
+                  "incident.export",
                   "incident.ai_summary_generate",
                   "incident_comment.create",
                   "incident_comment.update",
@@ -3683,6 +3809,9 @@
                   "auth.password_reset_request",
                   "auth.password_reset_complete",
                   "account.password_change",
+                  "account.email_change_request",
+                  "account.email_change_confirm",
+                  "account.email_change_cancel",
                   "account.update",
                   "account.avatar_update",
                   "account.avatar_delete",
@@ -3691,6 +3820,7 @@
                   "api_key.create",
                   "api_key.update",
                   "api_key.revoke",
+                  "api_key.rotate",
                   "passkey.register",
                   "passkey.delete",
                   "totp.bind",
@@ -3995,6 +4125,12 @@
             "type": "boolean",
             "example": true,
             "description": "Отображается ли чат с ИИ помощником в панели управления"
+          },
+          "pending_email": {
+            "type": "string",
+            "example": "new@example.com",
+            "description": "Адрес, ожидающий подтверждения смены емейла. Логином остаётся `email`, пока владелец нового ящика не перейдёт по ссылке из письма",
+            "nullable": true
           }
         },
         "required": [
@@ -4006,7 +4142,8 @@
           "created_at",
           "password_changed_at",
           "timezone",
-          "is_ai_assistant_enabled"
+          "is_ai_assistant_enabled",
+          "pending_email"
         ],
         "title": "AccountResponseDto"
       },
@@ -8537,6 +8674,7 @@
               "status_page_announcement.delete",
               "incident.delete",
               "incident.report_download",
+              "incident.export",
               "incident.ai_summary_generate",
               "incident_comment.create",
               "incident_comment.update",
@@ -8548,6 +8686,9 @@
               "auth.password_reset_request",
               "auth.password_reset_complete",
               "account.password_change",
+              "account.email_change_request",
+              "account.email_change_confirm",
+              "account.email_change_cancel",
               "account.update",
               "account.avatar_update",
               "account.avatar_delete",
@@ -8556,6 +8697,7 @@
               "api_key.create",
               "api_key.update",
               "api_key.revoke",
+              "api_key.rotate",
               "passkey.register",
               "passkey.delete",
               "totp.bind",
@@ -8616,7 +8758,8 @@
               "telegram",
               "max",
               "ai_chat",
-              "system"
+              "system",
+              "staff"
             ],
             "nullable": true,
             "example": "panel",

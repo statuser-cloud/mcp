@@ -420,6 +420,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/incidents/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["IncidentsController_exportIncidentsCsv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/incidents/{incidentId}": {
         parameters: {
             query?: never;
@@ -976,6 +992,7 @@ export interface components {
             password_changed_at: string | null;
             timezone: string;
             is_ai_assistant_enabled: boolean;
+            pending_email: string | null;
         };
         UpdateAccountDto: {
             name?: string;
@@ -1635,10 +1652,10 @@ export interface components {
         ActivityLogEntryResponseDto: {
             id: string;
             created_at: string;
-            action: "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed";
+            action: "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed";
             actor_type: "user" | "api_key" | "support" | "system";
             actor_label: string | null;
-            source: "panel" | "api" | "mcp" | "telegram" | "max" | "ai_chat" | "system" | null;
+            source: "panel" | "api" | "mcp" | "telegram" | "max" | "ai_chat" | "system" | "staff" | null;
             target_type: "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer" | null;
             target_id: string | null;
             target_label: string | null;
@@ -2498,6 +2515,28 @@ export interface operations {
             };
         };
     };
+    IncidentsController_exportIncidentsCsv: {
+        parameters: {
+            query?: {
+                status?: ("ongoing" | "resolved" | "dismissed" | "auto_closed_changed" | "auto_closed_timeout")[];
+                server_ids?: number[];
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     IncidentsController_getIncident: {
         parameters: {
             query?: never;
@@ -2559,7 +2598,10 @@ export interface operations {
     IncidentsController_getIncidentsByAccount: {
         parameters: {
             query?: {
-                status?: "ongoing" | "resolved" | "dismissed" | "auto_closed_changed" | "auto_closed_timeout";
+                status?: ("ongoing" | "resolved" | "dismissed" | "auto_closed_changed" | "auto_closed_timeout")[];
+                server_ids?: number[];
+                from?: string;
+                to?: string;
             };
             header?: never;
             path?: never;
@@ -3591,7 +3633,7 @@ export interface operations {
                 actor_type?: ("user" | "api_key" | "support" | "system")[];
                 target_type?: "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer";
                 target_id?: string;
-                action?: ("server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
+                action?: ("server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
                 from?: string;
                 to?: string;
                 search?: string;
@@ -3621,7 +3663,7 @@ export interface operations {
                 actor_type?: ("user" | "api_key" | "support" | "system")[];
                 target_type?: "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer";
                 target_id?: string;
-                action?: ("server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
+                action?: ("server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
                 from?: string;
                 to?: string;
                 search?: string;
