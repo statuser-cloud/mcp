@@ -11,7 +11,10 @@ import { StatuserApiError } from '../errors.js';
 import { createServer } from '../server.js';
 import type { AuthFailureLimiter } from './auth-failure-limiter.js';
 
-const MCP_PATH = '/mcp';
+// The endpoint is the host root: the URL a user pastes into a client is the
+// bare host. Everything else (probes, OAuth metadata under /.well-known later)
+// keeps its own path.
+const MCP_PATH = '/';
 const HEALTH_PATH = '/healthz';
 
 // The SDK transport reads the body without a size cap. Tool arguments are
