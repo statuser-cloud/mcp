@@ -5,7 +5,7 @@
       "get": {
         "operationId": "TelegramClientController_getLinkedAccounts",
         "summary": "Получить список привязанных Телеграм аккаунтов",
-        "description": "Возвращает все Telegram-аккаунты и групповые чаты, привязанные к аккаунту Statuser, вместе с настройками: id чата, тип (личный/группа), username, аватар, флаг 2FA, выбранный топик и список доступных топиков для групп с supergroup-форумом. Используется в правилах нотификаций как канал доставки уведомлений.",
+        "description": "Возвращает все Telegram-аккаунты и групповые чаты, привязанные к аккаунту Statuser, вместе с настройками: id чата, тип (личный/группа), username, аватар, флаг 2FA, выбранный топик и список доступных топиков для групп с supergroup-форумом. Используется в правилах уведомлений как канал доставки.",
         "parameters": [],
         "responses": {
           "200": {
@@ -86,7 +86,7 @@
       "patch": {
         "operationId": "AccountsController_updateAccount",
         "summary": "Обновить информацию об аккаунте",
-        "description": "Частичное обновление профиля аккаунта. Изменяемые поля: `name` (имя пользователя), `timezone` (часовой пояс для отображения времени в нотификациях и PDF-отчётах по инцидентам) и `is_ai_assistant_enabled` (показывать ли чат с AI-ассистентом в панели). Передавайте только те поля, которые действительно меняются — остальные останутся как есть.",
+        "description": "Частичное обновление профиля аккаунта. Изменяемые поля: `name` (имя пользователя), `timezone` (часовой пояс для отображения времени в уведомлениях и PDF-отчётах по инцидентам) и `is_ai_assistant_enabled` (показывать ли чат с AI-ассистентом в панели). Передавайте только те поля, которые действительно меняются — остальные останутся как есть.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -181,7 +181,7 @@
       "post": {
         "operationId": "ServersController_addServer",
         "summary": "Добавить в мониторинг новый сервер",
-        "description": "Создаёт новый мониторинг. Тип проверки задаётся полем `protocol` (`ping`, `http`, `keyword`, `tcp`, `dns`, `heartbeat`). Дополнительные проверки SSL и домена включаются флагами `is_ssl_check` / `is_domain_check` поверх HTTP-протокола. Учитывается лимит серверов на тарифе и доступность отдельных фич (DNS/keyword/heartbeat-мониторинг, latency-alerts, кастомные success-коды, набор локаций) — при недоступности возвращается 403.",
+        "description": "Создаёт новый мониторинг. Тип проверки задаётся полем `protocol` (`ping`, `http`, `keyword`, `tcp`, `dns`, `heartbeat`). Дополнительные проверки SSL и домена включаются флагами `is_ssl_check` / `is_domain_check` поверх HTTP-протокола. Учитывается лимит серверов на тарифе и доступность отдельных фич (DNS/keyword/heartbeat-мониторинг, latency-alerts, кастомные success-коды, набор локаций) — при недоступности возвращается 403. Поле `project_id` кладёт сервер в конкретный проект; без него — проект по умолчанию. Лимит серверов при этом считается по аккаунту целиком.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -217,7 +217,7 @@
       "get": {
         "operationId": "ServersController_getServers",
         "summary": "Получить все серверы на аккаунте",
-        "description": "Возвращает массив всех серверов, которые отслеживает аккаунт, вместе с текущим статусом и настройками мониторинга. Поддерживает пагинацию через `limit` и `offset`. Для дашбордов и сводных интеграций рекомендуется явно указывать `limit`, чтобы не получать весь список на больших аккаунтах.",
+        "description": "Возвращает массив всех серверов, которые отслеживает аккаунт, вместе с текущим статусом и настройками мониторинга. Поддерживает пагинацию через `limit` и `offset`. Для дашбордов и сводных интеграций рекомендуется явно указывать `limit`, чтобы не получать весь список на больших аккаунтах. Фильтр `project_id` ограничивает выборку одним проектом; без него отдаются серверы всех проектов аккаунта.",
         "parameters": [
           {
             "name": "limit",
@@ -233,6 +233,15 @@
             "required": false,
             "in": "query",
             "description": "Смещение для пагинации",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "project_id",
+            "required": false,
+            "in": "query",
+            "description": "Только серверы этого проекта. Без параметра — все серверы аккаунта",
             "schema": {
               "type": "number"
             }
@@ -318,7 +327,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Сервер успешно удален"
+            "description": "Сервер успешно удалён"
           },
           "404": {
             "description": "Сервер не найден"
@@ -336,7 +345,7 @@
       "patch": {
         "operationId": "ServersController_updateServer",
         "summary": "Обновить сервер",
-        "description": "Частичное обновление настроек существующего сервера: хост и протокол, порт, HTTP-метод и тело, заголовки, success-коды, интервал проверки, таймаут, набор локаций, keyword и keyword_mode, типы DNS-записей, флаги `is_ssl_check` / `is_domain_check`, `is_follow_redirects`, `is_latency_alert_enabled` и порог `latency_trigger_ms`, имя и описание. Передавайте только те поля, которые меняются. Поля, требующие фич тарифа (DNS-мониторинг, keyword, heartbeat, latency-alerts, кастомные success-коды, неосновные локации, малые `check_interval`), валидируются на стороне сервера — при недоступности возвращается 403.",
+        "description": "Частичное обновление настроек существующего сервера: хост и протокол, порт, HTTP-метод и тело, заголовки, success-коды, интервал проверки, таймаут, набор локаций, keyword и keyword_mode, типы DNS-записей, флаги `is_ssl_check` / `is_domain_check`, `is_follow_redirects`, `is_latency_alert_enabled` и порог `latency_trigger_ms`, имя и описание. Передавайте только те поля, которые меняются: непереданное поле остаётся прежним. Чтобы очистить заголовки, передайте `headers: []` — опускать поле для этого недостаточно. Поля, требующие фич тарифа (DNS-мониторинг, keyword, heartbeat, latency-alerts, кастомные success-коды, неосновные локации, малые `check_interval`), валидируются на стороне сервера — при недоступности возвращается 403.",
         "parameters": [
           {
             "name": "id",
@@ -359,7 +368,7 @@
         },
         "responses": {
           "200": {
-            "description": "Сервер успешно обновлен",
+            "description": "Сервер успешно обновлён",
             "content": {
               "application/json": {
                 "schema": {
@@ -591,8 +600,8 @@
     "/v1/servers/{id}/test-notify": {
       "post": {
         "operationId": "ServersController_sendTestNotification",
-        "summary": "Отправить тестовую нотификацию для сервера",
-        "description": "Отправляет тестовое сообщение по настроенным на аккаунте каналам уведомлений (email/Telegram/MAX согласно правилам нотификаций и вебхукам, подписанным на соответствующий тип). Тип теста зависит от протокола сервера: для `dns` — DNS-тест, для `heartbeat` — heartbeat-тест, для остальных — обычный сервис-тест. Удобно для проверки конфигурации без ожидания реального инцидента.",
+        "summary": "Отправить тестовую уведомление для сервера",
+        "description": "Отправляет тестовое сообщение по настроенным на аккаунте каналам (email/Telegram/MAX согласно правилам уведомлений и вебхукам, подписанным на соответствующий тип). Тип теста зависит от протокола сервера: для `dns` — DNS-тест, для `heartbeat` — heartbeat-тест, для остальных — обычный сервис-тест. Удобно для проверки конфигурации без ожидания реального инцидента.",
         "parameters": [
           {
             "name": "id",
@@ -605,7 +614,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Тестовая нотификация успешно отправлена"
+            "description": "Тестовая уведомление успешно отправлена"
           },
           "404": {
             "description": "Сервер не найден"
@@ -621,12 +630,302 @@
         ]
       }
     },
+    "/v1/projects": {
+      "get": {
+        "operationId": "ProjectsController_getProjects",
+        "summary": "Получить список проектов",
+        "description": "Возвращает проекты аккаунта. Проект — область, которой принадлежат серверы, страницы статуса и настройки уведомлений по мониторингу; каналы уведомлений, биллинг и API-ключи общие для всего аккаунта. Первым идёт самый старый проект — в него попадает всё, что создано без явного указания проекта.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Проекты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ProjectsController_createProject",
+        "summary": "Создать проект",
+        "description": "Создаёт проект. Число проектов ограничено тарифом (`projects_limit`), при исчерпании — 403 `project_quota_exceeded`. Лимиты серверов и страниц статуса при этом считаются по аккаунту целиком: новый проект не добавляет ни того, ни другого. Иконка загружается отдельным запросом, до тех пор `avatar_url` пустой и панель рисует градиент, вычисленный из `id`.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Проекты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/projects/order": {
+      "patch": {
+        "operationId": "ProjectsController_reorderProjects",
+        "summary": "Изменить порядок проектов",
+        "description": "Задаёт порядок, в котором проекты показываются в панели. Принимается полный список проектов аккаунта — каждый ровно один раз. На доставку и на то, куда попадает запись без `project_id`, порядок не влияет: за это по-прежнему отвечает самый старый проект.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderProjectsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Проекты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/projects/{id}": {
+      "patch": {
+        "operationId": "ProjectsController_updateProject",
+        "summary": "Изменить проект",
+        "description": "Меняет название проекта. Непереданное поле остаётся прежним.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Проекты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ProjectsController_deleteProject",
+        "summary": "Удалить проект",
+        "description": "Удаляет проект вместе с его настройками уведомлений: правилами, тумблерами каналов и подписками вебхуков на события мониторинга. Серверы и страницы статуса не удаляются, а переезжают в проект из `move_to_project_id` — и начинают жить по ЕГО настройкам уведомлений. Без `move_to_project_id` непустой проект не удаляется — 409 `project_not_empty`. Последний проект аккаунта удалить нельзя — 409 `project_last_not_deletable`.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "move_to_project_id",
+            "required": false,
+            "in": "query",
+            "description": "Куда перенести серверы и страницы статуса удаляемого проекта. Обязателен, если в проекте что-то есть. Удаляемый проект как цель переноса — 400",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Проект удалён"
+          }
+        },
+        "tags": [
+          "Проекты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/projects/{projectId}/channels": {
+      "get": {
+        "operationId": "ProjectChannelsController_getChannels",
+        "summary": "Каналы аккаунта и их состояние в проекте",
+        "description": "Возвращает каналы уведомлений аккаунта (подтверждённые адреса, привязки Телеграма и MAX) с признаком, пользуется ли ими этот проект. Канал подключается один раз на аккаунт — здесь он только включается и выключается. Уведомления о мониторинге уходят только во включённые каналы; события аккаунта (счета, безопасность, вход) приходят во все, независимо от проекта. Вебхуки в список не входят: у них своя модель — подписка хранит и проект, и тип события, поэтому тумблера «включён в проекте» у них нет. Чтобы собрать полную картину доставки проекта, возьмите вебхуки из `GET /v1/webhooks` и отберите те, у кого этот проект есть в `project_ids`.",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectChannelResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Проекты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "ProjectChannelsController_updateChannel",
+        "summary": "Включить или выключить канал в проекте",
+        "description": "Включает или выключает канал аккаунта для этого проекта. Сам канал остаётся подключённым к аккаунту и продолжает получать события аккаунта. Возвращает обновлённый список каналов проекта.",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectChannelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectChannelResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Проекты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/v1/notification-rules": {
       "get": {
         "operationId": "NotificationRuleController_getNotificationRules",
         "summary": "Получить правила уведомлений для аккаунта",
-        "description": "Возвращает текущую матрицу правил уведомлений: по каждому типу подписки (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `weekly_reports`, `updates`, `billing_alerts`, `holiday_mode`, `api_key_alerts`, `security_alerts`, `ideas`) — три булевых флага `email` / `telegram` / `max`, включён ли соответствующий канал для этого типа. Вебхуки в этой матрице не участвуют — они конфигурируются собственным полем `subscriptions` на самом вебхуке. Внутренние/служебные типы уведомлений в публичный ответ не попадают.",
-        "parameters": [],
+        "description": "Возвращает текущую матрицу правил уведомлений: по каждому типу подписки (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `weekly_reports`, `updates`, `billing_alerts`, `holiday_mode`, `api_key_alerts`, `security_alerts`, `ideas`) — три булевых флага `email` / `telegram` / `max`, включён ли соответствующий канал для этого типа. Вебхуки в этой матрице не участвуют — они конфигурируются собственным полем `subscriptions` на самом вебхуке. Внутренние/служебные типы уведомлений в публичный ответ не попадают. Поле `scope` у каждого правила говорит, к чему относится настройка: `project` — к запрошенному проекту (падения, SSL, домены, DNS, реестры блокировок, недельные отчёты), `account` — ко всему аккаунту. Параметр `project_id` выбирает проект; без него берётся самый старый проект аккаунта.",
+        "parameters": [
+          {
+            "name": "project_id",
+            "required": false,
+            "in": "query",
+            "description": "Проект, чьи правила про мониторинг вернуть. Без параметра — самый старый проект аккаунта",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Список правил уведомлений успешно получен",
@@ -643,7 +942,7 @@
           }
         },
         "tags": [
-          "Нотификации"
+          "Уведомления"
         ],
         "security": [
           {
@@ -654,7 +953,7 @@
       "patch": {
         "operationId": "NotificationRuleController_createOrUpdateNotificationRule",
         "summary": "Обновить правило уведомлений для аккаунта",
-        "description": "Создаёт или обновляет правило для одного типа подписки (`type`): включает/выключает каналы `email`, `telegram`, `max` (отдельные id адресов/чатов выбирать не нужно — это глобальный on/off на канал-тип). Возвращает обновлённый полный список правил аккаунта (без внутренних/служебных типов). Подписки конкретных вебхуков здесь не настраиваются — для них используйте `PATCH /v1/webhooks/{id}`.",
+        "description": "Создаёт или обновляет правило для одного типа подписки (`type`): включает/выключает каналы `email`, `telegram`, `max` (отдельные id адресов/чатов выбирать не нужно — это глобальный on/off на канал-тип). Возвращает обновлённый полный список правил (без внутренних/служебных типов). У типов про мониторинг настройка принадлежит проекту — он задаётся полем `project_id`, без него берётся самый старый проект аккаунта; у остальных типов поле игнорируется. Подписки конкретных вебхуков здесь не настраиваются — для них используйте `PATCH /v1/webhooks/{id}`.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -682,7 +981,7 @@
           }
         },
         "tags": [
-          "Нотификации"
+          "Уведомления"
         ],
         "security": [
           {
@@ -695,7 +994,7 @@
       "get": {
         "operationId": "WebhookController_list",
         "summary": "Получить список вебхуков аккаунта",
-        "description": "Возвращает все настроенные вебхуки аккаунта: имя, URL получателя и набор подписок (`subscriptions`) — типов событий, которые в этот вебхук отправляются (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `weekly_reports`, `updates`, `billing_alerts`, `holiday_mode`, `api_key_alerts`, `security_alerts`, `ideas`). Секрет, заданный при создании, обратно из API не возвращается.",
+        "description": "Возвращает все настроенные вебхуки аккаунта: имя, URL получателя, проекты (`project_ids`) и набор подписок (`subscriptions`) — типов событий, которые в этот вебхук отправляются (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `weekly_reports`, `updates`, `billing_alerts`, `holiday_mode`, `api_key_alerts`, `security_alerts`, `ideas`). Секрет, заданный при создании, обратно из API не возвращается.",
         "parameters": [],
         "responses": {
           "200": {
@@ -724,7 +1023,7 @@
       "post": {
         "operationId": "WebhookController_create",
         "summary": "Создать вебхук",
-        "description": "Регистрирует новый вебхук-эндпоинт, в который Statuser будет отправлять события выбранных типов (`subscriptions`). Обязательные поля: имя, URL, набор подписок. Опционально можно задать секрет — тогда Statuser подписывает payload, а приёмная сторона проверяет подпись, чтобы убедиться, что запрос действительно от Statuser. Требует тарифа с включёнными вебхук-уведомлениями (`webhook_notifications_enabled`).",
+        "description": "Регистрирует новый вебхук-эндпоинт, в который Statuser будет отправлять события выбранных типов (`subscriptions`). Обязательные поля: имя, URL, набор подписок. События мониторинга уходят из проектов, перечисленных в `project_ids`; без этого поля — из самого старого проекта. События аккаунта (счета, безопасность, ключи) приходят всегда. Опционально можно задать секрет — тогда Statuser подписывает payload, а приёмная сторона проверяет подпись, чтобы убедиться, что запрос действительно от Statuser. Требует тарифа с включёнными вебхук-уведомлениями (`webhook_notifications_enabled`).",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -762,7 +1061,7 @@
       "patch": {
         "operationId": "WebhookController_update",
         "summary": "Обновить вебхук",
-        "description": "Частичное обновление существующего вебхука: можно изменить имя, URL, секрет и набор подписок (`subscriptions`). Передавайте только меняющиеся поля. Чтобы убрать секрет, передайте `secret: null`. После изменения секрета подписи начинают считаться с новым значением — убедитесь, что приёмная сторона обновлена.",
+        "description": "Частичное обновление существующего вебхука: можно изменить имя, URL, секрет, набор подписок (`subscriptions`) и набор проектов (`project_ids`). Передавайте только меняющиеся поля. Чтобы убрать секрет, передайте `secret: null`. После изменения секрета подписи начинают считаться с новым значением — убедитесь, что приёмная сторона обновлена.",
         "parameters": [
           {
             "name": "id",
@@ -821,6 +1120,40 @@
         "responses": {
           "204": {
             "description": "Вебхук успешно удалён"
+          }
+        },
+        "tags": [
+          "Вебхуки"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/webhooks/test-notify": {
+      "post": {
+        "operationId": "WebhookController_sendTestToUrl",
+        "summary": "Отправить тестовый запрос на адрес",
+        "description": "Отправляет тестовый payload на указанный URL, не создавая вебхук. Нужно, чтобы проверить приёмник прямо в форме — до сохранения. Секрет необязателен: с ним запрос уходит подписанным, без него — нет. Если доставка не удалась — возвращается 502 с подробностями (`reason`, `webhook_status`), как и у теста сохранённого вебхука.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestWebhookEndpointDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Тестовый запрос успешно отправлен"
+          },
+          "502": {
+            "description": "Не удалось доставить тестовый вебхук"
           }
         },
         "tags": [
@@ -913,7 +1246,7 @@
       "get": {
         "operationId": "MaxClientController_getLinkedAccounts",
         "summary": "Получить список привязанных MAX аккаунтов",
-        "description": "Возвращает все аккаунты/групповые чаты MAX, привязанные к данному аккаунту Statuser, со статусом и флагом «используется для 2FA». Эти аккаунты доступны как канал доставки уведомлений в правилах нотификаций.",
+        "description": "Возвращает все аккаунты/групповые чаты MAX, привязанные к данному аккаунту Statuser, со статусом и флагом «используется для 2FA». Эти аккаунты доступны как канал доставки в правилах уведомлений.",
         "parameters": [],
         "responses": {
           "200": {
@@ -944,7 +1277,7 @@
       "delete": {
         "operationId": "MaxClientController_unlinkAccount",
         "summary": "Отвязать MAX аккаунт",
-        "description": "Отвязывает MAX-аккаунт от аккаунта Statuser. Уведомления в этот канал больше отправляться не будут; правила нотификаций перестанут его учитывать. Если отвязываемый аккаунт был выбран как канал 2FA, его роль второго фактора снимается автоматически — но если других каналов 2FA нет, рекомендуется заранее переключить второй фактор через `PATCH /v1/max/2fa-account` или эквивалентный telegram-эндпоинт.",
+        "description": "Отвязывает MAX-аккаунт от аккаунта Statuser. Уведомления в этот канал больше отправляться не будут; правила уведомлений перестанут его учитывать. Если отвязываемый аккаунт был выбран как канал 2FA, его роль второго фактора снимается автоматически — но если других каналов 2FA нет, рекомендуется заранее переключить второй фактор через `PATCH /v1/max/2fa-account` или эквивалентный telegram-эндпоинт.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1013,7 +1346,7 @@
       "get": {
         "operationId": "NotificationEmailsController_list",
         "summary": "Получить список емейл для уведомлений",
-        "description": "Возвращает все email-адреса, добавленные на аккаунт для получения уведомлений, со статусом подтверждения. Уведомления уходят только на подтверждённые адреса — неподтверждённые видны в списке для UX, но в правилах нотификаций фактически не используются.",
+        "description": "Возвращает все email-адреса, добавленные на аккаунт для получения уведомлений, со статусом подтверждения. Уведомления уходят только на подтверждённые адреса — неподтверждённые видны в списке для UX, но фактически не используются.",
         "parameters": [],
         "responses": {
           "200": {
@@ -1042,7 +1375,7 @@
       "post": {
         "operationId": "NotificationEmailsController_add",
         "summary": "Добавить емейл для уведомлений (отправит письмо с кодом)",
-        "description": "Регистрирует новый email-адрес для получения уведомлений и сразу отправляет на него письмо с кодом подтверждения. Адрес становится использующимся в правилах нотификаций только после подтверждения через `POST /v1/notification-emails/{id}/confirm`. Если адрес уже подтверждён на этом аккаунте — 409; если за коротким окном уже отправлялся код для этого адреса — 429; если достигнут общий лимит email-каналов аккаунта — 403.",
+        "description": "Регистрирует новый email-адрес для получения уведомлений и сразу отправляет на него письмо с кодом подтверждения. Адрес становится использующимся в правилах уведомлений только после подтверждения через `POST /v1/notification-emails/{id}/confirm`. Если адрес уже подтверждён на этом аккаунте — 409; если за коротким окном уже отправлялся код для этого адреса — 429; если достигнут общий лимит email-каналов аккаунта — 403.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1163,7 +1496,7 @@
       "delete": {
         "operationId": "NotificationEmailsController_remove",
         "summary": "Удалить емейл из списка уведомлений",
-        "description": "Удаляет email-адрес из списка получателей уведомлений. Все правила нотификаций, ссылавшиеся на этот адрес, перестанут отправлять на него письма. Операция необратима — для повторного использования адрес придётся добавить и подтвердить заново.",
+        "description": "Удаляет email-адрес из списка получателей уведомлений. Все правила уведомлений, ссылавшиеся на этот адрес, перестанут отправлять на него письма. Операция необратима — для повторного использования адрес придётся добавить и подтвердить заново.",
         "parameters": [
           {
             "name": "id",
@@ -1248,624 +1581,6 @@
         },
         "tags": [
           "Аккаунт"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/v1/servers/{serverId}/incidents": {
-      "get": {
-        "operationId": "IncidentsController_getIncidentsByServer",
-        "summary": "Получить инциденты сервера",
-        "description": "Возвращает список всех инцидентов для конкретного сервера за период, доступный по тарифу (`incident_retention_days`). Инциденты приходят в хронологическом порядке и включают как закрытые, так и текущие. Для широких выборок по всему аккаунту используйте `GET /v1/incidents`.",
-        "parameters": [
-          {
-            "name": "serverId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Инциденты сервера успешно получены",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/IncidentResponseDto"
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Сервер не найден"
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/v1/incidents/{incidentId}": {
-      "get": {
-        "operationId": "IncidentsController_getIncident",
-        "summary": "Получить инцидент",
-        "description": "Возвращает подробную карточку инцидента: статус, время начала/окончания, root-причину, ключевое слово, replay-ссылку, а также скриншот и сетевую диагностику (заголовки, тело ответа, OpenSSL, ping/nmap/mtr/traceroute, тайминги) по каждой локации. Поле `screenshot` отдаётся только при включённой фиче тарифа `screenshots_enabled`, поле `details` — только при `network_diagnostics_enabled`; иначе они равны `null`.",
-        "parameters": [
-          {
-            "name": "incidentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Инцидент успешно получен",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IncidentResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Инцидент не найден"
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
-      "delete": {
-        "operationId": "IncidentsController_deleteIncident",
-        "summary": "Удалить инцидент",
-        "description": "Полностью удаляет инцидент вместе с сетевой диагностикой, скриншотом, комментариями, AI-саммари и историей отправленных уведомлений. Операция необратима. Аптайм и SLA считаются по инцидентам, поэтому после удаления процент доступности сервера пересчитается вверх — на статус-страницах и во всех отчётах, сформированных после удаления (уже выпущенные отчёты сохраняют прежние цифры). Удалить можно только закрытый инцидент: для активного (`ongoing`) вернётся 409 — дождитесь восстановления сервера, иначе следующая проверка создаст инцидент заново.",
-        "parameters": [
-          {
-            "name": "incidentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Инцидент успешно удален"
-          },
-          "404": {
-            "description": "Инцидент не найден"
-          },
-          "409": {
-            "description": "Нельзя удалить активный инцидент"
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/v1/incidents": {
-      "get": {
-        "operationId": "IncidentsController_getIncidentsByAccount",
-        "summary": "Получить все инциденты на аккаунте",
-        "description": "Возвращает плоский список инцидентов по всем серверам аккаунта, отсортированный по дате начала по убыванию. Можно отфильтровать по статусу через query-параметр `status` (`ongoing`, `resolved`, `dismissed`, `auto_closed_changed`, `auto_closed_timeout`). Глубина выборки ограничена `incident_retention_days` текущего тарифа.",
-        "parameters": [
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "description": "Статус инцидента (опционально)",
-            "schema": {
-              "enum": [
-                "ongoing",
-                "resolved",
-                "dismissed",
-                "auto_closed_changed",
-                "auto_closed_timeout"
-              ],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Инциденты успешно получены",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/IncidentResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/v1/incidents/{incidentId}/events": {
-      "get": {
-        "operationId": "IncidentsController_getIncidentEventsByServer",
-        "summary": "Получить события инцидента",
-        "description": "Возвращает хронологическую ленту событий инцидента: смены статуса, отправленные уведомления (email/Telegram/MAX/вебхуки), подтверждения, авто-восстановления и т.п. Используется для отображения таймлайна на странице инцидента и для аудита, в какие каналы и когда уходили нотификации. События `screenshot` и `diagnostics` отдаются только на тарифах с включёнными `screenshots_enabled` и `network_diagnostics_enabled` соответственно.",
-        "parameters": [
-          {
-            "name": "incidentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "События инцидента успешно получены",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/IncidentEventResponseDto"
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Инцидент не найден"
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/v1/incidents/{incidentId}/server": {
-      "get": {
-        "operationId": "IncidentsController_getServerByIncidentId",
-        "summary": "Получить сервер по инциденту",
-        "description": "Удобный шорткат: по `incidentId` сразу возвращает связанный сервер с актуальными настройками мониторинга и статусом. Эквивалентно последовательному `GET /v1/incidents/{id}` + `GET /v1/servers/{server_id}` в один запрос.",
-        "parameters": [
-          {
-            "name": "incidentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Сервер успешно получен",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Инцидент не найден"
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/v1/incidents/{incidentId}/report": {
-      "get": {
-        "operationId": "IncidentsController_downloadIncidentReport",
-        "summary": "Скачать PDF отчет по инциденту",
-        "description": "Возвращает готовый PDF-отчёт по инциденту в виде файла (`application/pdf`). Удобно для прикрепления к тикетам, постмортемам и отчётам клиенту. Состав секций настраивается через repeated query `sections` — допустимые значения: `ai_summary`, `diagnostics`, `technical_reference`, `events` (пример: `?sections=ai_summary&sections=events`). Доступно только на тарифах с включённым отчётом по инциденту (`incident_report_enabled`) — иначе 403.",
-        "parameters": [
-          {
-            "name": "incidentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "sections",
-            "required": false,
-            "in": "query",
-            "description": "Секции, которые будут включены в отчет. Требуется передавать как repeated query (?sections=ai_summary&sections=events)",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "ai_summary",
-                  "diagnostics",
-                  "technical_reference",
-                  "events"
-                ]
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "PDF отчет по инциденту успешно сформирован"
-          },
-          "403": {
-            "description": "PDF отчет по инциденту недоступен на текущем тарифе"
-          },
-          "404": {
-            "description": "Инцидент не найден"
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/v1/incidents/{incidentId}/ai-summary": {
-      "post": {
-        "operationId": "IncidentsController_generateIncidentAiSummary",
-        "summary": "Сгенерировать AI саммари инцидента",
-        "description": "Генерирует (или возвращает закэшированное) AI-саммари инцидента: краткий человекочитаемый разбор того, что произошло и в чём вероятная причина, на основе диагностических данных. Идемпотентна: повторные вызовы для того же инцидента возвращают уже сгенерированную сводку. Требует тарифа с включённой сетевой диагностикой (`network_diagnostics_enabled`).",
-        "parameters": [
-          {
-            "name": "incidentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "AI саммари успешно сгенерировано",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IncidentSummaryResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Инцидент не найден"
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/v1/incidents/{incidentId}/ai-summary/rating": {
-      "post": {
-        "operationId": "IncidentsController_rateIncidentAiSummary",
-        "summary": "Оценить AI саммари инцидента",
-        "description": "Проставляет пользовательскую оценку ранее сгенерированному AI-саммари инцидента: допустимые значения `rating` — `positive` или `negative`. Используется для сбора обратной связи о качестве AI-разбора. Передайте `rating: null`, чтобы сбросить ранее поставленную оценку.",
-        "parameters": [
-          {
-            "name": "incidentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/IncidentSummaryRatingDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Оценка успешно сохранена",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IncidentSummaryResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Инцидент не найден"
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/v1/incidents/{incidentId}/comments": {
-      "post": {
-        "operationId": "IncidentCommentController_create",
-        "summary": "Создать комментарий к инциденту",
-        "description": "Добавляет текстовый комментарий к инциденту, опционально с вложениями (`attached_files`). Ссылки на вложения должны быть получены заранее через `POST /v1/incidents/{incidentId}/comments/upload-url` — произвольные внешние URL не принимаются. Требует тарифа с включёнными комментариями к инцидентам (`incident_comments_enabled`).",
-        "parameters": [
-          {
-            "name": "incidentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateIncidentCommentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Комментарий успешно создан",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommentResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
-      "get": {
-        "operationId": "IncidentCommentController_getAllCommentsByIncident",
-        "summary": "Получить все комментарии к инциденту",
-        "description": "Возвращает список всех комментариев к инциденту в хронологическом порядке с прикреплёнными файлами и временем создания/обновления. Удобно для отображения обсуждения постмортема или хронологии действий дежурного.",
-        "parameters": [
-          {
-            "name": "incidentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Комментарии успешно получены",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CommentResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/v1/incidents/{incidentId}/comments/upload-url": {
-      "post": {
-        "operationId": "IncidentCommentController_getAttachmentUploadUrl",
-        "summary": "Получить ссылку для загрузки вложения к комментарию инцидента",
-        "description": "Возвращает временную ссылку (`uploadUrl`), по которой клиент должен `PUT`-нуть содержимое файла напрямую, минуя API Statuser, и итоговый публичный URL (`fileUrl`). После успешной загрузки `fileUrl` передаётся в `attached_files` при создании/обновлении комментария. Лимиты: расширение файла должно быть разрешено, размер — не больше 5 МБ. Требует тарифа с включёнными комментариями к инцидентам (`incident_comments_enabled`).",
-        "parameters": [
-          {
-            "name": "incidentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateIncidentCommentUploadUrlDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Ссылка успешно получена",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PresignedUploadUrlResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/v1/incidents/{incidentId}/comments/{commentId}": {
-      "patch": {
-        "operationId": "IncidentCommentController_update",
-        "summary": "Обновить комментарий",
-        "description": "Редактирует текст и/или список вложений уже опубликованного комментария к инциденту. Поле `attached_files`, если передано, полностью заменяет предыдущий список вложений — передавайте все актуальные ссылки, а не только новые. Вложения, отсутствующие в новом списке, удаляются безвозвратно.",
-        "parameters": [
-          {
-            "name": "incidentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "commentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateIncidentCommentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Комментарий успешно обновлен",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommentResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Инциденты"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
-      "delete": {
-        "operationId": "IncidentCommentController_delete",
-        "summary": "Удалить комментарий",
-        "description": "Окончательно удаляет комментарий и одновременно удаляет все его файлы-вложения. Операция необратима — восстановить ни комментарий, ни файлы будет нельзя.",
-        "parameters": [
-          {
-            "name": "incidentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "commentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Комментарий успешно удалён"
-          },
-          "404": {
-            "description": "Комментарий не найден"
-          }
-        },
-        "tags": [
-          "Инциденты"
         ],
         "security": [
           {
@@ -2003,7 +1718,17 @@
         "operationId": "StatusPagesController_getAccountStatusPages",
         "summary": "Получить все страницы статуса на аккаунте",
         "description": "Возвращает список всех страниц статуса аккаунта со всеми настройками: домен/slug, группы и привязанные серверы, тема, white-label, защита паролем и т.д. Используется для админ-дашбордов и интеграций, которым нужно увидеть все публичные страницы клиента сразу.",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "project_id",
+            "required": false,
+            "in": "query",
+            "description": "Только страницы этого проекта. Без параметра — все страницы аккаунта",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Страницы статуса успешно получены",
@@ -2141,7 +1866,7 @@
       "patch": {
         "operationId": "StatusPagesController_updateServer",
         "summary": "Обновить страницу статуса",
-        "description": "Частичное обновление настроек страницы статуса: название, slug, описание, ссылки на лого/favicon, кастомный домен, тема, временная зона, точность uptime, защита паролем, white-label, индексация, длительность таймлайна и порог отображения инцидентов. Передавайте только меняющиеся поля. Конфликты по slug/домену → 409, недоступность фич тарифа (кастомный домен, защита паролем, отключение индексации, white-label, расширенный таймлайн, кастомный `minimum_incident_duration`) → 403.",
+        "description": "Частичное обновление настроек страницы статуса: название, slug, описание, ссылки на лого/favicon, кастомный домен, тема, временная зона, точность uptime, защита паролем, white-label, индексация, длительность таймлайна и порог отображения инцидентов. Передавайте только меняющиеся поля. Конфликты по slug/домену → 409, недоступность фич тарифа (кастомный домен, защита паролем, отключение индексации, white-label, расширенный таймлайн, кастомный `minimum_incident_duration`) → 403. Поле `project_id` переносит страницу в другой проект.",
         "parameters": [
           {
             "name": "id",
@@ -3228,6 +2953,764 @@
         ]
       }
     },
+    "/v1/servers/{serverId}/incidents": {
+      "get": {
+        "operationId": "IncidentsController_getIncidentsByServer",
+        "summary": "Получить инциденты сервера",
+        "description": "Возвращает список всех инцидентов для конкретного сервера за период, доступный по тарифу (`incident_retention_days`). Инциденты приходят в хронологическом порядке и включают как закрытые, так и текущие. Для широких выборок по всему аккаунту используйте `GET /v1/incidents`.",
+        "parameters": [
+          {
+            "name": "serverId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Инциденты сервера успешно получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IncidentResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Сервер не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/export": {
+      "get": {
+        "operationId": "IncidentsController_exportIncidentsCsv",
+        "summary": "Выгрузить инциденты аккаунта в CSV",
+        "description": "Те же инциденты, что у `GET /v1/incidents`, файлом CSV: фильтры `status`, `server_ids` (один или несколько через запятую), `project_id`, `from`/`to`; выгружается не более 50000 инцидентов от новых к старым, при обрезке ответ несёт заголовок `X-Export-Truncated: true`. Глубина ограничена окном тарифа `incident_retention_days`; без явного `from` идущие инциденты попадают в файл, даже если начались раньше окна. Колонки: id, server_id, server_name, server_host, protocol, status, started_at, ended_at, duration_seconds, error_code, error_description, keyword, failed_regions, incident_url; время — UTC (ISO 8601), `duration_seconds` пустая у открытого инцидента, `error_description` — подпись кода ошибки как в интерфейсе, `failed_regions` — города, из которых проверка провалилась за время инцидента (пусто у `heartbeat`: сигнал присылает сам сервис). Контракт: имена колонок не переименовываются, новые добавляются в конец.",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Статусы инцидентов, один или несколько через запятую (`status=resolved,ongoing`). Без параметра — все",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ongoing",
+                  "resolved",
+                  "dismissed",
+                  "auto_closed_changed",
+                  "auto_closed_timeout"
+                ]
+              }
+            }
+          },
+          {
+            "name": "server_ids",
+            "required": false,
+            "in": "query",
+            "description": "Только инциденты этих серверов, один или несколько через запятую (`server_ids=563,564`). Без параметра — все серверы аккаунта. Если какой-то из идентификаторов в аккаунте не найден — 404",
+            "schema": {
+              "example": [
+                563,
+                564
+              ],
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          {
+            "name": "project_id",
+            "required": false,
+            "in": "query",
+            "description": "Только инциденты серверов этого проекта. Без параметра — все проекты аккаунта",
+            "schema": {
+              "example": 100000,
+              "type": "number"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Инциденты, начавшиеся не раньше этого момента (ISO 8601, UTC). Не глубже окна тарифа `incident_retention_days`",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-08-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Инциденты, начавшиеся не позже этого момента (ISO 8601, UTC)",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-09-01T00:00:00.000Z",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV-файл"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}": {
+      "get": {
+        "operationId": "IncidentsController_getIncident",
+        "summary": "Получить инцидент",
+        "description": "Возвращает подробную карточку инцидента: статус, время начала/окончания, root-причину, ключевое слово, replay-ссылку, а также скриншот и сетевую диагностику (заголовки, тело ответа, OpenSSL, ping/nmap/mtr/traceroute, тайминги) по каждой локации. Поле `screenshot` отдаётся только при включённой фиче тарифа `screenshots_enabled`, поле `details` — только при `network_diagnostics_enabled`; иначе они равны `null`.",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Инцидент успешно получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "IncidentsController_deleteIncident",
+        "summary": "Удалить инцидент",
+        "description": "Полностью удаляет инцидент вместе с сетевой диагностикой, скриншотом, комментариями, AI-саммари и историей отправленных уведомлений. Операция необратима. Аптайм и SLA считаются по инцидентам, поэтому после удаления процент доступности сервера пересчитается вверх — на статус-страницах и во всех отчётах, сформированных после удаления (уже выпущенные отчёты сохраняют прежние цифры). Удалить можно только закрытый инцидент: для активного (`ongoing`) вернётся 409 — дождитесь восстановления сервера, иначе следующая проверка создаст инцидент заново.",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Инцидент успешно удалён"
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          },
+          "409": {
+            "description": "Нельзя удалить активный инцидент"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents": {
+      "get": {
+        "operationId": "IncidentsController_getIncidentsByAccount",
+        "summary": "Получить все инциденты на аккаунте",
+        "description": "Возвращает плоский список инцидентов по всем серверам аккаунта, отсортированный по дате начала по убыванию. Фильтры: `status` — один или несколько через запятую (`ongoing`, `resolved`, `dismissed`, `auto_closed_changed`, `auto_closed_timeout`), `server_ids` — идентификаторы серверов через запятую (404, если какой-то из них в аккаунте не найден), `project_id` — только серверы одного проекта, `from`/`to` — окно по времени начала. Глубина выборки ограничена `incident_retention_days` текущего тарифа; идущие инциденты отдаются независимо от неё, даже если начались раньше окна. Явно заданный `from` соблюдается как есть.",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Статусы инцидентов, один или несколько через запятую (`status=resolved,ongoing`). Без параметра — все",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ongoing",
+                  "resolved",
+                  "dismissed",
+                  "auto_closed_changed",
+                  "auto_closed_timeout"
+                ]
+              }
+            }
+          },
+          {
+            "name": "server_ids",
+            "required": false,
+            "in": "query",
+            "description": "Только инциденты этих серверов, один или несколько через запятую (`server_ids=563,564`). Без параметра — все серверы аккаунта. Если какой-то из идентификаторов в аккаунте не найден — 404",
+            "schema": {
+              "example": [
+                563,
+                564
+              ],
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          {
+            "name": "project_id",
+            "required": false,
+            "in": "query",
+            "description": "Только инциденты серверов этого проекта. Без параметра — все проекты аккаунта",
+            "schema": {
+              "example": 100000,
+              "type": "number"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Инциденты, начавшиеся не раньше этого момента (ISO 8601, UTC). Не глубже окна тарифа `incident_retention_days`",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-08-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Инциденты, начавшиеся не позже этого момента (ISO 8601, UTC)",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-09-01T00:00:00.000Z",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Инциденты успешно получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IncidentResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/events": {
+      "get": {
+        "operationId": "IncidentsController_getIncidentEventsByServer",
+        "summary": "Получить события инцидента",
+        "description": "Возвращает хронологическую ленту событий инцидента: смены статуса, отправленные уведомления (email/Telegram/MAX/вебхуки), подтверждения, авто-восстановления и т.п. Используется для отображения таймлайна на странице инцидента и для аудита, в какие каналы и когда уходили уведомления. События `screenshot` и `diagnostics` отдаются только на тарифах с включёнными `screenshots_enabled` и `network_diagnostics_enabled` соответственно.",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "События инцидента успешно получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IncidentEventResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/server": {
+      "get": {
+        "operationId": "IncidentsController_getServerByIncidentId",
+        "summary": "Получить сервер по инциденту",
+        "description": "Удобный шорткат: по `incidentId` сразу возвращает связанный сервер с актуальными настройками мониторинга и статусом. Эквивалентно последовательному `GET /v1/incidents/{id}` + `GET /v1/servers/{server_id}` в один запрос.",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Сервер успешно получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/report": {
+      "get": {
+        "operationId": "IncidentsController_downloadIncidentReport",
+        "summary": "Скачать PDF отчёт по инциденту",
+        "description": "Возвращает готовый PDF-отчёт по инциденту в виде файла (`application/pdf`). Удобно для прикрепления к тикетам, постмортемам и отчётам клиенту. Состав секций настраивается через repeated query `sections` — допустимые значения: `ai_summary`, `diagnostics`, `technical_reference`, `events` (пример: `?sections=ai_summary&sections=events`). Доступно только на тарифах с включённым отчётом по инциденту (`incident_report_enabled`) — иначе 403.",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sections",
+            "required": false,
+            "in": "query",
+            "description": "Секции, которые будут включены в отчёт. Требуется передавать как repeated query (?sections=ai_summary&sections=events)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ai_summary",
+                  "diagnostics",
+                  "technical_reference",
+                  "events"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF отчёт по инциденту успешно сформирован"
+          },
+          "403": {
+            "description": "PDF отчёт по инциденту недоступен на текущем тарифе"
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/ai-summary": {
+      "post": {
+        "operationId": "IncidentsController_generateIncidentAiSummary",
+        "summary": "Сгенерировать AI саммари инцидента",
+        "description": "Генерирует (или возвращает закэшированное) AI-саммари инцидента: краткий человекочитаемый разбор того, что произошло и в чём вероятная причина, на основе диагностических данных. Идемпотентна: повторные вызовы для того же инцидента возвращают уже сгенерированную сводку. Требует тарифа с включённой сетевой диагностикой (`network_diagnostics_enabled`).",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AI саммари успешно сгенерировано",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/ai-summary/rating": {
+      "post": {
+        "operationId": "IncidentsController_rateIncidentAiSummary",
+        "summary": "Оценить AI саммари инцидента",
+        "description": "Проставляет пользовательскую оценку ранее сгенерированному AI-саммари инцидента: допустимые значения `rating` — `positive` или `negative`. Используется для сбора обратной связи о качестве AI-разбора. Передайте `rating: null`, чтобы сбросить ранее поставленную оценку.",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentSummaryRatingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Оценка успешно сохранена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Инцидент не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/comments": {
+      "post": {
+        "operationId": "IncidentCommentController_create",
+        "summary": "Создать комментарий к инциденту",
+        "description": "Добавляет текстовый комментарий к инциденту, опционально с вложениями (`attached_files`). Ссылки на вложения должны быть получены заранее через `POST /v1/incidents/{incidentId}/comments/upload-url` — произвольные внешние URL не принимаются. Требует тарифа с включёнными комментариями к инцидентам (`incident_comments_enabled`).",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIncidentCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Комментарий успешно создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "IncidentCommentController_getAllCommentsByIncident",
+        "summary": "Получить все комментарии к инциденту",
+        "description": "Возвращает список всех комментариев к инциденту в хронологическом порядке с прикреплёнными файлами и временем создания/обновления. Удобно для отображения обсуждения постмортема или хронологии действий дежурного.",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Комментарии успешно получены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommentResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/comments/upload-url": {
+      "post": {
+        "operationId": "IncidentCommentController_getAttachmentUploadUrl",
+        "summary": "Получить ссылку для загрузки вложения к комментарию инцидента",
+        "description": "Возвращает временную ссылку (`uploadUrl`), по которой клиент должен `PUT`-нуть содержимое файла напрямую, минуя API Statuser, и итоговый публичный URL (`fileUrl`). После успешной загрузки `fileUrl` передаётся в `attached_files` при создании/обновлении комментария. Лимиты: расширение файла должно быть разрешено, размер — не больше 5 МБ. Требует тарифа с включёнными комментариями к инцидентам (`incident_comments_enabled`).",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIncidentCommentUploadUrlDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ссылка успешно получена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignedUploadUrlResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{incidentId}/comments/{commentId}": {
+      "patch": {
+        "operationId": "IncidentCommentController_update",
+        "summary": "Обновить комментарий",
+        "description": "Редактирует текст и/или список вложений уже опубликованного комментария к инциденту. Поле `attached_files`, если передано, полностью заменяет предыдущий список вложений — передавайте все актуальные ссылки, а не только новые. Вложения, отсутствующие в новом списке, удаляются безвозвратно.",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIncidentCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Комментарий успешно обновлён",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "IncidentCommentController_delete",
+        "summary": "Удалить комментарий",
+        "description": "Окончательно удаляет комментарий и одновременно удаляет все его файлы-вложения. Операция необратима — восстановить ни комментарий, ни файлы будет нельзя.",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Комментарий успешно удалён"
+          },
+          "404": {
+            "description": "Комментарий не найден"
+          }
+        },
+        "tags": [
+          "Инциденты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/v1/activity-log": {
       "get": {
         "operationId": "ActivityLogController_list",
@@ -3303,6 +3786,7 @@
             "schema": {
               "example": "server",
               "enum": [
+                "project",
                 "server",
                 "notification_rule",
                 "notification_email",
@@ -3345,6 +3829,13 @@
               "items": {
                 "type": "string",
                 "enum": [
+                  "project.create",
+                  "project.update",
+                  "project.delete",
+                  "project.avatar_update",
+                  "project.avatar_delete",
+                  "project.channel_update",
+                  "project.reorder",
                   "server.create",
                   "server.update",
                   "server.delete",
@@ -3396,6 +3887,7 @@
                   "status_page_announcement.delete",
                   "incident.delete",
                   "incident.report_download",
+                  "incident.export",
                   "incident.ai_summary_generate",
                   "incident_comment.create",
                   "incident_comment.update",
@@ -3407,6 +3899,9 @@
                   "auth.password_reset_request",
                   "auth.password_reset_complete",
                   "account.password_change",
+                  "account.email_change_request",
+                  "account.email_change_confirm",
+                  "account.email_change_cancel",
                   "account.update",
                   "account.avatar_update",
                   "account.avatar_delete",
@@ -3415,6 +3910,7 @@
                   "api_key.create",
                   "api_key.update",
                   "api_key.revoke",
+                  "api_key.rotate",
                   "passkey.register",
                   "passkey.delete",
                   "totp.bind",
@@ -3579,6 +4075,7 @@
             "schema": {
               "example": "server",
               "enum": [
+                "project",
                 "server",
                 "notification_rule",
                 "notification_email",
@@ -3621,6 +4118,13 @@
               "items": {
                 "type": "string",
                 "enum": [
+                  "project.create",
+                  "project.update",
+                  "project.delete",
+                  "project.avatar_update",
+                  "project.avatar_delete",
+                  "project.channel_update",
+                  "project.reorder",
                   "server.create",
                   "server.update",
                   "server.delete",
@@ -3672,6 +4176,7 @@
                   "status_page_announcement.delete",
                   "incident.delete",
                   "incident.report_download",
+                  "incident.export",
                   "incident.ai_summary_generate",
                   "incident_comment.create",
                   "incident_comment.update",
@@ -3683,6 +4188,9 @@
                   "auth.password_reset_request",
                   "auth.password_reset_complete",
                   "account.password_change",
+                  "account.email_change_request",
+                  "account.email_change_confirm",
+                  "account.email_change_cancel",
                   "account.update",
                   "account.avatar_update",
                   "account.avatar_delete",
@@ -3691,6 +4199,7 @@
                   "api_key.create",
                   "api_key.update",
                   "api_key.revoke",
+                  "api_key.rotate",
                   "passkey.register",
                   "passkey.delete",
                   "totp.bind",
@@ -3830,15 +4339,15 @@
       "description": ""
     },
     {
-      "name": "Нотификации",
-      "description": ""
-    },
-    {
       "name": "Серверы",
       "description": ""
     },
     {
       "name": "Страницы статуса",
+      "description": ""
+    },
+    {
+      "name": "Уведомления",
       "description": ""
     }
   ],
@@ -3879,6 +4388,11 @@
       "TelegramResponseDto": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "number",
+            "description": "Идентификатор привязки. Им же канал адресуется в настройках проекта (`GET /v1/projects/:id/channels`) — id из Телеграма для этого не годится, он не влезает в число",
+            "example": 12
+          },
           "telegram_id": {
             "type": "string",
             "description": "ID Телеграм аккаунта или чата",
@@ -3933,6 +4447,7 @@
           }
         },
         "required": [
+          "id",
           "telegram_id",
           "telegram_username",
           "type",
@@ -3989,12 +4504,18 @@
           "timezone": {
             "type": "string",
             "example": "Europe/Moscow",
-            "description": "Часовой пояс, в котором отображается время в нотификациях и PDF-отчётах по инцидентам. В панели управления время показывается по часовому поясу устройства"
+            "description": "Часовой пояс, в котором отображается время в уведомлениях и PDF-отчётах по инцидентам. В панели управления время показывается по часовому поясу устройства"
           },
           "is_ai_assistant_enabled": {
             "type": "boolean",
             "example": true,
             "description": "Отображается ли чат с ИИ помощником в панели управления"
+          },
+          "pending_email": {
+            "type": "string",
+            "example": "new@example.com",
+            "description": "Адрес, ожидающий подтверждения смены емейла. Логином остаётся `email`, пока владелец нового ящика не перейдёт по ссылке из письма",
+            "nullable": true
           }
         },
         "required": [
@@ -4006,7 +4527,8 @@
           "created_at",
           "password_changed_at",
           "timezone",
-          "is_ai_assistant_enabled"
+          "is_ai_assistant_enabled",
+          "pending_email"
         ],
         "title": "AccountResponseDto"
       },
@@ -4021,7 +4543,7 @@
           "timezone": {
             "type": "string",
             "example": "Europe/Moscow",
-            "description": "Часовой пояс, в котором отображается время в нотификациях и PDF-отчётах по инцидентам. В панели управления время показывается по часовому поясу устройства"
+            "description": "Часовой пояс, в котором отображается время в уведомлениях и PDF-отчётах по инцидентам. В панели управления время показывается по часовому поясу устройства"
           },
           "is_ai_assistant_enabled": {
             "type": "boolean",
@@ -4034,6 +4556,11 @@
       "PlanFeaturesResponseDto": {
         "type": "object",
         "properties": {
+          "projects_limit": {
+            "type": "number",
+            "example": 3,
+            "description": "Максимальное количество проектов. Лимиты серверов и страниц статуса считаются по аккаунту целиком, а не по проекту"
+          },
           "servers_limit": {
             "type": "number",
             "example": 50,
@@ -4149,7 +4676,7 @@
           "incident_report_enabled": {
             "type": "boolean",
             "example": true,
-            "description": "Возможность скачивания отчета по инциденту"
+            "description": "Возможность скачивания отчёта по инциденту"
           },
           "webhook_notifications_enabled": {
             "type": "boolean",
@@ -4219,6 +4746,7 @@
           }
         },
         "required": [
+          "projects_limit",
           "servers_limit",
           "available_locations",
           "allow_location_selection",
@@ -4346,7 +4874,7 @@
             "nullable": true
           },
           "pending_plan": {
-            "description": "Планируемый тариф на который произойдет даунгрейд",
+            "description": "Планируемый тариф на который произойдёт даунгрейд",
             "nullable": true,
             "allOf": [
               {
@@ -4397,6 +4925,11 @@
       "CreateServerDto": {
         "type": "object",
         "properties": {
+          "project_id": {
+            "type": "number",
+            "example": 100000,
+            "description": "Проект, в который попадёт сервер. Без параметра — самый старый проект аккаунта"
+          },
           "host": {
             "type": "string",
             "example": "192.168.1.1",
@@ -4847,6 +5380,11 @@
             "example": 1,
             "description": "ID сервера"
           },
+          "project_id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID проекта, которому принадлежит сервер. Сервер, созданный без указания проекта, попадает в самый старый проект аккаунта"
+          },
           "host": {
             "type": "string",
             "example": "192.168.1.1",
@@ -5163,6 +5701,7 @@
         },
         "required": [
           "id",
+          "project_id",
           "host",
           "protocol",
           "heartbeat_token",
@@ -5209,6 +5748,11 @@
       "UpdateServerDto": {
         "type": "object",
         "properties": {
+          "project_id": {
+            "type": "number",
+            "example": 100000,
+            "description": "Перенести сервер в этот проект. Непереданное поле оставляет проект прежним"
+          },
           "host": {
             "type": "string",
             "example": "192.168.1.1",
@@ -5700,7 +6244,7 @@
                 "value": "old-record.example.com"
               }
             ],
-            "description": "Удаленные DNS записи",
+            "description": "Удалённые DNS записи",
             "nullable": true
           },
           "change_type": {
@@ -5731,13 +6275,162 @@
         ],
         "title": "DnsRecordDiffResponseDto"
       },
+      "ProjectResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 100000,
+            "description": "ID проекта"
+          },
+          "name": {
+            "type": "string",
+            "example": "Мой мониторинг",
+            "description": "Название проекта"
+          },
+          "avatar_url": {
+            "type": "string",
+            "nullable": true,
+            "example": null,
+            "description": "Ссылка на загруженную иконку проекта. `null` значит, что свою иконку не загружали: панель рисует градиент, вычисленный из `id`"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-06-01T10:00:00.000Z",
+            "description": "Дата создания проекта"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "avatar_url",
+          "created_at"
+        ],
+        "title": "ProjectResponseDto"
+      },
+      "CreateProjectDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Клиент «Ромашка»",
+            "description": "Название проекта",
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CreateProjectDto"
+      },
+      "ReorderProjectsDto": {
+        "type": "object",
+        "properties": {
+          "project_ids": {
+            "example": [
+              100001,
+              100000
+            ],
+            "description": "Проекты аккаунта в нужном порядке. Список должен содержать КАЖДЫЙ проект аккаунта ровно один раз: по частичному пришлось бы догадываться, куда девать остальные. Порядок влияет только на список в панели — запись без project_id по-прежнему уходит в самый старый проект.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "project_ids"
+        ],
+        "title": "ReorderProjectsDto"
+      },
+      "UpdateProjectDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Клиент «Ромашка»",
+            "description": "Название проекта. Непереданное поле не меняется — как у остальных PATCH-ручек",
+            "maxLength": 255
+          }
+        },
+        "title": "UpdateProjectDto"
+      },
+      "ProjectChannelResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "email",
+              "telegram",
+              "max"
+            ],
+            "example": "telegram",
+            "description": "Тип канала"
+          },
+          "id": {
+            "type": "number",
+            "example": 12,
+            "description": "ID канала в своём справочнике (адреса, привязки, чаты)"
+          },
+          "title": {
+            "type": "string",
+            "example": "@ops_alerts",
+            "description": "Подпись канала: адрес, имя чата или привязки"
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Пользуется ли этим каналом проект. Уведомления о мониторинге уходят только во включённые; события аккаунта (счета, безопасность) приходят во все каналы независимо от проекта"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "title",
+          "is_enabled"
+        ],
+        "title": "ProjectChannelResponseDto"
+      },
+      "UpdateProjectChannelDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "email",
+              "telegram",
+              "max"
+            ],
+            "example": "telegram",
+            "description": "Тип канала"
+          },
+          "channel_id": {
+            "type": "number",
+            "example": 12,
+            "description": "ID канала в своём справочнике"
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Пользуется ли этим каналом проект"
+          }
+        },
+        "required": [
+          "type",
+          "channel_id",
+          "is_enabled"
+        ],
+        "title": "UpdateProjectChannelDto"
+      },
       "NotificationRuleResponseDto": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
             "example": "service_alerts",
-            "description": "Тип подписки на уведомления, например, для оповещений или обновлений",
+            "description": "Тип события, о котором приходят уведомления: падения сервисов, SSL, домены, счета, безопасность, новости продукта",
             "enum": [
               "updates",
               "weekly_reports",
@@ -5754,6 +6447,15 @@
               "security_alerts",
               "receipt"
             ]
+          },
+          "scope": {
+            "type": "string",
+            "example": "project",
+            "enum": [
+              "project",
+              "account"
+            ],
+            "description": "Область правила. `project` — настройка относится к запрошенному проекту (падения, SSL, домены, DNS, реестры блокировок, недельные отчёты); `account` — общая для аккаунта (счета, безопасность, ключи, новости, идеи)"
           },
           "channels": {
             "type": "object",
@@ -5779,6 +6481,7 @@
         },
         "required": [
           "type",
+          "scope",
           "channels"
         ],
         "title": "NotificationRuleResponseDto"
@@ -5789,7 +6492,7 @@
           "type": {
             "type": "string",
             "example": "service_alerts",
-            "description": "Тип подписки на уведомления, например, для оповещений или обновлений",
+            "description": "Тип события, о котором приходят уведомления: падения сервисов, SSL, домены, счета, безопасность, новости продукта",
             "enum": [
               "updates",
               "weekly_reports",
@@ -5821,6 +6524,11 @@
             "type": "boolean",
             "example": true,
             "description": "Включены ли уведомления в MAX для данного типа подписки"
+          },
+          "project_id": {
+            "type": "number",
+            "example": 100000,
+            "description": "Проект, в котором меняется правило. Учитывается только для типов про мониторинг (`scope: project`); у остальных настройка общая для аккаунта, и поле игнорируется. Без параметра — самый старый проект аккаунта"
           }
         },
         "required": [
@@ -5876,6 +6584,16 @@
               ]
             }
           },
+          "project_ids": {
+            "example": [
+              100000
+            ],
+            "description": "Проекты, события мониторинга которых уходят в этот вебхук (сбои сервисов, SSL, домены, DNS, реестры, недельный отчёт). События аккаунта — счета, безопасность, ключи, отпуск, идеи, обновления — приходят всегда и от проекта не зависят.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
           "is_secret_set": {
             "type": "boolean",
             "example": true,
@@ -5893,6 +6611,7 @@
           "name",
           "url",
           "subscriptions",
+          "project_ids",
           "is_secret_set",
           "created_at"
         ],
@@ -5939,6 +6658,16 @@
                 "api_key_alerts",
                 "security_alerts"
               ]
+            }
+          },
+          "project_ids": {
+            "example": [
+              100000
+            ],
+            "description": "Проекты, события мониторинга которых уходят в этот вебхук. Без этого поля — самый старый проект, тот же, куда попадают серверы, созданные без указания проекта. Пустой список означает, что события мониторинга в вебхук не уходят вовсе. События аккаунта (счета, безопасность, ключи) приходят всегда и здесь не настраиваются.",
+            "type": "array",
+            "items": {
+              "type": "number"
             }
           }
         },
@@ -5992,9 +6721,39 @@
                 "security_alerts"
               ]
             }
+          },
+          "project_ids": {
+            "example": [
+              100000
+            ],
+            "description": "Проекты, события мониторинга которых уходят в этот вебхук. Непереданное поле не меняет текущий набор; пустой список выключает события мониторинга целиком. События аккаунта (счета, безопасность, ключи) приходят всегда и здесь не настраиваются.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
           }
         },
         "title": "UpdateWebhookEndpointDto"
+      },
+      "TestWebhookEndpointDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "https://example.com/webhooks/statuser",
+            "description": "URL, на который отправить тестовый запрос"
+          },
+          "secret": {
+            "type": "string",
+            "example": "my-secret",
+            "description": "Секрет для подписи запроса. Передаётся, чтобы проверить и подпись тоже; без него запрос уходит неподписанным",
+            "nullable": true
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "TestWebhookEndpointDto"
       },
       "CreateMaxLinkDto": {
         "type": "object",
@@ -6019,6 +6778,11 @@
       "MaxResponseDto": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "number",
+            "description": "Идентификатор привязки. Им же канал адресуется в настройках проекта (`GET /v1/projects/:id/channels`) — id из MAX для этого не годится, он не влезает в число",
+            "example": 7
+          },
           "max_id": {
             "type": "string",
             "description": "ID чата в Max",
@@ -6058,6 +6822,7 @@
           }
         },
         "required": [
+          "id",
           "max_id",
           "max_name",
           "avatar_url",
@@ -6159,7 +6924,7 @@
           "holiday_until": {
             "type": "string",
             "nullable": true,
-            "description": "Дата и время (UTC) до включения уведомлений, либо null, если режим отключен"
+            "description": "Дата и время (UTC) до включения уведомлений, либо null, если режим отключён"
           }
         },
         "required": [
@@ -6178,672 +6943,6 @@
           }
         },
         "title": "CreateHolidayModeDto"
-      },
-      "TimingDetails": {
-        "type": "object",
-        "properties": {
-          "effective_url": {
-            "type": "string",
-            "example": "https://example.com",
-            "description": "Финальный URL после всех редиректов"
-          },
-          "redirect_count": {
-            "type": "number",
-            "example": 0,
-            "description": "Количество редиректов"
-          },
-          "name_lookup_time": {
-            "type": "string",
-            "example": "0.001",
-            "description": "Время разрешения имени хоста"
-          },
-          "connect_time": {
-            "type": "string",
-            "example": "0.002",
-            "description": "Время установления соединения"
-          },
-          "pre_transfer_time": {
-            "type": "string",
-            "example": "0.003",
-            "description": "Время до начала передачи данных"
-          },
-          "start_transfer_time": {
-            "type": "string",
-            "example": "0.004",
-            "description": "Время начала передачи данных"
-          },
-          "app_connect_time": {
-            "type": "string",
-            "example": "0.005",
-            "description": "Время установления SSL-соединения"
-          },
-          "redirect_time": {
-            "type": "string",
-            "example": "0.006",
-            "description": "Общее время редиректов"
-          },
-          "total_time": {
-            "type": "string",
-            "example": "0.007",
-            "description": "Общее время выполнения запроса"
-          },
-          "response_code": {
-            "type": "string",
-            "example": "200",
-            "description": "Код ответа сервера"
-          }
-        },
-        "required": [
-          "effective_url",
-          "redirect_count",
-          "name_lookup_time",
-          "connect_time",
-          "pre_transfer_time",
-          "start_transfer_time",
-          "app_connect_time",
-          "redirect_time",
-          "total_time",
-          "response_code"
-        ],
-        "title": "TimingDetails"
-      },
-      "ServerCheckDetailsResponseDto": {
-        "type": "object",
-        "properties": {
-          "headers": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "example": {
-              "content-type": "text/html"
-            },
-            "description": "Заголовки ответа",
-            "nullable": true
-          },
-          "body": {
-            "type": "string",
-            "example": "https://s3.statuser.cloud/responses/body.txt",
-            "description": "Ссылка на сохранённое тело ответа",
-            "nullable": true
-          },
-          "openssl": {
-            "example": [
-              "line 1",
-              "line 2"
-            ],
-            "description": "Результаты выполнения OpenSSL",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "mtr": {
-            "example": [
-              "mtr line 1",
-              "mtr line 2"
-            ],
-            "description": "Результаты выполнения MTR",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "traceroute": {
-            "example": [
-              "traceroute line 1",
-              "traceroute line 2"
-            ],
-            "description": "Результаты выполнения traceroute",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "ping": {
-            "example": [
-              "ping line 1",
-              "ping line 2"
-            ],
-            "description": "Результаты выполнения ping",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "nmap": {
-            "example": [
-              "nmap line 1",
-              "nmap line 2"
-            ],
-            "description": "Результаты выполнения nmap",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "resolved_ips": {
-            "example": [
-              "192.168.1.1",
-              "8.8.8.8"
-            ],
-            "description": "Зарезолвленные IP",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "timing": {
-            "description": "Детали тайминга запроса",
-            "nullable": true,
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TimingDetails"
-              }
-            ]
-          },
-          "location": {
-            "type": "string",
-            "example": "msk-1",
-            "description": "Регион проверки",
-            "enum": [
-              "msk-1",
-              "spb-1",
-              "ala-1",
-              "nyc-1",
-              "ams-1"
-            ]
-          }
-        },
-        "required": [
-          "headers",
-          "body",
-          "openssl",
-          "mtr",
-          "traceroute",
-          "ping",
-          "nmap",
-          "resolved_ips",
-          "timing",
-          "location"
-        ],
-        "title": "ServerCheckDetailsResponseDto"
-      },
-      "IncidentResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number",
-            "example": 1,
-            "description": "ID инцидента"
-          },
-          "server_id": {
-            "type": "number",
-            "example": 1,
-            "description": "ID сервера"
-          },
-          "started_at": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2023-01-01T00:00:00.000Z",
-            "description": "Время начала инцидента"
-          },
-          "ended_at": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2023-01-02T00:00:00.000Z",
-            "description": "Время окончания инцидента",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "example": "resolved",
-            "description": "Текущий статус инцидента. `ongoing` — инцидент активен, сервер сейчас недоступен. `resolved` — сервер восстановился, инцидент закрыт штатно. `dismissed` — инцидент вручную отклонён пользователем. `auto_closed_changed` — автоматически закрыт, потому что параметры проверки сервера изменились, и прежний инцидент стал нерелевантным. `auto_closed_timeout` — автоматически закрыт планировщиком после длительной неактивности.",
-            "enum": [
-              "ongoing",
-              "resolved",
-              "dismissed",
-              "auto_closed_changed",
-              "auto_closed_timeout"
-            ]
-          },
-          "root_error": {
-            "type": "string",
-            "description": "Основная ошибка проверки сервера"
-          },
-          "keyword": {
-            "type": "string",
-            "description": "Ключевое слово, которое искали при типе проверки keyword",
-            "nullable": true,
-            "example": "simple"
-          },
-          "llm_model": {
-            "type": "object",
-            "example": "deepseek/deepseek-v4-flash",
-            "description": "Модель, которую использовала проверка при `protocol = llm`. Снимок на момент создания инцидента; null в режиме проверки доступности и у остальных протоколов",
-            "nullable": true
-          },
-          "screenshot": {
-            "type": "string",
-            "example": "https://s3.statuser.cloud/sreenshots/img.png",
-            "description": "Ссылка на скриншот страницы",
-            "nullable": true
-          },
-          "replay": {
-            "type": "string",
-            "example": "curl -X GET 1.1.1.1",
-            "description": "Команда для повтора запроса",
-            "nullable": true
-          },
-          "details": {
-            "description": "Детали проваленной проверки",
-            "nullable": true,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ServerCheckDetailsResponseDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "server_id",
-          "started_at",
-          "ended_at",
-          "status",
-          "root_error",
-          "keyword",
-          "llm_model",
-          "screenshot",
-          "replay",
-          "details"
-        ],
-        "title": "IncidentResponseDto"
-      },
-      "ErrorMeta": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "string",
-            "description": "Ошибка проверки сервера"
-          },
-          "location": {
-            "type": "string",
-            "description": "Регион проверки"
-          }
-        },
-        "required": [
-          "error",
-          "location"
-        ],
-        "title": "ErrorMeta"
-      },
-      "ResolvedMeta": {
-        "type": "object",
-        "properties": {
-          "location": {
-            "type": "string",
-            "description": "Регион проверки"
-          }
-        },
-        "required": [
-          "location"
-        ],
-        "title": "ResolvedMeta"
-      },
-      "NotificationMeta": {
-        "type": "object",
-        "properties": {
-          "channel": {
-            "type": "string",
-            "description": "Канал уведомления"
-          },
-          "recipient": {
-            "type": "string",
-            "description": "Получатель уведомления"
-          },
-          "type": {
-            "type": "string",
-            "description": "Тип уведомления"
-          },
-          "status": {
-            "type": "string",
-            "description": "Статус отправки"
-          }
-        },
-        "required": [
-          "channel",
-          "recipient",
-          "type",
-          "status"
-        ],
-        "title": "NotificationMeta"
-      },
-      "CommentMeta": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number",
-            "description": "ID  комментария"
-          },
-          "comment_text": {
-            "type": "string",
-            "description": "Сообщение комментария"
-          },
-          "attached_files": {
-            "description": "Прикрепленные к комментарию файлы",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "updated_at": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2023-01-01T00:00:00.000Z",
-            "description": "Дата обновления комментария"
-          }
-        },
-        "required": [
-          "id",
-          "comment_text",
-          "attached_files",
-          "updated_at"
-        ],
-        "title": "CommentMeta"
-      },
-      "ScreenshotMeta": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "example": "https://s3.statuser.cloud/screenshots/img.png",
-            "description": "Ссылка на скриншот страницы",
-            "nullable": true
-          }
-        },
-        "required": [
-          "url"
-        ],
-        "title": "ScreenshotMeta"
-      },
-      "DiagnosticsMeta": {
-        "type": "object",
-        "properties": {
-          "location": {
-            "type": "string",
-            "description": "Регион, из которого выполнялась диагностика"
-          },
-          "tools": {
-            "type": "array",
-            "description": "Блоки диагностики, которые удалось собрать",
-            "example": [
-              "ping",
-              "mtr",
-              "traceroute"
-            ],
-            "items": {
-              "type": "string",
-              "enum": [
-                "headers",
-                "body",
-                "timing",
-                "resolved_ips",
-                "ping",
-                "traceroute",
-                "mtr",
-                "nmap",
-                "openssl"
-              ]
-            }
-          }
-        },
-        "required": [
-          "location",
-          "tools"
-        ],
-        "title": "DiagnosticsMeta"
-      },
-      "IncidentEventResponseDto": {
-        "type": "object",
-        "properties": {
-          "created_at": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2023-01-01T00:00:00.000Z",
-            "description": "Время создания события"
-          },
-          "type": {
-            "type": "string",
-            "example": "end",
-            "description": "Тип события",
-            "enum": [
-              "error",
-              "resolved",
-              "notification",
-              "comment",
-              "start",
-              "end",
-              "screenshot",
-              "diagnostics"
-            ]
-          },
-          "meta": {
-            "description": "Метаданные события",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/ErrorMeta"
-              },
-              {
-                "$ref": "#/components/schemas/ResolvedMeta"
-              },
-              {
-                "$ref": "#/components/schemas/NotificationMeta"
-              },
-              {
-                "$ref": "#/components/schemas/CommentMeta"
-              },
-              {
-                "$ref": "#/components/schemas/ScreenshotMeta"
-              },
-              {
-                "$ref": "#/components/schemas/DiagnosticsMeta"
-              }
-            ],
-            "nullable": true
-          }
-        },
-        "required": [
-          "created_at",
-          "type",
-          "meta"
-        ],
-        "title": "IncidentEventResponseDto"
-      },
-      "IncidentSummaryResponseDto": {
-        "type": "object",
-        "properties": {
-          "summary": {
-            "type": "string",
-            "description": "Сгенерированное ИИ саммари диагностики инцидента",
-            "example": "Сервер недоступен из-за сетевого таймаута...",
-            "nullable": true
-          },
-          "rating": {
-            "type": "string",
-            "description": "Оценка саммари пользователем",
-            "example": "positive",
-            "enum": [
-              "positive",
-              "negative"
-            ],
-            "nullable": true
-          }
-        },
-        "required": [
-          "summary",
-          "rating"
-        ],
-        "title": "IncidentSummaryResponseDto"
-      },
-      "IncidentSummaryRatingDto": {
-        "type": "object",
-        "properties": {
-          "rating": {
-            "type": "string",
-            "description": "Оценка саммари",
-            "example": "positive",
-            "enum": [
-              "positive",
-              "negative"
-            ],
-            "nullable": true
-          }
-        },
-        "title": "IncidentSummaryRatingDto"
-      },
-      "IncidentCommentAttachmentDto": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "example": "https://s3.statuser.cloud/incident-attachments-dev/uuid.png",
-            "description": "URL вложенного файла"
-          },
-          "file_name": {
-            "type": "string",
-            "example": "error-screenshot.png",
-            "description": "Имя вложенного файла"
-          }
-        },
-        "required": [
-          "url",
-          "file_name"
-        ],
-        "title": "IncidentCommentAttachmentDto"
-      },
-      "CreateIncidentCommentDto": {
-        "type": "object",
-        "properties": {
-          "comment_text": {
-            "type": "string",
-            "example": "Текст комментария",
-            "description": "Текст комментария"
-          },
-          "attached_files": {
-            "description": "Список прикрепленных файлов",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IncidentCommentAttachmentDto"
-            }
-          }
-        },
-        "required": [
-          "comment_text"
-        ],
-        "title": "CreateIncidentCommentDto"
-      },
-      "CommentResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number",
-            "example": 1,
-            "description": "ID комментария"
-          },
-          "comment_text": {
-            "type": "string",
-            "example": "Комментарий",
-            "description": "Текст комментария"
-          },
-          "attached_files": {
-            "example": [],
-            "description": "Прикрепленные к комментарию файлы",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IncidentCommentAttachmentDto"
-            }
-          },
-          "created_at": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2023-01-01T00:00:00.000Z",
-            "description": "Дата создания комментария"
-          },
-          "updated_at": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2023-01-01T00:00:00.000Z",
-            "description": "Дата обновления комментария"
-          }
-        },
-        "required": [
-          "id",
-          "comment_text",
-          "attached_files",
-          "created_at",
-          "updated_at"
-        ],
-        "title": "CommentResponseDto"
-      },
-      "CreateIncidentCommentUploadUrlDto": {
-        "type": "object",
-        "properties": {
-          "file_name": {
-            "type": "string",
-            "example": "incident-log.txt",
-            "description": "Имя файла для загрузки"
-          },
-          "content_type": {
-            "type": "string",
-            "example": "text/plain",
-            "description": "MIME-тип файла"
-          },
-          "file_size": {
-            "type": "number",
-            "example": 1024,
-            "description": "Размер файла в байтах"
-          }
-        },
-        "required": [
-          "file_name"
-        ],
-        "title": "CreateIncidentCommentUploadUrlDto"
-      },
-      "PresignedUploadUrlResponseDto": {
-        "type": "object",
-        "properties": {
-          "uploadUrl": {
-            "type": "string",
-            "example": "https://s3.timeweb.cloud/..."
-          },
-          "fileUrl": {
-            "type": "string",
-            "example": "https://s3.statuser.cloud/status-pages/..."
-          }
-        },
-        "required": [
-          "uploadUrl",
-          "fileUrl"
-        ],
-        "title": "PresignedUploadUrlResponseDto"
-      },
-      "UpdateIncidentCommentDto": {
-        "type": "object",
-        "properties": {
-          "comment_text": {
-            "type": "string",
-            "example": "Текст комментария",
-            "description": "Текст комментария"
-          },
-          "attached_files": {
-            "description": "Список прикрепленных файлов с именами",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IncidentCommentAttachmentDto"
-            }
-          }
-        },
-        "title": "UpdateIncidentCommentDto"
       },
       "CheckSlugAvailabilityResponseDto": {
         "type": "object",
@@ -7403,6 +7502,11 @@
             "example": 1,
             "description": "ID страницы статуса"
           },
+          "project_id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID проекта, которому принадлежит страница. Страница, созданная без указания проекта, попадает в самый старый проект аккаунта"
+          },
           "name": {
             "type": "string",
             "example": "Statuser",
@@ -7571,6 +7675,7 @@
         },
         "required": [
           "id",
+          "project_id",
           "name",
           "status",
           "slug",
@@ -7605,6 +7710,11 @@
       "CreateStatusPageDto": {
         "type": "object",
         "properties": {
+          "project_id": {
+            "type": "number",
+            "example": 100000,
+            "description": "Проект, которому будет принадлежать страница. Без параметра — самый старый проект аккаунта"
+          },
           "name": {
             "type": "string",
             "example": "Statuser",
@@ -7745,6 +7855,11 @@
       "UpdateStatusPageDto": {
         "type": "object",
         "properties": {
+          "project_id": {
+            "type": "number",
+            "example": 100000,
+            "description": "Перенести страницу в этот проект. Непереданное поле оставляет проект прежним"
+          },
           "name": {
             "type": "string",
             "example": "Statuser",
@@ -8469,6 +8584,672 @@
         ],
         "title": "StatusPageSubscribersResponseDto"
       },
+      "TimingDetails": {
+        "type": "object",
+        "properties": {
+          "effective_url": {
+            "type": "string",
+            "example": "https://example.com",
+            "description": "Финальный URL после всех редиректов"
+          },
+          "redirect_count": {
+            "type": "number",
+            "example": 0,
+            "description": "Количество редиректов"
+          },
+          "name_lookup_time": {
+            "type": "string",
+            "example": "0.001",
+            "description": "Время разрешения имени хоста"
+          },
+          "connect_time": {
+            "type": "string",
+            "example": "0.002",
+            "description": "Время установления соединения"
+          },
+          "pre_transfer_time": {
+            "type": "string",
+            "example": "0.003",
+            "description": "Время до начала передачи данных"
+          },
+          "start_transfer_time": {
+            "type": "string",
+            "example": "0.004",
+            "description": "Время начала передачи данных"
+          },
+          "app_connect_time": {
+            "type": "string",
+            "example": "0.005",
+            "description": "Время установления SSL-соединения"
+          },
+          "redirect_time": {
+            "type": "string",
+            "example": "0.006",
+            "description": "Общее время редиректов"
+          },
+          "total_time": {
+            "type": "string",
+            "example": "0.007",
+            "description": "Общее время выполнения запроса"
+          },
+          "response_code": {
+            "type": "string",
+            "example": "200",
+            "description": "Код ответа сервера"
+          }
+        },
+        "required": [
+          "effective_url",
+          "redirect_count",
+          "name_lookup_time",
+          "connect_time",
+          "pre_transfer_time",
+          "start_transfer_time",
+          "app_connect_time",
+          "redirect_time",
+          "total_time",
+          "response_code"
+        ],
+        "title": "TimingDetails"
+      },
+      "ServerCheckDetailsResponseDto": {
+        "type": "object",
+        "properties": {
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "content-type": "text/html"
+            },
+            "description": "Заголовки ответа",
+            "nullable": true
+          },
+          "body": {
+            "type": "string",
+            "example": "https://s3.statuser.cloud/responses/body.txt",
+            "description": "Ссылка на сохранённое тело ответа",
+            "nullable": true
+          },
+          "openssl": {
+            "example": [
+              "line 1",
+              "line 2"
+            ],
+            "description": "Результаты выполнения OpenSSL",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mtr": {
+            "example": [
+              "mtr line 1",
+              "mtr line 2"
+            ],
+            "description": "Результаты выполнения MTR",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "traceroute": {
+            "example": [
+              "traceroute line 1",
+              "traceroute line 2"
+            ],
+            "description": "Результаты выполнения traceroute",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ping": {
+            "example": [
+              "ping line 1",
+              "ping line 2"
+            ],
+            "description": "Результаты выполнения ping",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nmap": {
+            "example": [
+              "nmap line 1",
+              "nmap line 2"
+            ],
+            "description": "Результаты выполнения nmap",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "resolved_ips": {
+            "example": [
+              "192.168.1.1",
+              "8.8.8.8"
+            ],
+            "description": "Зарезолвленные IP",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timing": {
+            "description": "Детали тайминга запроса",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TimingDetails"
+              }
+            ]
+          },
+          "location": {
+            "type": "string",
+            "example": "msk-1",
+            "description": "Регион проверки",
+            "enum": [
+              "msk-1",
+              "spb-1",
+              "ala-1",
+              "nyc-1",
+              "ams-1"
+            ]
+          }
+        },
+        "required": [
+          "headers",
+          "body",
+          "openssl",
+          "mtr",
+          "traceroute",
+          "ping",
+          "nmap",
+          "resolved_ips",
+          "timing",
+          "location"
+        ],
+        "title": "ServerCheckDetailsResponseDto"
+      },
+      "IncidentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID инцидента"
+          },
+          "server_id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID сервера"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Время начала инцидента"
+          },
+          "ended_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-02T00:00:00.000Z",
+            "description": "Время окончания инцидента",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "example": "resolved",
+            "description": "Текущий статус инцидента. `ongoing` — инцидент активен, сервер сейчас недоступен. `resolved` — сервер восстановился, инцидент закрыт штатно. `dismissed` — инцидент вручную отклонён пользователем. `auto_closed_changed` — автоматически закрыт, потому что параметры проверки сервера изменились, и прежний инцидент стал нерелевантным. `auto_closed_timeout` — автоматически закрыт планировщиком после длительной неактивности.",
+            "enum": [
+              "ongoing",
+              "resolved",
+              "dismissed",
+              "auto_closed_changed",
+              "auto_closed_timeout"
+            ]
+          },
+          "root_error": {
+            "type": "string",
+            "description": "Основная ошибка проверки сервера"
+          },
+          "keyword": {
+            "type": "string",
+            "description": "Ключевое слово, которое искали при типе проверки keyword",
+            "nullable": true,
+            "example": "simple"
+          },
+          "llm_model": {
+            "type": "object",
+            "example": "deepseek/deepseek-v4-flash",
+            "description": "Модель, которую использовала проверка при `protocol = llm`. Снимок на момент создания инцидента; null в режиме проверки доступности и у остальных протоколов",
+            "nullable": true
+          },
+          "screenshot": {
+            "type": "string",
+            "example": "https://s3.statuser.cloud/sreenshots/img.png",
+            "description": "Ссылка на скриншот страницы",
+            "nullable": true
+          },
+          "replay": {
+            "type": "string",
+            "example": "curl -X GET 1.1.1.1",
+            "description": "Команда для повтора запроса",
+            "nullable": true
+          },
+          "details": {
+            "description": "Детали проваленной проверки",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServerCheckDetailsResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "server_id",
+          "started_at",
+          "ended_at",
+          "status",
+          "root_error",
+          "keyword",
+          "llm_model",
+          "screenshot",
+          "replay",
+          "details"
+        ],
+        "title": "IncidentResponseDto"
+      },
+      "ErrorMeta": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Ошибка проверки сервера"
+          },
+          "location": {
+            "type": "string",
+            "description": "Регион проверки"
+          }
+        },
+        "required": [
+          "error",
+          "location"
+        ],
+        "title": "ErrorMeta"
+      },
+      "ResolvedMeta": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "Регион проверки"
+          }
+        },
+        "required": [
+          "location"
+        ],
+        "title": "ResolvedMeta"
+      },
+      "NotificationMeta": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "description": "Канал уведомления"
+          },
+          "recipient": {
+            "type": "string",
+            "description": "Получатель уведомления"
+          },
+          "type": {
+            "type": "string",
+            "description": "Тип уведомления"
+          },
+          "status": {
+            "type": "string",
+            "description": "Статус отправки"
+          }
+        },
+        "required": [
+          "channel",
+          "recipient",
+          "type",
+          "status"
+        ],
+        "title": "NotificationMeta"
+      },
+      "CommentMeta": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "ID  комментария"
+          },
+          "comment_text": {
+            "type": "string",
+            "description": "Сообщение комментария"
+          },
+          "attached_files": {
+            "description": "Прикрепленные к комментарию файлы",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Дата обновления комментария"
+          }
+        },
+        "required": [
+          "id",
+          "comment_text",
+          "attached_files",
+          "updated_at"
+        ],
+        "title": "CommentMeta"
+      },
+      "ScreenshotMeta": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "https://s3.statuser.cloud/screenshots/img.png",
+            "description": "Ссылка на скриншот страницы",
+            "nullable": true
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "ScreenshotMeta"
+      },
+      "DiagnosticsMeta": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "Регион, из которого выполнялась диагностика"
+          },
+          "tools": {
+            "type": "array",
+            "description": "Блоки диагностики, которые удалось собрать",
+            "example": [
+              "ping",
+              "mtr",
+              "traceroute"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "headers",
+                "body",
+                "timing",
+                "resolved_ips",
+                "ping",
+                "traceroute",
+                "mtr",
+                "nmap",
+                "openssl"
+              ]
+            }
+          }
+        },
+        "required": [
+          "location",
+          "tools"
+        ],
+        "title": "DiagnosticsMeta"
+      },
+      "IncidentEventResponseDto": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Время создания события"
+          },
+          "type": {
+            "type": "string",
+            "example": "end",
+            "description": "Тип события",
+            "enum": [
+              "error",
+              "resolved",
+              "notification",
+              "comment",
+              "start",
+              "end",
+              "screenshot",
+              "diagnostics"
+            ]
+          },
+          "meta": {
+            "description": "Метаданные события",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ErrorMeta"
+              },
+              {
+                "$ref": "#/components/schemas/ResolvedMeta"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationMeta"
+              },
+              {
+                "$ref": "#/components/schemas/CommentMeta"
+              },
+              {
+                "$ref": "#/components/schemas/ScreenshotMeta"
+              },
+              {
+                "$ref": "#/components/schemas/DiagnosticsMeta"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "created_at",
+          "type",
+          "meta"
+        ],
+        "title": "IncidentEventResponseDto"
+      },
+      "IncidentSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string",
+            "description": "Сгенерированное ИИ саммари диагностики инцидента",
+            "example": "Сервер недоступен из-за сетевого таймаута...",
+            "nullable": true
+          },
+          "rating": {
+            "type": "string",
+            "description": "Оценка саммари пользователем",
+            "example": "positive",
+            "enum": [
+              "positive",
+              "negative"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "summary",
+          "rating"
+        ],
+        "title": "IncidentSummaryResponseDto"
+      },
+      "IncidentSummaryRatingDto": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "string",
+            "description": "Оценка саммари",
+            "example": "positive",
+            "enum": [
+              "positive",
+              "negative"
+            ],
+            "nullable": true
+          }
+        },
+        "title": "IncidentSummaryRatingDto"
+      },
+      "IncidentCommentAttachmentDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "https://s3.statuser.cloud/incident-attachments-dev/uuid.png",
+            "description": "URL вложенного файла"
+          },
+          "file_name": {
+            "type": "string",
+            "example": "error-screenshot.png",
+            "description": "Имя вложенного файла"
+          }
+        },
+        "required": [
+          "url",
+          "file_name"
+        ],
+        "title": "IncidentCommentAttachmentDto"
+      },
+      "CreateIncidentCommentDto": {
+        "type": "object",
+        "properties": {
+          "comment_text": {
+            "type": "string",
+            "example": "Текст комментария",
+            "description": "Текст комментария"
+          },
+          "attached_files": {
+            "description": "Список прикрепленных файлов",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IncidentCommentAttachmentDto"
+            }
+          }
+        },
+        "required": [
+          "comment_text"
+        ],
+        "title": "CreateIncidentCommentDto"
+      },
+      "CommentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID комментария"
+          },
+          "comment_text": {
+            "type": "string",
+            "example": "Комментарий",
+            "description": "Текст комментария"
+          },
+          "attached_files": {
+            "example": [],
+            "description": "Прикрепленные к комментарию файлы",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IncidentCommentAttachmentDto"
+            }
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Дата создания комментария"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-01-01T00:00:00.000Z",
+            "description": "Дата обновления комментария"
+          }
+        },
+        "required": [
+          "id",
+          "comment_text",
+          "attached_files",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CommentResponseDto"
+      },
+      "CreateIncidentCommentUploadUrlDto": {
+        "type": "object",
+        "properties": {
+          "file_name": {
+            "type": "string",
+            "example": "incident-log.txt",
+            "description": "Имя файла для загрузки"
+          },
+          "content_type": {
+            "type": "string",
+            "example": "text/plain",
+            "description": "MIME-тип файла"
+          },
+          "file_size": {
+            "type": "number",
+            "example": 1024,
+            "description": "Размер файла в байтах"
+          }
+        },
+        "required": [
+          "file_name"
+        ],
+        "title": "CreateIncidentCommentUploadUrlDto"
+      },
+      "PresignedUploadUrlResponseDto": {
+        "type": "object",
+        "properties": {
+          "uploadUrl": {
+            "type": "string",
+            "example": "https://s3.timeweb.cloud/..."
+          },
+          "fileUrl": {
+            "type": "string",
+            "example": "https://s3.statuser.cloud/status-pages/..."
+          }
+        },
+        "required": [
+          "uploadUrl",
+          "fileUrl"
+        ],
+        "title": "PresignedUploadUrlResponseDto"
+      },
+      "UpdateIncidentCommentDto": {
+        "type": "object",
+        "properties": {
+          "comment_text": {
+            "type": "string",
+            "example": "Текст комментария",
+            "description": "Текст комментария"
+          },
+          "attached_files": {
+            "description": "Список прикрепленных файлов с именами",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IncidentCommentAttachmentDto"
+            }
+          }
+        },
+        "title": "UpdateIncidentCommentDto"
+      },
       "ActivityLogEntryResponseDto": {
         "type": "object",
         "properties": {
@@ -8486,6 +9267,13 @@
           "action": {
             "type": "string",
             "enum": [
+              "project.create",
+              "project.update",
+              "project.delete",
+              "project.avatar_update",
+              "project.avatar_delete",
+              "project.channel_update",
+              "project.reorder",
               "server.create",
               "server.update",
               "server.delete",
@@ -8537,6 +9325,7 @@
               "status_page_announcement.delete",
               "incident.delete",
               "incident.report_download",
+              "incident.export",
               "incident.ai_summary_generate",
               "incident_comment.create",
               "incident_comment.update",
@@ -8548,6 +9337,9 @@
               "auth.password_reset_request",
               "auth.password_reset_complete",
               "account.password_change",
+              "account.email_change_request",
+              "account.email_change_confirm",
+              "account.email_change_cancel",
               "account.update",
               "account.avatar_update",
               "account.avatar_delete",
@@ -8556,6 +9348,7 @@
               "api_key.create",
               "api_key.update",
               "api_key.revoke",
+              "api_key.rotate",
               "passkey.register",
               "passkey.delete",
               "totp.bind",
@@ -8616,7 +9409,8 @@
               "telegram",
               "max",
               "ai_chat",
-              "system"
+              "system",
+              "staff"
             ],
             "nullable": true,
             "example": "panel",
@@ -8625,6 +9419,7 @@
           "target_type": {
             "type": "string",
             "enum": [
+              "project",
               "server",
               "notification_rule",
               "notification_email",
