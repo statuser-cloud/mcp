@@ -196,6 +196,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ProjectsController_getProjects"];
+        put?: never;
+        post: operations["ProjectsController_createProject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/projects/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["ProjectsController_reorderProjects"];
+        trace?: never;
+    };
+    "/v1/projects/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ProjectsController_deleteProject"];
+        options?: never;
+        head?: never;
+        patch: operations["ProjectsController_updateProject"];
+        trace?: never;
+    };
+    "/v1/projects/{projectId}/channels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ProjectChannelsController_getChannels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["ProjectChannelsController_updateChannel"];
+        trace?: never;
+    };
     "/v1/notification-rules": {
         parameters: {
             query?: never;
@@ -242,6 +306,22 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["WebhookController_update"];
+        trace?: never;
+    };
+    "/v1/webhooks/test-notify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WebhookController_sendTestToUrl"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/webhooks/{id}/test-notify": {
@@ -402,182 +482,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/v1/servers/{serverId}/incidents": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["IncidentsController_getIncidentsByServer"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/incidents/{incidentId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["IncidentsController_getIncident"];
-        put?: never;
-        post?: never;
-        delete: operations["IncidentsController_deleteIncident"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/incidents": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["IncidentsController_getIncidentsByAccount"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/incidents/{incidentId}/events": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["IncidentsController_getIncidentEventsByServer"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/incidents/{incidentId}/server": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["IncidentsController_getServerByIncidentId"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/incidents/{incidentId}/report": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["IncidentsController_downloadIncidentReport"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/incidents/{incidentId}/ai-summary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["IncidentsController_generateIncidentAiSummary"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/incidents/{incidentId}/ai-summary/rating": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["IncidentsController_rateIncidentAiSummary"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/incidents/{incidentId}/comments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["IncidentCommentController_getAllCommentsByIncident"];
-        put?: never;
-        post: operations["IncidentCommentController_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/incidents/{incidentId}/comments/upload-url": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["IncidentCommentController_getAttachmentUploadUrl"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/incidents/{incidentId}/comments/{commentId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["IncidentCommentController_delete"];
-        options?: never;
-        head?: never;
-        patch: operations["IncidentCommentController_update"];
         trace?: never;
     };
     "/v1/status-pages/check-slug/{slug}": {
@@ -900,6 +804,198 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/servers/{serverId}/incidents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["IncidentsController_getIncidentsByServer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/incidents/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["IncidentsController_exportIncidentsCsv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/incidents/{incidentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["IncidentsController_getIncident"];
+        put?: never;
+        post?: never;
+        delete: operations["IncidentsController_deleteIncident"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/incidents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["IncidentsController_getIncidentsByAccount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/incidents/{incidentId}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["IncidentsController_getIncidentEventsByServer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/incidents/{incidentId}/server": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["IncidentsController_getServerByIncidentId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/incidents/{incidentId}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["IncidentsController_downloadIncidentReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/incidents/{incidentId}/ai-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["IncidentsController_generateIncidentAiSummary"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/incidents/{incidentId}/ai-summary/rating": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["IncidentsController_rateIncidentAiSummary"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/incidents/{incidentId}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["IncidentCommentController_getAllCommentsByIncident"];
+        put?: never;
+        post: operations["IncidentCommentController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/incidents/{incidentId}/comments/upload-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["IncidentCommentController_getAttachmentUploadUrl"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/incidents/{incidentId}/comments/{commentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["IncidentCommentController_delete"];
+        options?: never;
+        head?: never;
+        patch: operations["IncidentCommentController_update"];
+        trace?: never;
+    };
     "/v1/activity-log": {
         parameters: {
             query?: never;
@@ -957,6 +1053,7 @@ export interface components {
             name: string;
         };
         TelegramResponseDto: {
+            id: number;
             telegram_id: string;
             telegram_username: string | null;
             type: "user" | "group" | "supergroup";
@@ -976,6 +1073,7 @@ export interface components {
             password_changed_at: string | null;
             timezone: string;
             is_ai_assistant_enabled: boolean;
+            pending_email: string | null;
         };
         UpdateAccountDto: {
             name?: string;
@@ -983,6 +1081,7 @@ export interface components {
             is_ai_assistant_enabled?: boolean;
         };
         PlanFeaturesResponseDto: {
+            projects_limit: number;
             servers_limit: number;
             available_locations: string[];
             allow_location_selection: boolean;
@@ -1042,6 +1141,7 @@ export interface components {
             value: string;
         };
         CreateServerDto: {
+            project_id?: number;
             host: string;
             protocol: "ping" | "http" | "keyword" | "tcp" | "dns" | "heartbeat" | "llm";
             port?: number;
@@ -1101,6 +1201,7 @@ export interface components {
         };
         ServerResponseDto: {
             id: number;
+            project_id: number;
             host: string;
             protocol: string;
             heartbeat_token: string | null;
@@ -1143,6 +1244,7 @@ export interface components {
             created_at: string;
         };
         UpdateServerDto: {
+            project_id?: number;
             host?: string;
             protocol?: "ping" | "http" | "keyword" | "tcp" | "dns" | "heartbeat" | "llm";
             port?: number;
@@ -1189,8 +1291,35 @@ export interface components {
             change_type: "added" | "modified" | "removed";
             changed_at: string;
         };
+        ProjectResponseDto: {
+            id: number;
+            name: string;
+            avatar_url: string | null;
+            created_at: string;
+        };
+        CreateProjectDto: {
+            name: string;
+        };
+        ReorderProjectsDto: {
+            project_ids: number[];
+        };
+        UpdateProjectDto: {
+            name?: string;
+        };
+        ProjectChannelResponseDto: {
+            type: "email" | "telegram" | "max";
+            id: number;
+            title: string;
+            is_enabled: boolean;
+        };
+        UpdateProjectChannelDto: {
+            type: "email" | "telegram" | "max";
+            channel_id: number;
+            is_enabled: boolean;
+        };
         NotificationRuleResponseDto: {
             type: "updates" | "weekly_reports" | "service_alerts" | "test_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "blocklist_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts" | "receipt";
+            scope: "project" | "account";
             channels: {
                 email?: boolean;
                 telegram?: boolean;
@@ -1202,12 +1331,14 @@ export interface components {
             email: boolean;
             telegram: boolean;
             max: boolean;
+            project_id?: number;
         };
         WebhookEndpointResponseDto: {
             id: number;
             name: string;
             url: string;
             subscriptions: ("updates" | "weekly_reports" | "service_alerts" | "test_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "blocklist_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts" | "receipt")[];
+            project_ids: number[];
             is_secret_set: boolean;
             created_at: string;
         };
@@ -1216,18 +1347,25 @@ export interface components {
             url: string;
             secret: string | null;
             subscriptions: ("weekly_reports" | "service_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "blocklist_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts")[];
+            project_ids?: number[];
         };
         UpdateWebhookEndpointDto: {
             name?: string;
             url?: string;
             secret?: string | null;
             subscriptions?: ("weekly_reports" | "service_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "blocklist_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts")[];
+            project_ids?: number[];
+        };
+        TestWebhookEndpointDto: {
+            url: string;
+            secret?: string | null;
         };
         CreateMaxLinkDto: {
             link_user: string;
             link_group: string;
         };
         MaxResponseDto: {
+            id: number;
             max_id: string;
             max_name: string | null;
             avatar_url: string | null;
@@ -1256,111 +1394,6 @@ export interface components {
         };
         CreateHolidayModeDto: {
             holiday_until?: string | null;
-        };
-        TimingDetails: {
-            effective_url: string;
-            redirect_count: number;
-            name_lookup_time: string;
-            connect_time: string;
-            pre_transfer_time: string;
-            start_transfer_time: string;
-            app_connect_time: string;
-            redirect_time: string;
-            total_time: string;
-            response_code: string;
-        };
-        ServerCheckDetailsResponseDto: {
-            headers: {
-                [key: string]: string;
-            } | null;
-            body: string | null;
-            openssl: string[];
-            mtr: string[];
-            traceroute: string[];
-            ping: string[];
-            nmap: string[];
-            resolved_ips: string[];
-            timing: components["schemas"]["TimingDetails"] | null;
-            location: "msk-1" | "spb-1" | "ala-1" | "nyc-1" | "ams-1";
-        };
-        IncidentResponseDto: {
-            id: number;
-            server_id: number;
-            started_at: string;
-            ended_at: string | null;
-            status: "ongoing" | "resolved" | "dismissed" | "auto_closed_changed" | "auto_closed_timeout";
-            root_error: string;
-            keyword: string | null;
-            llm_model: Record<string, never> | null;
-            screenshot: string | null;
-            replay: string | null;
-            details: components["schemas"]["ServerCheckDetailsResponseDto"][] | null;
-        };
-        ErrorMeta: {
-            error: string;
-            location: string;
-        };
-        ResolvedMeta: {
-            location: string;
-        };
-        NotificationMeta: {
-            channel: string;
-            recipient: string;
-            type: string;
-            status: string;
-        };
-        CommentMeta: {
-            id: number;
-            comment_text: string;
-            attached_files: string[];
-            updated_at: string;
-        };
-        ScreenshotMeta: {
-            url: string | null;
-        };
-        DiagnosticsMeta: {
-            location: string;
-            tools: ("headers" | "body" | "timing" | "resolved_ips" | "ping" | "traceroute" | "mtr" | "nmap" | "openssl")[];
-        };
-        IncidentEventResponseDto: {
-            created_at: string;
-            type: "error" | "resolved" | "notification" | "comment" | "start" | "end" | "screenshot" | "diagnostics";
-            meta: (components["schemas"]["ErrorMeta"] | components["schemas"]["ResolvedMeta"] | components["schemas"]["NotificationMeta"] | components["schemas"]["CommentMeta"] | components["schemas"]["ScreenshotMeta"] | components["schemas"]["DiagnosticsMeta"]) | null;
-        };
-        IncidentSummaryResponseDto: {
-            summary: string | null;
-            rating: "positive" | "negative" | null;
-        };
-        IncidentSummaryRatingDto: {
-            rating?: "positive" | "negative" | null;
-        };
-        IncidentCommentAttachmentDto: {
-            url: string;
-            file_name: string;
-        };
-        CreateIncidentCommentDto: {
-            comment_text: string;
-            attached_files?: components["schemas"]["IncidentCommentAttachmentDto"][];
-        };
-        CommentResponseDto: {
-            id: number;
-            comment_text: string;
-            attached_files: components["schemas"]["IncidentCommentAttachmentDto"][];
-            created_at: string;
-            updated_at: string;
-        };
-        CreateIncidentCommentUploadUrlDto: {
-            file_name: string;
-            content_type?: string;
-            file_size?: number;
-        };
-        PresignedUploadUrlResponseDto: {
-            uploadUrl: string;
-            fileUrl: string;
-        };
-        UpdateIncidentCommentDto: {
-            comment_text?: string;
-            attached_files?: components["schemas"]["IncidentCommentAttachmentDto"][];
         };
         CheckSlugAvailabilityResponseDto: {
             available: boolean;
@@ -1454,6 +1487,7 @@ export interface components {
         };
         StatusPageResponseDto: {
             id: number;
+            project_id: number;
             name: string;
             status: string;
             slug: string;
@@ -1484,6 +1518,7 @@ export interface components {
             created_at: string;
         };
         CreateStatusPageDto: {
+            project_id?: number;
             name: string;
             slug?: string;
             description?: string | null;
@@ -1507,6 +1542,7 @@ export interface components {
             password?: string | null;
         };
         UpdateStatusPageDto: {
+            project_id?: number;
             name?: string;
             slug?: string;
             description?: string | null;
@@ -1632,14 +1668,119 @@ export interface components {
             subscribers: components["schemas"]["StatusPageSubscriberResponseDto"][];
             stats: components["schemas"]["StatusPageSubscribersStatsResponseDto"];
         };
+        TimingDetails: {
+            effective_url: string;
+            redirect_count: number;
+            name_lookup_time: string;
+            connect_time: string;
+            pre_transfer_time: string;
+            start_transfer_time: string;
+            app_connect_time: string;
+            redirect_time: string;
+            total_time: string;
+            response_code: string;
+        };
+        ServerCheckDetailsResponseDto: {
+            headers: {
+                [key: string]: string;
+            } | null;
+            body: string | null;
+            openssl: string[];
+            mtr: string[];
+            traceroute: string[];
+            ping: string[];
+            nmap: string[];
+            resolved_ips: string[];
+            timing: components["schemas"]["TimingDetails"] | null;
+            location: "msk-1" | "spb-1" | "ala-1" | "nyc-1" | "ams-1";
+        };
+        IncidentResponseDto: {
+            id: number;
+            server_id: number;
+            started_at: string;
+            ended_at: string | null;
+            status: "ongoing" | "resolved" | "dismissed" | "auto_closed_changed" | "auto_closed_timeout";
+            root_error: string;
+            keyword: string | null;
+            llm_model: Record<string, never> | null;
+            screenshot: string | null;
+            replay: string | null;
+            details: components["schemas"]["ServerCheckDetailsResponseDto"][] | null;
+        };
+        ErrorMeta: {
+            error: string;
+            location: string;
+        };
+        ResolvedMeta: {
+            location: string;
+        };
+        NotificationMeta: {
+            channel: string;
+            recipient: string;
+            type: string;
+            status: string;
+        };
+        CommentMeta: {
+            id: number;
+            comment_text: string;
+            attached_files: string[];
+            updated_at: string;
+        };
+        ScreenshotMeta: {
+            url: string | null;
+        };
+        DiagnosticsMeta: {
+            location: string;
+            tools: ("headers" | "body" | "timing" | "resolved_ips" | "ping" | "traceroute" | "mtr" | "nmap" | "openssl")[];
+        };
+        IncidentEventResponseDto: {
+            created_at: string;
+            type: "error" | "resolved" | "notification" | "comment" | "start" | "end" | "screenshot" | "diagnostics";
+            meta: (components["schemas"]["ErrorMeta"] | components["schemas"]["ResolvedMeta"] | components["schemas"]["NotificationMeta"] | components["schemas"]["CommentMeta"] | components["schemas"]["ScreenshotMeta"] | components["schemas"]["DiagnosticsMeta"]) | null;
+        };
+        IncidentSummaryResponseDto: {
+            summary: string | null;
+            rating: "positive" | "negative" | null;
+        };
+        IncidentSummaryRatingDto: {
+            rating?: "positive" | "negative" | null;
+        };
+        IncidentCommentAttachmentDto: {
+            url: string;
+            file_name: string;
+        };
+        CreateIncidentCommentDto: {
+            comment_text: string;
+            attached_files?: components["schemas"]["IncidentCommentAttachmentDto"][];
+        };
+        CommentResponseDto: {
+            id: number;
+            comment_text: string;
+            attached_files: components["schemas"]["IncidentCommentAttachmentDto"][];
+            created_at: string;
+            updated_at: string;
+        };
+        CreateIncidentCommentUploadUrlDto: {
+            file_name: string;
+            content_type?: string;
+            file_size?: number;
+        };
+        PresignedUploadUrlResponseDto: {
+            uploadUrl: string;
+            fileUrl: string;
+        };
+        UpdateIncidentCommentDto: {
+            comment_text?: string;
+            attached_files?: components["schemas"]["IncidentCommentAttachmentDto"][];
+        };
         ActivityLogEntryResponseDto: {
             id: string;
             created_at: string;
-            action: "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed";
+            action: "project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed";
             actor_type: "user" | "api_key" | "support" | "system";
             actor_label: string | null;
-            source: "panel" | "api" | "mcp" | "telegram" | "max" | "ai_chat" | "system" | null;
-            target_type: "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer" | null;
+            source: "panel" | "api" | "mcp" | "telegram" | "max" | "ai_chat" | "system" | "staff" | null;
+            target_type: "project" | "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer" | null;
             target_id: string | null;
             target_label: string | null;
             changes: {
@@ -1808,6 +1949,7 @@ export interface operations {
             query?: {
                 limit?: number;
                 offset?: number;
+                project_id?: number;
             };
             header?: never;
             path?: never;
@@ -2069,9 +2211,168 @@ export interface operations {
             };
         };
     };
-    NotificationRuleController_getNotificationRules: {
+    ProjectsController_getProjects: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectResponseDto"][];
+                };
+            };
+        };
+    };
+    ProjectsController_createProject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProjectDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectResponseDto"];
+                };
+            };
+        };
+    };
+    ProjectsController_reorderProjects: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderProjectsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectResponseDto"][];
+                };
+            };
+        };
+    };
+    ProjectsController_deleteProject: {
+        parameters: {
+            query?: {
+                move_to_project_id?: number;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProjectsController_updateProject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProjectDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectResponseDto"];
+                };
+            };
+        };
+    };
+    ProjectChannelsController_getChannels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectChannelResponseDto"][];
+                };
+            };
+        };
+    };
+    ProjectChannelsController_updateChannel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProjectChannelDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectChannelResponseDto"][];
+                };
+            };
+        };
+    };
+    NotificationRuleController_getNotificationRules: {
+        parameters: {
+            query?: {
+                project_id?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2194,6 +2495,33 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["WebhookEndpointResponseDto"];
                 };
+            };
+        };
+    };
+    WebhookController_sendTestToUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestWebhookEndpointDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -2471,380 +2799,6 @@ export interface operations {
             };
         };
     };
-    IncidentsController_getIncidentsByServer: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                serverId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IncidentResponseDto"][];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    IncidentsController_getIncident: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                incidentId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IncidentResponseDto"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    IncidentsController_deleteIncident: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                incidentId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    IncidentsController_getIncidentsByAccount: {
-        parameters: {
-            query?: {
-                status?: "ongoing" | "resolved" | "dismissed" | "auto_closed_changed" | "auto_closed_timeout";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IncidentResponseDto"][];
-                };
-            };
-        };
-    };
-    IncidentsController_getIncidentEventsByServer: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                incidentId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IncidentEventResponseDto"][];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    IncidentsController_getServerByIncidentId: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                incidentId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ServerResponseDto"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    IncidentsController_downloadIncidentReport: {
-        parameters: {
-            query?: {
-                sections?: ("ai_summary" | "diagnostics" | "technical_reference" | "events")[];
-            };
-            header?: never;
-            path: {
-                incidentId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    IncidentsController_generateIncidentAiSummary: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                incidentId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IncidentSummaryResponseDto"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    IncidentsController_rateIncidentAiSummary: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                incidentId: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["IncidentSummaryRatingDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IncidentSummaryResponseDto"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    IncidentCommentController_getAllCommentsByIncident: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                incidentId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CommentResponseDto"][];
-                };
-            };
-        };
-    };
-    IncidentCommentController_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                incidentId: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateIncidentCommentDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CommentResponseDto"];
-                };
-            };
-        };
-    };
-    IncidentCommentController_getAttachmentUploadUrl: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                incidentId: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateIncidentCommentUploadUrlDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PresignedUploadUrlResponseDto"];
-                };
-            };
-        };
-    };
-    IncidentCommentController_delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                incidentId: number;
-                commentId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    IncidentCommentController_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                incidentId: number;
-                commentId: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateIncidentCommentDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CommentResponseDto"];
-                };
-            };
-        };
-    };
     StatusPagesController_checkSlug: {
         parameters: {
             query?: never;
@@ -2914,7 +2868,9 @@ export interface operations {
     };
     StatusPagesController_getAccountStatusPages: {
         parameters: {
-            query?: never;
+            query?: {
+                project_id?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3582,6 +3538,407 @@ export interface operations {
             };
         };
     };
+    IncidentsController_getIncidentsByServer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                serverId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentResponseDto"][];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IncidentsController_exportIncidentsCsv: {
+        parameters: {
+            query?: {
+                status?: ("ongoing" | "resolved" | "dismissed" | "auto_closed_changed" | "auto_closed_timeout")[];
+                server_ids?: number[];
+                project_id?: number;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IncidentsController_getIncident: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incidentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IncidentsController_deleteIncident: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incidentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IncidentsController_getIncidentsByAccount: {
+        parameters: {
+            query?: {
+                status?: ("ongoing" | "resolved" | "dismissed" | "auto_closed_changed" | "auto_closed_timeout")[];
+                server_ids?: number[];
+                project_id?: number;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentResponseDto"][];
+                };
+            };
+        };
+    };
+    IncidentsController_getIncidentEventsByServer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incidentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentEventResponseDto"][];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IncidentsController_getServerByIncidentId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incidentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServerResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IncidentsController_downloadIncidentReport: {
+        parameters: {
+            query?: {
+                sections?: ("ai_summary" | "diagnostics" | "technical_reference" | "events")[];
+            };
+            header?: never;
+            path: {
+                incidentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IncidentsController_generateIncidentAiSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incidentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentSummaryResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IncidentsController_rateIncidentAiSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incidentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncidentSummaryRatingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentSummaryResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IncidentCommentController_getAllCommentsByIncident: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incidentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommentResponseDto"][];
+                };
+            };
+        };
+    };
+    IncidentCommentController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incidentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateIncidentCommentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommentResponseDto"];
+                };
+            };
+        };
+    };
+    IncidentCommentController_getAttachmentUploadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incidentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateIncidentCommentUploadUrlDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresignedUploadUrlResponseDto"];
+                };
+            };
+        };
+    };
+    IncidentCommentController_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incidentId: number;
+                commentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IncidentCommentController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incidentId: number;
+                commentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateIncidentCommentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommentResponseDto"];
+                };
+            };
+        };
+    };
     ActivityLogController_list: {
         parameters: {
             query?: {
@@ -3589,9 +3946,9 @@ export interface operations {
                 offset?: number;
                 category?: ("monitoring" | "status_pages" | "security" | "billing")[];
                 actor_type?: ("user" | "api_key" | "support" | "system")[];
-                target_type?: "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer";
+                target_type?: "project" | "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer";
                 target_id?: string;
-                action?: ("server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
+                action?: ("project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
                 from?: string;
                 to?: string;
                 search?: string;
@@ -3619,9 +3976,9 @@ export interface operations {
                 offset?: number;
                 category?: ("monitoring" | "status_pages" | "security" | "billing")[];
                 actor_type?: ("user" | "api_key" | "support" | "system")[];
-                target_type?: "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer";
+                target_type?: "project" | "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer";
                 target_id?: string;
-                action?: ("server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
+                action?: ("project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
                 from?: string;
                 to?: string;
                 search?: string;
