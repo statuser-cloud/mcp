@@ -12,6 +12,7 @@ import { registerStatusPageAnnouncementTools } from './tools/status-page-announc
 import { registerStatusPageSubscriberTools } from './tools/status-page-subscribers.js';
 import { registerNotificationTools } from './tools/notifications.js';
 import { registerAccountTools } from './tools/account.js';
+import { registerProjectTools } from './tools/projects.js';
 
 async function main(): Promise<void> {
   let config;
@@ -35,6 +36,7 @@ async function main(): Promise<void> {
 
   const { toolsets } = config;
   if (toolsets.has('account')) registerAccountTools(server, ctx);
+  if (toolsets.has('projects')) registerProjectTools(server, ctx);
   if (toolsets.has('monitors')) registerMonitorTools(server, ctx);
   if (toolsets.has('incidents')) registerIncidentTools(server, ctx);
   if (toolsets.has('incident-comments'))

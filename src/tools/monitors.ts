@@ -48,6 +48,14 @@ const headerSchema = z.object({
 });
 
 const baseMonitorFields = {
+  project_id: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe(
+      'Project the monitor belongs to. Omitted on create, it goes to the oldest project of the account; passed on update, the monitor MOVES there — it starts living by the notification rules and channels of the new project and disappears from the status pages of the old one. See `project_list`.',
+    ),
   host: z
     .string()
     .describe(
@@ -181,12 +189,20 @@ export function registerMonitorTools(
     inputSchema: {
       limit: z.number().int().min(1).optional(),
       offset: z.number().int().min(0).optional(),
+      project_id: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe(
+          'Only monitors of this project. Omitted, the whole account is returned — that is the default and it stays so for compatibility.',
+        ),
     },
-    handler: async ({ limit, offset }, { client }) =>
+    handler: async ({ limit, offset, project_id }, { client }) =>
       client.call<MonitorListResponse>({
         method: 'GET',
         path: '/v1/servers',
-        query: { limit, offset },
+        query: { limit, offset, project_id },
       }),
   });
 

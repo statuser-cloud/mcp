@@ -169,13 +169,27 @@ const optionalStatusPageFields = {
     ),
 };
 
+// Project of the page. On create it defaults to the oldest project of the
+// account; on update the page MOVES, taking its monitors with it — a page may
+// only show monitors of its own project.
+const projectIdField = z
+  .number()
+  .int()
+  .positive()
+  .optional()
+  .describe(
+    'Project the status page belongs to. Omitted on create, it goes to the oldest project of the account; passed on update, the page moves there together with the monitors it shows. See `project_list`.',
+  );
+
 const createStatusPageFields = {
   name: z.string().min(1).max(150),
+  project_id: projectIdField,
   ...optionalStatusPageFields,
 };
 
 const updateStatusPageFields = {
   name: z.string().min(1).max(150).optional(),
+  project_id: projectIdField,
   ...optionalStatusPageFields,
 };
 
@@ -188,11 +202,21 @@ export function registerStatusPageTools(
     title: 'List status pages',
     description:
       'Lists all status pages on the account with their full configuration: domain/slug, groups and linked monitors, theme, white-label, password protection, etc.',
-    inputSchema: {},
-    handler: async (_args, { client }) =>
+    inputSchema: {
+      project_id: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe(
+          'Only status pages of this project. Omitted, the whole account is returned.',
+        ),
+    },
+    handler: async ({ project_id }, { client }) =>
       client.call<StatusPageListResponse>({
         method: 'GET',
         path: '/v1/status-pages',
+        query: { project_id },
       }),
   });
 
