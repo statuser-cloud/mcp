@@ -35,10 +35,13 @@ export class StatuserApiError extends Error {
 }
 
 export class WriteNotAllowedError extends Error {
-  constructor(toolName: string) {
+  constructor(toolName: string, transport: 'stdio' | 'http') {
     super(
-      `Refusing to call "${toolName}": this tool performs a write/destructive operation, but STATUSER_ALLOW_WRITE is not enabled. ` +
-        `Set STATUSER_ALLOW_WRITE=1 in the MCP client config, or pass { confirm: true } as a tool argument for a one-off override.`,
+      transport === 'stdio'
+        ? `Refusing to call "${toolName}": this tool performs a write/destructive operation, but STATUSER_ALLOW_WRITE is not enabled. ` +
+            `Set STATUSER_ALLOW_WRITE=1 in the MCP client config, or pass { confirm: true } as a tool argument for a one-off override.`
+        : `Refusing to call "${toolName}": this tool performs a write/destructive operation. ` +
+            `Pass { confirm: true } as a tool argument to proceed.`,
     );
     this.name = 'WriteNotAllowedError';
   }
