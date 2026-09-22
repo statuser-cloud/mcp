@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.github
+.idea
+.vscode
+.cursor
+.env*
+.mcp.json
+*.log
+spec
+scripts

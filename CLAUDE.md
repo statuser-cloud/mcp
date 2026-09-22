@@ -38,6 +38,12 @@ side, then sync. `src/generated/helpers.ts` is hand-written and fine to edit.
    `git pull && git tag "v$(jq -r .version package.json)" && git push --tags`.
    The version in `package.json` must match the tag — `publish.yml` gates on it.
 
+The same tag also builds the container image of the hosted HTTP endpoint
+(`image` job in `publish.yml`, `ghcr.io/statuser-cloud/statuser-mcp:<version>`),
+and only after the npm publish succeeded. The deployment pins that version
+and is updated separately — this repository holds no cluster credentials, keep
+it that way.
+
 **Never move a published `v*` tag.** npm refuses to republish the same version,
 and provenance breaks on a moved tag. Got a release wrong — ship the next
 version instead of repointing the tag.

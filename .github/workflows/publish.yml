@@ -1,4 +1,4 @@
-name: Publish to npm
+name: Publish
 
 on:
   # Trigger: pushing a tag like `v0.1.2`, `v1.0.0`, etc.
@@ -64,3 +64,30 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
+
+  # Image of the hosted HTTP endpoint, tagged with the same version as the npm
+  # package. The cluster pins this tag in its manifests and rolls it out from
+  # there, so this public repository holds no cluster credentials.
+  image:
+    needs: publish
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and push image
+        run: |
+          IMAGE="ghcr.io/${{ github.repository_owner }}/statuser-mcp:${GITHUB_REF_NAME#v}"
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker build \
+            --label "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            --label "org.opencontainers.image.version=${GITHUB_REF_NAME#v}" \
+            -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "Pushed $IMAGE" >> "$GITHUB_STEP_SUMMARY"
