@@ -35,7 +35,7 @@ server.headersTimeout = 66_000;
 
 server.listen(port, host, () => {
   process.stderr.write(
-    `[@statuser/mcp] HTTP transport listening on http://${host}:${port}/mcp\n`,
+    `[@statuser/mcp] HTTP transport listening on http://${host}:${port}/\n`,
   );
 });
 
