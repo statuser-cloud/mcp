@@ -54,17 +54,27 @@ export function registerIncidentTools(
     name: 'incident_list',
     title: 'List incidents',
     description:
-      'Lists incidents. Without `server_id` — across the whole account, sorted by start time desc; with `server_id` — only that monitor. `status` filter applies only to the account-wide form. Time depth is limited by the `incident_retention_days` plan feature.',
+      'Lists incidents. Without `server_id` — across the whole account, sorted by start time desc; with `server_id` — only that monitor. `status` and `project_id` filters apply only to the account-wide form. Time depth is limited by the `incident_retention_days` plan feature.',
     inputSchema: {
       server_id: z
         .number()
         .int()
         .positive()
         .optional()
-        .describe('Limit to one monitor. If set, `status` filter is ignored.'),
+        .describe(
+          'Limit to one monitor. If set, `status` and `project_id` filters are ignored.',
+        ),
       status: incidentStatusEnum.optional(),
+      project_id: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe(
+          'Only incidents of monitors in this project. Omitted, the whole account is returned.',
+        ),
     },
-    handler: async ({ server_id, status }, { client }) => {
+    handler: async ({ server_id, status, project_id }, { client }) => {
       if (server_id !== undefined) {
         return client.call<IncidentsByServerResponse>({
           method: 'GET',
@@ -74,7 +84,7 @@ export function registerIncidentTools(
       return client.call<IncidentsListResponse>({
         method: 'GET',
         path: '/v1/incidents',
-        query: { status },
+        query: { status, project_id },
       });
     },
   });

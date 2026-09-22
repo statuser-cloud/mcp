@@ -9,6 +9,7 @@ export type Toolset =
   | 'monitors'
   | 'incidents'
   | 'incident-comments'
+  | 'projects'
   | 'status-pages'
   | 'status-page-reports'
   | 'notifications';
@@ -18,6 +19,7 @@ export const ALL_TOOLSETS: readonly Toolset[] = [
   'monitors',
   'incidents',
   'incident-comments',
+  'projects',
   'status-pages',
   'status-page-reports',
   'notifications',

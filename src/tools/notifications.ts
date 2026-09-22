@@ -102,6 +102,12 @@ export function registerNotificationTools(
           'Signing secret. Omit (or pass `null`) if you do not want signatures.',
         ),
       subscriptions: z.array(webhookSubscriptionEnum),
+      project_ids: z
+        .array(z.number().int().positive())
+        .optional()
+        .describe(
+          'Projects whose monitoring events go to this webhook. Omitted, the oldest project of the account is used. An empty array is meaningful: it switches monitoring events off entirely, while account events (invoices, security, API keys) keep arriving regardless of projects.',
+        ),
     },
     handler: async (args, { client }) => {
       // Backend DTO marks `secret` as required (string | null), but for the
@@ -128,6 +134,12 @@ export function registerNotificationTools(
       url: z.string().url().optional(),
       secret: z.string().nullable().optional(),
       subscriptions: z.array(webhookSubscriptionEnum).optional(),
+      project_ids: z
+        .array(z.number().int().positive())
+        .optional()
+        .describe(
+          'Full set of projects whose monitoring events go to this webhook — the list replaces the previous one. Omitted, the set stays as it was. An empty array switches monitoring events off entirely; account events keep arriving.',
+        ),
     },
     handler: async ({ id, ...patch }, { client }) => {
       const body: WebhookUpdateBody = patch;
@@ -178,12 +190,22 @@ export function registerNotificationTools(
     name: 'notification_rule_list',
     title: 'List notification rules',
     description:
-      'Returns the current matrix of notification rules: for each subscription type (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `weekly_reports`, `updates`, `billing_alerts`, `holiday_mode`, `api_key_alerts`, `security_alerts`, `ideas`) — three boolean flags `email` / `telegram` / `max` indicating whether that channel is enabled. Webhooks have their own per-webhook `subscriptions` field and do not appear here.',
-    inputSchema: {},
-    handler: async (_args, { client }) =>
+      'Returns the current matrix of notification rules: for each subscription type (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `weekly_reports`, `updates`, `billing_alerts`, `holiday_mode`, `api_key_alerts`, `security_alerts`, `ideas`) — three boolean flags `email` / `telegram` / `max` indicating whether that channel is enabled. Every rule carries a `scope`: monitoring types (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `blocklist_alerts`, `weekly_reports`) belong to a PROJECT and differ from project to project, the rest belong to the account. Without `project_id` the monitoring half is read from the oldest project. Webhooks have their own per-webhook `subscriptions` field and do not appear here.',
+    inputSchema: {
+      project_id: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe(
+          'Whose monitoring rules to read. Omitted, the oldest project of the account is used — pass it explicitly when the account has more than one project, see `project_list`.',
+        ),
+    },
+    handler: async ({ project_id }, { client }) =>
       client.call<NotificationRuleListResponse>({
         method: 'GET',
         path: '/v1/notification-rules',
+        query: { project_id },
       }),
   });
 
@@ -191,13 +213,21 @@ export function registerNotificationTools(
     name: 'notification_rule_set',
     title: 'Set notification rule for a subscription type',
     description:
-      'Creates or updates the rule for a single subscription type: toggles channels `email`, `telegram`, `max`. Selecting individual recipients/chats is not possible — these are account-wide on/off per channel. Returns the full updated list of rules.',
+      'Creates or updates the rule for a single subscription type: toggles channels `email`, `telegram`, `max`. Selecting individual recipients or chats is not possible — the toggle is on/off per kind of channel; which exact addresses and chats a project uses is decided by `project_channel_set`. Monitoring types apply to ONE project (the oldest one unless `project_id` says otherwise), account types (`billing_alerts`, `security_alerts`, `api_key_alerts`, `updates`, `ideas`, `holiday_mode`) apply to the account as a whole. Returns the full updated list of rules.',
     write: true,
     inputSchema: {
       type: notificationRuleSubscriptionEnum,
       email: z.boolean(),
       telegram: z.boolean(),
       max: z.boolean(),
+      project_id: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe(
+          'Which project the rule belongs to, for monitoring types. Omitted, the oldest project is changed — on an account with several projects that is rarely what the user means. Ignored for account-level types.',
+        ),
     },
     handler: async (args, { client }) => {
       const body: NotificationRuleSetBody = args;
