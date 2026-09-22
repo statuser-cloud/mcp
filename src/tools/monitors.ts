@@ -66,7 +66,9 @@ const baseMonitorFields = {
   http_method: z
     .enum(['get', 'head', 'post', 'put', 'patch', 'options'])
     .optional()
-    .describe('HTTP method, applies to `http` and `keyword` protocols.'),
+    .describe(
+      'HTTP method, applies to `http` and `keyword` protocols. Defaults to `head` there, as in the panel — the cheapest request that still proves the service answers.',
+    ),
   body: z
     .string()
     .optional()
@@ -83,8 +85,9 @@ const baseMonitorFields = {
   headers: z.array(headerSchema).optional(),
   is_follow_redirects: z
     .boolean()
+    .optional()
     .describe(
-      'Follow HTTP redirects. Required on create; for backend DTOs this field has no default.',
+      'Follow HTTP redirects. Defaults to true for `http`/`keyword` (what the panel does) and to false for the protocols where redirects mean nothing.',
     ),
   success_http_codes: z
     .array(z.string())
@@ -97,13 +100,15 @@ const baseMonitorFields = {
     .int()
     .min(1)
     .max(60)
-    .describe('Request timeout in seconds. Required on create.'),
+    .optional()
+    .describe('Request timeout in seconds. Defaults to 30, as in the panel.'),
   check_interval: z
     .number()
     .int()
     .min(60)
+    .optional()
     .describe(
-      'Interval between checks in seconds. Required on create. Minimum depends on `min_check_interval_seconds` of the current plan.',
+      'Interval between checks in seconds. Defaults to 300 — the smallest value every plan allows. Anything shorter needs `min_check_interval_seconds` of the current plan to permit it (60 on paid plans).',
     ),
   heartbeat_grace_interval: z
     .number()
@@ -124,8 +129,18 @@ const baseMonitorFields = {
     ),
   name: z.string().max(150).optional(),
   description: z.string().max(500).optional(),
-  is_ssl_check: z.boolean(),
-  is_domain_check: z.boolean(),
+  is_ssl_check: z
+    .boolean()
+    .optional()
+    .describe(
+      'Watch the SSL certificate of the host. Defaults to false: it is a paid feature (`ssl_monitoring_enabled`), and turning it on by default would make creation fail on Free. Pass true to enable.',
+    ),
+  is_domain_check: z
+    .boolean()
+    .optional()
+    .describe(
+      'Watch the domain registration of the host. Defaults to false for the same reason as `is_ssl_check` (`domain_monitoring_enabled`).',
+    ),
   is_blocklist_check: z
     .boolean()
     .optional()
@@ -209,11 +224,30 @@ export function registerMonitorTools(
     name: 'monitor_create',
     title: 'Create monitor',
     description:
-      'Creates a new monitor. Returns 403 if the account is over the servers limit or if a requested feature is not on the current plan (DNS/keyword/heartbeat, AI monitoring and its model response check as two separate gates, latency alerts, custom success codes, non-default locations, blocklist monitoring, incident confirmation delay).',
+      'Creates a new monitor. Only `host` and `protocol` are required — timeout, interval and redirect handling fall back to the same defaults the panel uses (30 s, 300 s, redirects followed for `http`/`keyword`), and the paid SSL and domain checks stay off unless asked for. Returns 403 if the account is over the servers limit or if a requested feature is not on the current plan (DNS/keyword/heartbeat, AI monitoring and its model response check as two separate gates, latency alerts, custom success codes, non-default locations, blocklist monitoring, incident confirmation delay).',
     write: true,
     inputSchema: baseMonitorFields,
     handler: async (args, { client }) => {
-      const body: CreateMonitorBody = args;
+      // The API marks these five as required with no defaults of its own, so
+      // the tool used to demand all of them even for a heartbeat, where
+      // redirects and certificates mean nothing — a plain «add example.com to
+      // monitoring» failed on validation before reaching the API. Defaults
+      // mirror the panel's add form, except the two paid checks: those stay
+      // off, otherwise creation would fail on Free.
+      const isHttpLike =
+        args.protocol === 'http' || args.protocol === 'keyword';
+      const body: CreateMonitorBody = {
+        ...args,
+        // The API rejects http/keyword without a method, and the panel starts
+        // with HEAD — the cheapest request that still proves the service
+        // answers.
+        http_method: args.http_method ?? (isHttpLike ? 'head' : undefined),
+        is_follow_redirects: args.is_follow_redirects ?? isHttpLike,
+        request_timeout: args.request_timeout ?? 30,
+        check_interval: args.check_interval ?? 300,
+        is_ssl_check: args.is_ssl_check ?? false,
+        is_domain_check: args.is_domain_check ?? false,
+      };
       return client.call<MonitorCreateResponse>({
         method: 'POST',
         path: '/v1/servers',
