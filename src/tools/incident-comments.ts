@@ -3,7 +3,7 @@ import { basename, extname } from 'node:path';
 import { request as undiciRequest } from 'undici';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { registerTool, type ToolContext } from '../tool.js';
+import { registerTool, type ToolContext, type TransportKind } from '../tool.js';
 import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
 
 type IncidentCommentCreateBody = RequestBody<
@@ -36,19 +36,22 @@ type IncidentCommentUploadUrlResponse = OkResponseBody<
   'post'
 >;
 
-const attachmentInput = z.object({
-  url: z
-    .string()
-    .url()
-    .describe(
-      'Public URL of a previously uploaded attachment (returned by `incident_comment_upload_file` as `file_url`).',
-    ),
-  file_name: z
-    .string()
-    .min(1)
-    .max(255)
-    .describe('Display name of the file as it will appear in the comment.'),
-});
+const attachmentInput = (transport: TransportKind) =>
+  z.object({
+    url: z
+      .string()
+      .url()
+      .describe(
+        transport === 'stdio'
+          ? 'Public URL of a previously uploaded attachment (returned by `incident_comment_upload_file` as `file_url`).'
+          : 'Public URL of a previously uploaded attachment.',
+      ),
+    file_name: z
+      .string()
+      .min(1)
+      .max(255)
+      .describe('Display name of the file as it will appear in the comment.'),
+  });
 
 const MIME_BY_EXT: Record<string, string> = {
   '.png': 'image/png',
@@ -68,6 +71,16 @@ export function registerIncidentCommentTools(
   server: McpServer,
   ctx: ToolContext,
 ): void {
+  const local = ctx.transport === 'stdio';
+  const localFilesField = {
+    attached_local_files: z
+      .array(z.string())
+      .optional()
+      .describe(
+        'Local absolute paths to upload as attachments before posting the comment. Combined with `attached_files`.',
+      ),
+  };
+
   registerTool(server, ctx, {
     name: 'incident_comment_list',
     title: 'List incident comments',
@@ -86,19 +99,18 @@ export function registerIncidentCommentTools(
   registerTool(server, ctx, {
     name: 'incident_comment_create',
     title: 'Create incident comment',
-    description:
-      'Adds a text comment to an incident. To attach files: either pass URLs already issued via `incident_comment_upload_file`, or pass local file paths in `attached_local_files` and the tool will upload them first. Requires `incident_comments_enabled` on the plan.',
+    description: local
+      ? 'Adds a text comment to an incident. To attach files: either pass URLs already issued via `incident_comment_upload_file`, or pass local file paths in `attached_local_files` and the tool will upload them first. Requires `incident_comments_enabled` on the plan.'
+      : 'Adds a text comment to an incident, optionally with attachments by URL. Requires `incident_comments_enabled` on the plan.',
     write: true,
     inputSchema: {
       incident_id: z.number().int().positive(),
       comment_text: z.string().min(1),
-      attached_files: z.array(attachmentInput).optional(),
-      attached_local_files: z
-        .array(z.string())
-        .optional()
-        .describe(
-          'Local absolute paths to upload as attachments before posting the comment. Combined with `attached_files`.',
-        ),
+      attached_files: z.array(attachmentInput(ctx.transport)).optional(),
+      // Over HTTP the field is left out of the schema entirely, so zod drops
+      // it even if a client sends it: a path there would read files of our
+      // server. The cast keeps one handler type; the value is just undefined.
+      ...(local ? localFilesField : ({} as typeof localFilesField)),
     },
     handler: async (
       { incident_id, comment_text, attached_files, attached_local_files },
@@ -132,7 +144,7 @@ export function registerIncidentCommentTools(
       incident_id: z.number().int().positive(),
       comment_id: z.number().int().positive(),
       comment_text: z.string().optional(),
-      attached_files: z.array(attachmentInput).optional(),
+      attached_files: z.array(attachmentInput(ctx.transport)).optional(),
     },
     handler: async ({ incident_id, comment_id, ...patch }, { client }) => {
       const body: IncidentCommentUpdateBody = patch;
@@ -169,6 +181,7 @@ export function registerIncidentCommentTools(
     description:
       'Two-step file upload: requests an upload URL from Statuser, PUTs the local file there, and returns the public `file_url` you can pass into `incident_comment_create` / `incident_comment_update` as an attachment. Size limit: 5 MB.',
     write: true,
+    localOnly: true,
     inputSchema: {
       incident_id: z.number().int().positive(),
       local_path: z.string().describe('Absolute path to a local file.'),
@@ -186,6 +199,10 @@ async function uploadLocalFiles(
   paths: string[],
 ): Promise<Array<{ url: string; file_name: string }>> {
   if (!paths.length) return [];
+  // Second line of defence behind the schema: never read from disk over HTTP.
+  if (ctx.transport !== 'stdio') {
+    throw new Error('Local file attachments are not available on this server.');
+  }
   const results: Array<{ url: string; file_name: string }> = [];
 
   for (const path of paths) {

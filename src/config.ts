@@ -39,6 +39,26 @@ export class ConfigError extends Error {
   }
 }
 
+export interface ConfigInput {
+  apiKey: string;
+  baseUrl?: string;
+  allowWrite?: boolean;
+  toolsets?: ReadonlySet<Toolset>;
+}
+
+/**
+ * Transport-agnostic config: the stdio entrypoint feeds it from the
+ * environment, the HTTP one from the incoming request.
+ */
+export function buildConfig(input: ConfigInput): ServerConfig {
+  return {
+    apiKey: input.apiKey,
+    baseUrl: (input.baseUrl?.trim() || BASE_URL_DEFAULT).replace(/\/+$/, ''),
+    allowWrite: input.allowWrite ?? false,
+    toolsets: input.toolsets ?? new Set(ALL_TOOLSETS),
+  };
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   const apiKey = env[ENV_API_KEY]?.trim();
   if (!apiKey) {
@@ -47,15 +67,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     );
   }
 
-  const baseUrl = (env[ENV_BASE_URL]?.trim() || BASE_URL_DEFAULT).replace(
-    /\/+$/,
-    '',
-  );
-
-  const allowWrite = parseBool(env[ENV_ALLOW_WRITE]);
-  const toolsets = parseToolsets(env[ENV_TOOLSETS]);
-
-  return { apiKey, baseUrl, allowWrite, toolsets };
+  return buildConfig({
+    apiKey,
+    baseUrl: env[ENV_BASE_URL],
+    allowWrite: parseBool(env[ENV_ALLOW_WRITE]),
+    toolsets: parseToolsets(env[ENV_TOOLSETS]),
+  });
 }
 
 function parseBool(value: string | undefined): boolean {
@@ -64,7 +81,14 @@ function parseBool(value: string | undefined): boolean {
   return v === '1' || v === 'true' || v === 'yes' || v === 'on';
 }
 
-function parseToolsets(value: string | undefined): ReadonlySet<Toolset> {
+/**
+ * `source` names where the value came from, so the error points the user at
+ * the right place: an env variable for stdio, a query parameter for HTTP.
+ */
+export function parseToolsets(
+  value: string | undefined,
+  source: string = ENV_TOOLSETS,
+): ReadonlySet<Toolset> {
   const trimmed = value?.trim();
   if (!trimmed || trimmed.toLowerCase() === 'all') {
     return new Set(ALL_TOOLSETS);
@@ -77,7 +101,7 @@ function parseToolsets(value: string | undefined): ReadonlySet<Toolset> {
   const unknown = requested.filter((name) => !known.has(name));
   if (unknown.length) {
     throw new ConfigError(
-      `${ENV_TOOLSETS} contains unknown toolsets: ${unknown.join(
+      `${source} contains unknown toolsets: ${unknown.join(
         ', ',
       )}. Allowed values: ${ALL_TOOLSETS.join(', ')}, or "all".`,
     );

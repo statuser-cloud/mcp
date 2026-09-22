@@ -1,7 +1,9 @@
 # @statuser/mcp — notes for Claude
 
-An MCP server on top of the public Statuser API: stdio transport, hand-curated
-tools over types generated from the production OpenAPI spec. Published to npm as
+An MCP server on top of the public Statuser API: hand-curated tools over types
+generated from the production OpenAPI spec, served over two transports from one
+`createServer()` (`src/server.ts`) — stdio for `npx` on the user's machine and
+stateless Streamable HTTP (`src/http/`) for the hosted endpoint. Published to npm as
 `@statuser/mcp` with provenance. **This repository is public** — non-public data
 (internal accounts, credentials, internal addresses) and links to private
 repositories never land in repo files, comments included.
@@ -56,6 +58,23 @@ to production**: the spec is pulled from production, not from sources.
   availability (a plan feature), how deep the history goes, which parameters are
   mutually exclusive. The assistant picks a tool by that text — see
   `incident_list` in `src/tools/incidents.ts` for the tone.
+
+## Tools that touch the local machine
+
+Over HTTP the server runs on **our** infrastructure, so "local" means our pod.
+A tool argument holding a file path would let any key owner read our files —
+the service account token, `/proc/self/environ` with internal secrets — and
+download them back as an incident attachment. Rules:
+
+- A tool that reads or writes the filesystem is `localOnly: true`: it is not
+  registered over HTTP at all.
+- A path-like field on a tool that otherwise works remotely is added to the
+  schema only when `ctx.transport === 'stdio'` (see `attached_local_files` in
+  `src/tools/incident-comments.ts`). Zod strips fields missing from the schema,
+  so a client cannot smuggle it in; the helper that reads the file refuses
+  outside stdio as a second line of defence.
+- The same goes for fetching an arbitrary URL from a tool argument: over HTTP
+  that is a request from inside our network.
 
 ## Write tools
 

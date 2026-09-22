@@ -7,3 +7,7 @@ dist
 .idea
 .vscode
 *.tsbuildinfo
+
+# Local MCP client configs can hold an API key
+.mcp.json
+.cursor/mcp.json
