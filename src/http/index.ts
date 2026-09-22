@@ -5,10 +5,11 @@ const port = Number(process.env.PORT) || 3000;
 // Loopback by default: a container sets HOST=0.0.0.0 explicitly.
 const host = process.env.HOST?.trim() || '127.0.0.1';
 const apiBaseUrl = process.env.STATUSER_API_URL;
+const internalKey = process.env.STATUSER_API_INTERNAL_KEY?.trim() || undefined;
 
 const SHUTDOWN_TIMEOUT_MS = 25_000;
 
-const server = createHttpServer({ apiBaseUrl });
+const server = createHttpServer({ apiBaseUrl, internalKey });
 
 // Node closes idle keep-alive sockets after 5 s. A reverse proxy that reuses
 // upstream connections longer than that races the close and answers 502/503.

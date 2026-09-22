@@ -26,6 +26,12 @@ const KEY_CHECK_TIMEOUT_MS = 5_000;
 export interface HttpServerOptions {
   /** Statuser API base URL the tools call on behalf of the key owner. */
   apiBaseUrl?: string;
+  /**
+   * Shared secret the API recognises the hosted service by, so it can rate
+   * limit per API key rather than per the service's own address. Not an
+   * authentication: access is still decided by the caller's key.
+   */
+  internalKey?: string;
 }
 
 /**
@@ -104,6 +110,7 @@ async function handle(
     apiKey,
     baseUrl: options.apiBaseUrl,
     toolsets,
+    apiHeaders: upstreamHeaders(req, options),
   });
 
   // Once per client connection, not per call: stateless mode has no session to
@@ -136,6 +143,25 @@ function extractApiKey(header: string | undefined): string | null {
   const token = match?.[1];
   // Only the shape is checked here; the API validates the key itself.
   return token?.startsWith('sk_') ? token : null;
+}
+
+/**
+ * The API records the client address in the audit log. Forward the chain the
+ * proxy in front of us passed, plus our own peer, as any proxy would —
+ * otherwise every action would be logged from our address.
+ */
+function upstreamHeaders(
+  req: IncomingMessage,
+  options: HttpServerOptions,
+): Record<string, string> {
+  const headers: Record<string, string> = {};
+  const chain = [req.headers['x-forwarded-for'], req.socket.remoteAddress]
+    .flat()
+    .filter((v): v is string => Boolean(v))
+    .join(', ');
+  if (chain) headers['x-forwarded-for'] = chain;
+  if (options.internalKey) headers['x-mcp-internal-key'] = options.internalKey;
+  return headers;
 }
 
 function isInitialize(message: unknown): boolean {

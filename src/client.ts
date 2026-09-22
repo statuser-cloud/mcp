@@ -44,6 +44,8 @@ export class StatuserClient {
   private async execute(opts: RequestOptions): Promise<unknown> {
     const url = this.buildUrl(opts.path, opts.query);
     const headers: Record<string, string> = {
+      // First, so they can never override the key or the user agent.
+      ...this.config.apiHeaders,
       authorization: `Bearer ${this.config.apiKey}`,
       'user-agent': USER_AGENT,
       accept: opts.binary ? '*/*' : 'application/json',

@@ -30,6 +30,11 @@ export interface ServerConfig {
   baseUrl: string;
   allowWrite: boolean;
   toolsets: ReadonlySet<Toolset>;
+  /**
+   * Extra headers for every API request, set by the hosting transport (client
+   * address, service credentials). Never taken from the user's input.
+   */
+  apiHeaders?: Readonly<Record<string, string>>;
 }
 
 export class ConfigError extends Error {
@@ -44,6 +49,7 @@ export interface ConfigInput {
   baseUrl?: string;
   allowWrite?: boolean;
   toolsets?: ReadonlySet<Toolset>;
+  apiHeaders?: Readonly<Record<string, string>>;
 }
 
 /**
@@ -56,6 +62,7 @@ export function buildConfig(input: ConfigInput): ServerConfig {
     baseUrl: (input.baseUrl?.trim() || BASE_URL_DEFAULT).replace(/\/+$/, ''),
     allowWrite: input.allowWrite ?? false,
     toolsets: input.toolsets ?? new Set(ALL_TOOLSETS),
+    apiHeaders: input.apiHeaders,
   };
 }
 
