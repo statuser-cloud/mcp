@@ -44,8 +44,11 @@ export class StatuserClient {
   private async execute(opts: RequestOptions): Promise<unknown> {
     const url = this.buildUrl(opts.path, opts.query);
     const headers: Record<string, string> = {
-      // First, so they can never override the key or the user agent.
-      ...this.config.apiHeaders,
+      // First, so they can never override the key or the user agent. Only
+      // for the API itself: they carry service credentials.
+      ...(new URL(url).origin === new URL(this.config.baseUrl).origin
+        ? this.config.apiHeaders
+        : undefined),
       authorization: `Bearer ${this.config.apiKey}`,
       'user-agent': USER_AGENT,
       accept: opts.binary ? '*/*' : 'application/json',
@@ -109,6 +112,7 @@ export class StatuserClient {
       }
 
       // Error path — try to parse Statuser-shaped error body.
+      if (res.statusCode === 401) this.config.onUnauthorized?.();
       const text = await res.body.text();
       let parsed: StatuserApiErrorBody | null = null;
       try {

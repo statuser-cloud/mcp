@@ -9,6 +9,7 @@ import {
 import { StatuserClient } from '../client.js';
 import { StatuserApiError } from '../errors.js';
 import { createServer } from '../server.js';
+import type { AuthFailureLimiter } from './auth-failure-limiter.js';
 
 const MCP_PATH = '/mcp';
 const HEALTH_PATH = '/healthz';
@@ -32,6 +33,13 @@ export interface HttpServerOptions {
    * authentication: access is still decided by the caller's key.
    */
   internalKey?: string;
+  /**
+   * Take the client address from the first X-Forwarded-For entry. Only safe
+   * behind a proxy that overwrites the header rather than appending to it.
+   */
+  trustForwardedFor?: boolean;
+  /** Brake on rejected keys per client address; none when omitted. */
+  authFailures?: AuthFailureLimiter;
 }
 
 /**
@@ -77,8 +85,22 @@ async function handle(
     return;
   }
 
+  const address = clientAddress(req, options);
+  const retryAfter = options.authFailures?.retryAfter(address);
+  if (retryAfter) {
+    res.setHeader('retry-after', String(retryAfter));
+    sendError(
+      res,
+      429,
+      -32000,
+      'Too many requests with an invalid API key from this address, try again later',
+    );
+    return;
+  }
+
   const apiKey = extractApiKey(req.headers.authorization);
   if (!apiKey) {
+    options.authFailures?.recordFailure(address);
     sendUnauthorized(
       res,
       `Missing or malformed API key. Send "Authorization: Bearer <key>"; create a key at ${API_KEYS_URL}`,
@@ -111,6 +133,8 @@ async function handle(
     baseUrl: options.apiBaseUrl,
     toolsets,
     apiHeaders: upstreamHeaders(req, options),
+    // Covers the initialize check and every tool call alike.
+    onUnauthorized: () => options.authFailures?.recordFailure(address),
   });
 
   // Once per client connection, not per call: stateless mode has no session to
@@ -143,6 +167,16 @@ function extractApiKey(header: string | undefined): string | null {
   const token = match?.[1];
   // Only the shape is checked here; the API validates the key itself.
   return token?.startsWith('sk_') ? token : null;
+}
+
+function clientAddress(
+  req: IncomingMessage,
+  options: HttpServerOptions,
+): string {
+  const forwarded = options.trustForwardedFor
+    ? [req.headers['x-forwarded-for']].flat()[0]?.split(',')[0]?.trim()
+    : undefined;
+  return forwarded || req.socket.remoteAddress || 'unknown';
 }
 
 /**

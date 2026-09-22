@@ -35,6 +35,8 @@ export interface ServerConfig {
    * address, service credentials). Never taken from the user's input.
    */
   apiHeaders?: Readonly<Record<string, string>>;
+  /** Called on every 401 from the API, so the transport can count rejected keys. */
+  onUnauthorized?: () => void;
 }
 
 export class ConfigError extends Error {
@@ -50,6 +52,7 @@ export interface ConfigInput {
   allowWrite?: boolean;
   toolsets?: ReadonlySet<Toolset>;
   apiHeaders?: Readonly<Record<string, string>>;
+  onUnauthorized?: () => void;
 }
 
 /**
@@ -63,6 +66,7 @@ export function buildConfig(input: ConfigInput): ServerConfig {
     allowWrite: input.allowWrite ?? false,
     toolsets: input.toolsets ?? new Set(ALL_TOOLSETS),
     apiHeaders: input.apiHeaders,
+    onUnauthorized: input.onUnauthorized,
   };
 }
 
