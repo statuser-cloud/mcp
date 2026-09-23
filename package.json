@@ -1,5 +1,6 @@
 {
   "name": "@statuser/mcp",
+  "mcpName": "io.github.statuser-cloud/mcp",
   "version": "0.4.2",
   "description": "MCP server for Statuser.cloud — monitor servers, manage incidents and status pages from your AI client",
   "keywords": [

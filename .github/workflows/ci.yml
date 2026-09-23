@@ -1,0 +1,55 @@
+name: CI
+
+# The same gates publish.yml runs on a release, on every pull request, so a
+# broken build shows up in review instead of on the tag. No secrets are used
+# and the token is read-only: pull requests from forks run this too.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Build
+        run: npm run build
+
+      - name: server.json matches package.json
+        run: |
+          PKG="$(jq -r .version package.json)"
+          for field in .version '.packages[0].version'; do
+            VALUE="$(jq -r "$field" server.json)"
+            if [ "$VALUE" != "$PKG" ]; then
+              echo "::error file=server.json::$field is $VALUE, package.json is $PKG — bump both in the release commit"
+              exit 1
+            fi
+          done
+          if [ "$(jq -r .mcpName package.json)" != "$(jq -r .name server.json)" ]; then
+            echo "::error file=package.json::mcpName must equal the name in server.json"
+            exit 1
+          fi

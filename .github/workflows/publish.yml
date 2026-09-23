@@ -91,3 +91,51 @@ jobs:
             -t "$IMAGE" .
           docker push "$IMAGE"
           echo "Pushed $IMAGE" >> "$GITHUB_STEP_SUMMARY"
+
+  # Listing in the official MCP registry (registry.modelcontextprotocol.io):
+  # the npm package and the hosted endpoint in one entry. GitHub OIDC proves
+  # the io.github.statuser-cloud namespace, so no registry secret is stored.
+  registry:
+    needs: publish
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install mcp-publisher
+        run: |
+          BASE="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          ARCHIVE="mcp-publisher_linux_amd64.tar.gz"
+          curl -sfL -O "$BASE/$ARCHIVE" -O "$BASE/registry_${MCP_PUBLISHER_VERSION#v}_checksums.txt"
+          grep " ${ARCHIVE}\$" "registry_${MCP_PUBLISHER_VERSION#v}_checksums.txt" | sha256sum -c -
+          tar xzf "$ARCHIVE" mcp-publisher
+
+      # The registry reads mcpName from the published package, and a fresh
+      # version takes a few minutes to show up on the npm registry.
+      - name: Wait for the npm version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          for i in $(seq 1 40); do
+            if curl -sf "https://registry.npmjs.org/@statuser/mcp/$VERSION" >/dev/null; then
+              echo "npm has $VERSION"; exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::@statuser/mcp@$VERSION is not on npm after 10 minutes"
+          exit 1
+
+      - name: Publish to the MCP registry
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' server.json > server.tmp && mv server.tmp server.json
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish

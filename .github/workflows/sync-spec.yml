@@ -51,16 +51,41 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
+      # Hand-copied enums are pinned to the spec, so a value the API added
+      # fails typecheck here. That must not stop the PR from opening — the
+      # fresh spec is exactly what the fix needs — so the errors go into the
+      # PR body instead. PRs opened with GITHUB_TOKEN trigger no other
+      # workflows, so the body is the only place they would show up.
       - name: Typecheck
+        id: typecheck
         if: steps.diff.outputs.changed == 'true'
-        run: npm run typecheck
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run typecheck 2>&1 | tee "$RUNNER_TEMP/typecheck.log"
+
+      - name: Collect typecheck errors
+        if: steps.typecheck.outcome == 'failure'
+        run: |
+          {
+            echo 'TYPECHECK_WARNING<<TYPECHECK_EOF'
+            echo '> [!WARNING]'
+            echo '> **Typecheck fails on the new spec.** A hand-copied enum no longer'
+            echo '> matches the API — update it in this PR before merging.'
+            echo
+            echo '```'
+            grep 'error TS' "$RUNNER_TEMP/typecheck.log" | head -20
+            echo '```'
+            echo
+            echo 'TYPECHECK_EOF'
+          } >> "$GITHUB_ENV"
 
       - name: Lint
         if: steps.diff.outputs.changed == 'true'
         run: npm run lint
 
       - name: Build
-        if: steps.diff.outputs.changed == 'true'
+        if: steps.diff.outputs.changed == 'true' && steps.typecheck.outcome == 'success'
         run: npm run build
 
       - name: Bump patch version
@@ -68,6 +93,7 @@ jobs:
         run: |
           npm version patch --no-git-tag-version
           NEW_VERSION=$(jq -r .version package.json)
+          jq --arg v "$NEW_VERSION" '.version = $v | .packages[0].version = $v' server.json > server.tmp && mv server.tmp server.json
           echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_ENV"
 
       - name: Open pull request
@@ -77,6 +103,7 @@ jobs:
           commit-message: 'chore: sync openapi spec'
           title: 'Sync openapi spec from production (v${{ env.NEW_VERSION }})'
           body: |
+            ${{ env.TYPECHECK_WARNING }}
             Auto-PR opened by the **Sync openapi spec** workflow.
 
             **Source:**
@@ -88,12 +115,12 @@ jobs:
             **What changed:**
             - `spec/openapi.json` refreshed from production `/swagger-json`.
             - `src/generated/openapi.ts` regenerated.
-            - `package.json` version bumped to `${{ env.NEW_VERSION }}` (patch).
+            - `package.json` and `server.json` versions bumped to `${{ env.NEW_VERSION }}` (patch).
 
             **Before you merge:**
             1. Review the `spec/openapi.json` diff. If it contains a **breaking
                change** (removed endpoint, renamed field, narrower enum), bump
-               the version manually to minor/major in `package.json`.
+               the version manually to minor/major in `package.json` and `server.json`.
             2. If new endpoints showed up that deserve a curated tool with a
                human-friendly description for the LLM, open a separate issue —
                do not change anything in this PR.

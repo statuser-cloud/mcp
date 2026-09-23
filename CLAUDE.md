@@ -38,6 +38,19 @@ side, then sync. `src/generated/helpers.ts` is hand-written and fine to edit.
    `git pull && git tag "v$(jq -r .version package.json)" && git push --tags`.
    The version in `package.json` must match the tag — `publish.yml` gates on it.
 
+A release bumps the version in **both** `package.json` and `server.json`
+(top-level `version` and `packages[0].version`); CI fails a PR where they
+differ. The `registry` job in `publish.yml` then lists the release in the
+official MCP registry as `io.github.statuser-cloud/mcp` — npm package and the
+hosted endpoint in one entry, authenticated by GitHub OIDC, no secret. The
+registry reads `mcpName` from the published npm package, so that field in
+`package.json` must stay equal to the name in `server.json`.
+
+`sync-spec.yml` opens its PR even when typecheck fails on the new spec — that
+is how a pinned enum reports an added API value — and puts the errors at the
+top of the PR body. PRs opened with `GITHUB_TOKEN` do not trigger `ci.yml`, so
+read the body before merging.
+
 The same tag also builds the container image of the hosted HTTP endpoint
 (`image` job in `publish.yml`, `ghcr.io/statuser-cloud/statuser-mcp:<version>`),
 and only after the npm publish succeeded. The deployment pins that version
