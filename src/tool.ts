@@ -2,7 +2,11 @@ import { z, type ZodTypeAny } from 'zod';
 import { type McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { StatuserClient } from './client.js';
 import type { ServerConfig } from './config.js';
-import { WriteNotAllowedError, formatUnknownError } from './errors.js';
+import {
+  StatuserApiError,
+  WriteNotAllowedError,
+  formatUnknownError,
+} from './errors.js';
 
 /**
  * `stdio` runs on the user's machine; `http` runs on ours. Anything a tool
@@ -10,6 +14,24 @@ import { WriteNotAllowedError, formatUnknownError } from './errors.js';
  * server over HTTP.
  */
 export type TransportKind = 'stdio' | 'http';
+
+/** How a tool call ended; a closed set, so the hosted endpoint can count it. */
+export type ToolOutcome =
+  | 'ok'
+  | 'refused'
+  | 'invalid_args'
+  | 'api_4xx'
+  | 'api_5xx'
+  | 'error';
+
+function classifyFailure(err: unknown): ToolOutcome {
+  if (err instanceof WriteNotAllowedError) return 'refused';
+  if (err instanceof z.ZodError) return 'invalid_args';
+  if (err instanceof StatuserApiError) {
+    return err.status >= 500 ? 'api_5xx' : 'api_4xx';
+  }
+  return 'error';
+}
 
 export interface ToolContext {
   client: StatuserClient;
@@ -86,6 +108,14 @@ export function registerTool<Input extends z.ZodRawShape>(
           },
     },
     async (rawArgs: Record<string, unknown>) => {
+      const started = performance.now();
+      const report = (outcome: ToolOutcome, error?: unknown) =>
+        ctx.config.onToolCall?.(
+          def.name,
+          outcome,
+          (performance.now() - started) / 1000,
+          error,
+        );
       try {
         if (def.write) {
           const confirmed =
@@ -96,8 +126,10 @@ export function registerTool<Input extends z.ZodRawShape>(
         }
         const args = z.object(def.inputSchema).parse(rawArgs ?? {});
         const result = await def.handler(args, ctx);
+        report('ok');
         return toToolResult(result);
       } catch (err) {
+        report(classifyFailure(err), err);
         return {
           isError: true as const,
           content: [

@@ -104,6 +104,27 @@ download them back as an incident attachment. Rules:
 - The same goes for fetching an arbitrary URL from a tool argument: over HTTP
   that is a request from inside our network.
 
+## Hosted endpoint observability
+
+- **Metrics** (`src/http/metrics.ts`) are hand-rolled Prometheus text and are
+  served only on `STATUSER_METRICS_PORT`, a port of their own: the edge proxies
+  every path of the public host to the MCP port, so `/metrics` there would be
+  public. Keep labels low-cardinality — tool names and outcomes are closed
+  sets; client names are normalised and capped at 50.
+- **Errors** go to Sentry only from the HTTP entrypoint and only when
+  `STATUSER_SENTRY_DSN` is set — deliberately not `SENTRY_DSN`, which people
+  keep in their own environment for their own apps. Events carry the stack and
+  the tool name; request, user and breadcrumbs are stripped, because headers
+  hold the caller's key and tool arguments can hold webhook secrets. Only the
+  `error` outcome is reported: API 4xx, refused writes and bad arguments are
+  the caller's, API 5xx are in the API's own Sentry.
+- **A dependency the hosted image needs must not become a dependency of the
+  package**: every `npx` user would download it. `@sentry/node` is a
+  devDependency (types) plus an optional peer (npx skips those); the
+  `Dockerfile` promotes it to a regular dependency at the lockfile's version.
+  `npm install --omit=dev <pkg>` does NOT work for this — npm classifies the
+  package by package.json and silently drops it.
+
 ## Write tools
 
 Every mutation must be `write: true`. The flag does three things: it enables the
