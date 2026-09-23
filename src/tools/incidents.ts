@@ -1,7 +1,14 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
+import type {
+  Expect,
+  OkResponseBody,
+  QueryParams,
+  RequestBody,
+  SameValues,
+  SpecEnum,
+} from '../generated/helpers.js';
 
 type IncidentRateAiSummaryBody = RequestBody<
   '/v1/incidents/{incidentId}/ai-summary/rating',
@@ -45,6 +52,31 @@ const reportSection = z.enum([
   'technical_reference',
   'events',
 ]);
+
+const ratingEnum = z.enum(['positive', 'negative']);
+
+// Copied from the API; pinned so an added value fails the build instead of
+// being rejected by the tool.
+type _IncidentStatusesMatchApi = Expect<
+  SameValues<
+    z.infer<typeof incidentStatusEnum>,
+    SpecEnum<QueryParams<'/v1/incidents', 'get'>['status']>
+  >
+>;
+type _ReportSectionsMatchApi = Expect<
+  SameValues<
+    z.infer<typeof reportSection>,
+    SpecEnum<
+      QueryParams<'/v1/incidents/{incidentId}/report', 'get'>['sections']
+    >
+  >
+>;
+type _RatingsMatchApi = Expect<
+  SameValues<
+    z.infer<typeof ratingEnum>,
+    SpecEnum<IncidentRateAiSummaryBody['rating']>
+  >
+>;
 
 export function registerIncidentTools(
   server: McpServer,
@@ -158,7 +190,7 @@ export function registerIncidentTools(
     write: true,
     inputSchema: {
       id: z.number().int().positive(),
-      rating: z.enum(['positive', 'negative']).nullable(),
+      rating: ratingEnum.nullable(),
     },
     handler: async ({ id, rating }, { client }) => {
       const body: IncidentRateAiSummaryBody = { rating };

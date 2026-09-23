@@ -60,6 +60,15 @@ to production**: the spec is pulled from production, not from sources.
 - Take request/response types from `RequestBody<path, method>` and
   `OkResponseBody<path, method>` in `generated/helpers.ts`: they catch field
   typos and stale enums at build time. Runtime validation stays with zod.
+- An enum copied into a zod schema by hand must be pinned to the spec with
+  `type _X = Expect<SameValues<z.infer<typeof myEnum>, SpecEnum<Field>>>`
+  (`generated/helpers.ts`). A typed request body catches a value the API
+  dropped but not one it added, so an unpinned copy falls behind silently —
+  that is how `project` went missing from the activity log filter and
+  `blocklist_alerts` from notification rules and webhooks. A value left out on
+  purpose is subtracted explicitly (`Exclude<…, 'support'>`) with the reason
+  next to it. Path segments such as `/v1/servers/{id}/{action}` are plain
+  strings in the spec and cannot be pinned.
 - Put the constraints in `description` instead of restating the name: what gates
   availability (a plan feature), how deep the history goes, which parameters are
   mutually exclusive. The assistant picks a tool by that text — see
