@@ -10,6 +10,8 @@ import { StatuserClient } from '../client.js';
 import { StatuserApiError } from '../errors.js';
 import { createServer } from '../server.js';
 import type { AuthFailureLimiter } from './auth-failure-limiter.js';
+import type { HttpMetrics } from './metrics.js';
+import type { ErrorReporter } from './sentry.js';
 
 // The endpoint is the host root: the URL a user pastes into a client is the
 // bare host. Everything else (probes, OAuth metadata under /.well-known later)
@@ -43,6 +45,8 @@ export interface HttpServerOptions {
   trustForwardedFor?: boolean;
   /** Brake on rejected keys per client address; none when omitted. */
   authFailures?: AuthFailureLimiter;
+  metrics?: HttpMetrics;
+  errors?: ErrorReporter;
 }
 
 /**
@@ -51,7 +55,9 @@ export interface HttpServerOptions {
  */
 export function createHttpServer(options: HttpServerOptions = {}): http.Server {
   return http.createServer((req, res) => {
+    res.on('finish', () => options.metrics?.httpResponse(res.statusCode));
     handle(req, res, options).catch((err: unknown) => {
+      options.errors?.capture(err);
       // Never log the request itself: its Authorization header is a live key.
       process.stderr.write(
         `[@statuser/mcp] request failed: ${String(err instanceof Error ? err.stack : err)}\n`,
@@ -91,6 +97,7 @@ async function handle(
   const address = clientAddress(req, options);
   const retryAfter = options.authFailures?.retryAfter(address);
   if (retryAfter) {
+    options.metrics?.authRejected('blocked');
     res.setHeader('retry-after', String(retryAfter));
     sendError(
       res,
@@ -103,6 +110,7 @@ async function handle(
 
   const apiKey = extractApiKey(req.headers.authorization);
   if (!apiKey) {
+    options.metrics?.authRejected('missing_key');
     options.authFailures?.recordFailure(address);
     sendUnauthorized(
       res,
@@ -137,13 +145,25 @@ async function handle(
     toolsets,
     apiHeaders: upstreamHeaders(req, options),
     // Covers the initialize check and every tool call alike.
-    onUnauthorized: () => options.authFailures?.recordFailure(address),
+    onUnauthorized: () => {
+      options.metrics?.authRejected('invalid_key');
+      options.authFailures?.recordFailure(address);
+    },
+    onToolCall: (tool, outcome, seconds, error) => {
+      options.metrics?.toolCall(tool, outcome, seconds);
+      // Only unexpected failures are ours to fix: API 4xx, refused writes and
+      // bad arguments are the caller's, API 5xx land in the API's own Sentry.
+      if (outcome === 'error') options.errors?.capture(error, { tool });
+    },
   });
 
   // Once per client connection, not per call: stateless mode has no session to
   // remember the verdict in, and initialize is the one request every client
   // sends first. Without it a wrong key "connects" and fails on the first tool.
-  if (isInitialize(body.value) && (await isKeyRejected(config))) {
+  const initialize = initializeMessage(body.value);
+  if (initialize)
+    options.metrics?.clientSession(initialize.params?.clientInfo?.name);
+  if (initialize && (await isKeyRejected(config))) {
     sendUnauthorized(
       res,
       `The API key is invalid, expired or revoked. Create a new one at ${API_KEYS_URL}`,
@@ -201,10 +221,15 @@ function upstreamHeaders(
   return headers;
 }
 
-function isInitialize(message: unknown): boolean {
-  const messages = Array.isArray(message) ? message : [message];
-  return messages.some(
-    (m) =>
+type InitializeMessage = {
+  method: 'initialize';
+  params?: { clientInfo?: { name?: unknown } };
+};
+
+function initializeMessage(message: unknown): InitializeMessage | undefined {
+  const messages: unknown[] = Array.isArray(message) ? message : [message];
+  return messages.find(
+    (m): m is InitializeMessage =>
       typeof m === 'object' &&
       m !== null &&
       (m as { method?: unknown }).method === 'initialize',

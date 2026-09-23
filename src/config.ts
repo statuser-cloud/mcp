@@ -1,3 +1,5 @@
+import type { ToolOutcome } from './tool.js';
+
 const BASE_URL_DEFAULT = 'https://api.statuser.cloud';
 const ENV_API_KEY = 'STATUSER_API_KEY';
 const ENV_BASE_URL = 'STATUSER_API_URL';
@@ -37,6 +39,16 @@ export interface ServerConfig {
   apiHeaders?: Readonly<Record<string, string>>;
   /** Called on every 401 from the API, so the transport can count rejected keys. */
   onUnauthorized?: () => void;
+  /**
+   * Called after every tool call. Set only by the hosted transport, for its
+   * metrics and error reporting; `error` is present for failed calls.
+   */
+  onToolCall?: (
+    tool: string,
+    outcome: ToolOutcome,
+    seconds: number,
+    error?: unknown,
+  ) => void;
 }
 
 export class ConfigError extends Error {
@@ -53,6 +65,7 @@ export interface ConfigInput {
   toolsets?: ReadonlySet<Toolset>;
   apiHeaders?: Readonly<Record<string, string>>;
   onUnauthorized?: () => void;
+  onToolCall?: ServerConfig['onToolCall'];
 }
 
 /**
@@ -67,6 +80,7 @@ export function buildConfig(input: ConfigInput): ServerConfig {
     toolsets: input.toolsets ?? new Set(ALL_TOOLSETS),
     apiHeaders: input.apiHeaders,
     onUnauthorized: input.onUnauthorized,
+    onToolCall: input.onToolCall,
   };
 }
 

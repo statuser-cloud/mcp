@@ -20,6 +20,8 @@ const { version } = createRequire(import.meta.url)('../package.json') as {
   version: string;
 };
 
+export const SERVER_VERSION = version;
+
 /**
  * Builds a server with every enabled toolset registered. Shared by the stdio
  * and HTTP entrypoints — the transport is the only thing that differs.
