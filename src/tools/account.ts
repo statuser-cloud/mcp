@@ -1,7 +1,14 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
+import type {
+  Expect,
+  OkResponseBody,
+  QueryParams,
+  RequestBody,
+  SameValues,
+  SpecEnum,
+} from '../generated/helpers.js';
 
 type AccountUpdateBody = RequestBody<'/v1/account', 'patch'>;
 type HolidayModeSetBody = RequestBody<'/v1/holiday-mode', 'post'>;
@@ -29,6 +36,7 @@ const ACTIVITY_LOG_CATEGORIES = [
 ] as const;
 const ACTIVITY_LOG_ACTOR_TYPES = ['user', 'api_key', 'system'] as const;
 const ACTIVITY_LOG_TARGET_TYPES = [
+  'project',
   'server',
   'notification_rule',
   'notification_email',
@@ -47,6 +55,44 @@ const ACTIVITY_LOG_TARGET_TYPES = [
   'payment_card',
   'payer',
 ] as const;
+
+// The filter enums above are copied from the API, so pin them to it: when the
+// API adds a value, the build fails here instead of the tool rejecting it.
+type ActivityLogQuery = QueryParams<'/v1/activity-log', 'get'>;
+type ActivityLogFilters = Pick<
+  ActivityLogQuery,
+  'category' | 'actor_type' | 'target_type'
+>;
+type _CategoriesMatchApi = Expect<
+  SameValues<
+    (typeof ACTIVITY_LOG_CATEGORIES)[number],
+    SpecEnum<ActivityLogQuery['category']>
+  >
+>;
+// Support staff actions are never exposed to clients, so `support` is left
+// out of the tool on purpose: the tool must match the API minus `support`.
+type _ActorTypesMatchApi = Expect<
+  SameValues<
+    (typeof ACTIVITY_LOG_ACTOR_TYPES)[number],
+    Exclude<SpecEnum<ActivityLogQuery['actor_type']>, 'support'>
+  >
+>;
+type _TargetTypesMatchApi = Expect<
+  SameValues<
+    (typeof ACTIVITY_LOG_TARGET_TYPES)[number],
+    SpecEnum<ActivityLogQuery['target_type']>
+  >
+>;
+// `activity_log_export` reuses the same lists.
+type _ExportTakesTheSameFilters = Expect<
+  SameValues<
+    ActivityLogFilters,
+    Pick<
+      QueryParams<'/v1/activity-log/export', 'get'>,
+      keyof ActivityLogFilters
+    >
+  >
+>;
 
 // Shared filter schema for the activity log list and export tools.
 const activityLogFilterSchema = {

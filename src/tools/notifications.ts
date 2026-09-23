@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
+import type {
+  Expect,
+  OkResponseBody,
+  RequestBody,
+  SameValues,
+  SpecEnum,
+} from '../generated/helpers.js';
 
 type WebhookCreateBody = RequestBody<'/v1/webhooks', 'post'>;
 type WebhookUpdateBody = RequestBody<'/v1/webhooks/{id}', 'patch'>;
@@ -44,6 +50,7 @@ const notificationRuleSubscriptionEnum = z.enum([
   'ssl_alerts',
   'domain_alerts',
   'dns_alerts',
+  'blocklist_alerts',
   'ideas',
   'billing_alerts',
   'holiday_mode',
@@ -59,12 +66,32 @@ const webhookSubscriptionEnum = z.enum([
   'ssl_alerts',
   'domain_alerts',
   'dns_alerts',
+  'blocklist_alerts',
   'ideas',
   'billing_alerts',
   'holiday_mode',
   'api_key_alerts',
   'security_alerts',
 ]);
+
+// Both enums are copied from the API; pin them so an added type fails the
+// build instead of being rejected by the tool. `test_alerts` and `receipt` are
+// internal: the API never returns them in rules, so the tool leaves them out.
+type _RuleTypesMatchApi = Expect<
+  SameValues<
+    z.infer<typeof notificationRuleSubscriptionEnum>,
+    Exclude<
+      SpecEnum<NotificationRuleSetBody['type']>,
+      'test_alerts' | 'receipt'
+    >
+  >
+>;
+type _WebhookTypesMatchApi = Expect<
+  SameValues<
+    z.infer<typeof webhookSubscriptionEnum>,
+    SpecEnum<WebhookCreateBody['subscriptions']>
+  >
+>;
 
 export function registerNotificationTools(
   server: McpServer,
@@ -190,7 +217,7 @@ export function registerNotificationTools(
     name: 'notification_rule_list',
     title: 'List notification rules',
     description:
-      'Returns the current matrix of notification rules: for each subscription type (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `weekly_reports`, `updates`, `billing_alerts`, `holiday_mode`, `api_key_alerts`, `security_alerts`, `ideas`) — three boolean flags `email` / `telegram` / `max` indicating whether that channel is enabled. Every rule carries a `scope`: monitoring types (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `blocklist_alerts`, `weekly_reports`) belong to a PROJECT and differ from project to project, the rest belong to the account. Without `project_id` the monitoring half is read from the oldest project. Webhooks have their own per-webhook `subscriptions` field and do not appear here.',
+      'Returns the current matrix of notification rules: for each subscription type (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `blocklist_alerts`, `weekly_reports`, `updates`, `billing_alerts`, `holiday_mode`, `api_key_alerts`, `security_alerts`, `ideas`) — three boolean flags `email` / `telegram` / `max` indicating whether that channel is enabled. Every rule carries a `scope`: monitoring types (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `blocklist_alerts`, `weekly_reports`) belong to a PROJECT and differ from project to project, the rest belong to the account. Without `project_id` the monitoring half is read from the oldest project. Webhooks have their own per-webhook `subscriptions` field and do not appear here.',
     inputSchema: {
       project_id: z
         .number()

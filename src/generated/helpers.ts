@@ -64,5 +64,44 @@ export type OkResponseBody<
   ? ResponseBody<P, M, 201>
   : ResponseBody<P, M, 200>;
 
+/** Extract typed query parameters for a (path, method) pair. */
+export type QueryParams<
+  P extends keyof paths,
+  M extends AnyMethod & keyof paths[P],
+> = paths[P][M] extends { parameters: { query?: infer Q } }
+  ? NonNullable<Q>
+  : never;
+
+/**
+ * The values of a spec enum field, whether the field holds one value or an
+ * array of them, without `null`/`undefined`: `SpecEnum<'a' | 'b' | undefined>`
+ * and `SpecEnum<('a' | 'b')[]>` are both `'a' | 'b'`.
+ */
+export type SpecEnum<T> =
+  NonNullable<T> extends readonly (infer E)[]
+    ? NonNullable<E>
+    : NonNullable<T>;
+
+/**
+ * `true` when a hand-written enum lists exactly the values of a spec union;
+ * otherwise an object naming the difference, which `Expect` rejects with those
+ * values in the build error.
+ *
+ * Why it exists: a typed request body catches a value the spec dropped, but
+ * not one the spec added — so a zod enum copied by hand silently falls behind
+ * the API (that is how `project` went missing from the activity log filter).
+ *
+ *   type _Check = Expect<SameValues<z.infer<typeof myEnum>, SpecEnum<Field>>>;
+ */
+export type SameValues<Tool, Spec> = [
+  Exclude<Spec, Tool>,
+  Exclude<Tool, Spec>,
+] extends [never, never]
+  ? true
+  : { missing_from_tool: Exclude<Spec, Tool>; not_in_spec: Exclude<Tool, Spec> };
+
+/** Fails the build unless `T` is `true`. */
+export type Expect<T extends true> = T;
+
 /** Re-export of operations for explicit references when needed. */
 export type Operations = operations;

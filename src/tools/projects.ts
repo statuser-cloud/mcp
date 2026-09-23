@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
+import type {
+  Expect,
+  OkResponseBody,
+  RequestBody,
+  SameValues,
+  SpecEnum,
+} from '../generated/helpers.js';
 
 type ProjectCreateBody = RequestBody<'/v1/projects', 'post'>;
 type ProjectUpdateBody = RequestBody<'/v1/projects/{id}', 'patch'>;
@@ -25,6 +31,15 @@ type ProjectChannelSetResponse = OkResponseBody<
 >;
 
 const channelTypeEnum = z.enum(['email', 'telegram', 'max']);
+
+// Copied from the API; pinned so a new channel kind fails the build instead of
+// being rejected by the tool.
+type _ChannelTypesMatchApi = Expect<
+  SameValues<
+    z.infer<typeof channelTypeEnum>,
+    SpecEnum<ProjectChannelSetBody['type']>
+  >
+>;
 
 export function registerProjectTools(
   server: McpServer,

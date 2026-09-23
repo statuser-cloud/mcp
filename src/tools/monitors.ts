@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
+import type {
+  Expect,
+  OkResponseBody,
+  RequestBody,
+  SameValues,
+  SpecEnum,
+} from '../generated/helpers.js';
 
 /**
  * Compile-time guardrail: the request body sent to the backend must match
@@ -41,6 +47,41 @@ const protocolEnum = z.enum([
   'heartbeat',
   'llm',
 ]);
+
+const locationEnum = z.enum(['msk-1', 'spb-1', 'ala-1', 'nyc-1', 'ams-1']);
+
+const dnsRecordTypeEnum = z.enum([
+  'A',
+  'AAAA',
+  'CNAME',
+  'MX',
+  'TXT',
+  'NS',
+  'SOA',
+  'PTR',
+  'SRV',
+]);
+
+// Copied from the API; pinned so a new protocol, location or record type
+// fails the build instead of being rejected by the tool.
+type _ProtocolsMatchApi = Expect<
+  SameValues<
+    z.infer<typeof protocolEnum>,
+    SpecEnum<CreateMonitorBody['protocol']>
+  >
+>;
+type _LocationsMatchApi = Expect<
+  SameValues<
+    z.infer<typeof locationEnum>,
+    SpecEnum<CreateMonitorBody['locations']>
+  >
+>;
+type _DnsRecordTypesMatchApi = Expect<
+  SameValues<
+    z.infer<typeof dnsRecordTypeEnum>,
+    SpecEnum<CreateMonitorBody['dns_record_types']>
+  >
+>;
 
 const headerSchema = z.object({
   key: z.string(),
@@ -158,15 +199,13 @@ const baseMonitorFields = {
   is_latency_alert_enabled: z.boolean().optional(),
   latency_trigger_ms: z.number().int().min(50).max(60000).optional(),
   locations: z
-    .array(z.enum(['msk-1', 'spb-1', 'ala-1', 'nyc-1', 'ams-1']))
+    .array(locationEnum)
     .optional()
     .describe(
       'Locations to run checks from. Allowed values are the codes from `current_plan_get` -> `features.available_locations`.',
     ),
   dns_record_types: z
-    .array(
-      z.enum(['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SOA', 'PTR', 'SRV']),
-    )
+    .array(dnsRecordTypeEnum)
     .optional()
     .describe('Required for `dns` protocol.'),
   llm_provider: z
