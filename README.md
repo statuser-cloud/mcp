@@ -40,7 +40,7 @@ MCP-сервер для управления [Statuser](https://statuser.cloud) 
 
 ## Быстрый старт
 
-1. Создайте API-ключ в [личном кабинете Statuser](https://statuser.cloud/my/account/api-keys).
+1. Создайте API-ключ в [панели управления Statuser](https://statuser.cloud/my/account/api-keys).
 2. Добавьте сервер в MCP-клиент. Проще всего — по адресу `https://mcp.statuser.cloud` с заголовком `Authorization: Bearer ваш_ключ`; готовые конфиги — [ниже](#подключение-по-адресу).
 3. Перезапустите клиент. Инструменты появятся под именем `statuser`.
 
@@ -149,7 +149,7 @@ claude mcp add --transport http statuser https://mcp.statuser.cloud --header "Au
 [![Установить в VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Установить-24bfa5?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect?url=vscode-insiders:mcp/install?%7B%22name%22%3A%22statuser%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22%40statuser/mcp%22%5D%2C%22inputs%22%3A%5B%7B%22id%22%3A%22statuser_api_key%22%2C%22type%22%3A%22promptString%22%2C%22password%22%3Atrue%2C%22description%22%3A%22API-%5Cu043a%5Cu043b%5Cu044e%5Cu0447%20Statuser%20%28https%3A//statuser.cloud/my/account/api-keys%29%22%7D%5D%2C%22env%22%3A%7B%22STATUSER_API_KEY%22%3A%22%24%7Binput%3Astatuser_api_key%7D%22%7D%7D)
 [![Установить в Cursor](https://img.shields.io/badge/Cursor-Установить-000000?style=for-the-badge&logo=cursor&logoColor=white)](https://cursor.com/install-mcp?name=statuser&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIkBzdGF0dXNlci9tY3AiXSwiZW52Ijp7IlNUQVRVU0VSX0FQSV9LRVkiOiJBUElfS0VZX0hFUkUifX0)
 
-Перед установкой создайте API-ключ в [личном кабинете Statuser](https://statuser.cloud/my/account/api-keys) — клиент попросит его в момент установки. Кнопка для Cursor подставит плейсхолдер `API_KEY_HERE`; замените его на свой ключ в форме, которую откроет Cursor.
+Перед установкой создайте API-ключ в [панели управления Statuser](https://statuser.cloud/my/account/api-keys) — клиент попросит его в момент установки. Кнопка для Cursor подставит плейсхолдер `API_KEY_HERE`; замените его на свой ключ в форме, которую откроет Cursor.
 
 Для Claude Desktop, Claude Code, Windsurf, Zed и других клиентов автоустановки пока нет — там нужен ручной конфиг ниже.
 
