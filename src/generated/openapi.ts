@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/telegram/linked/{id}/test-notify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["TelegramClientController_sendTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/telegram/set-topic": {
         parameters: {
             query?: never;
@@ -260,6 +276,86 @@ export interface paths {
         patch: operations["ProjectChannelsController_updateChannel"];
         trace?: never;
     };
+    "/v1/project-channels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ChannelProjectsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat-webhooks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ChatWebhookController_list"];
+        put?: never;
+        post: operations["ChatWebhookController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat-webhooks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ChatWebhookController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["ChatWebhookController_update"];
+        trace?: never;
+    };
+    "/v1/chat-webhooks/test-notify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ChatWebhookController_sendTestToUrl"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat-webhooks/{id}/test-notify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ChatWebhookController_sendTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/notification-rules": {
         parameters: {
             query?: never;
@@ -388,6 +484,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/max/linked/{id}/test-notify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MaxClientController_sendTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/max/2fa-account": {
         parameters: {
             query?: never;
@@ -446,6 +558,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["NotificationEmailsController_resend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notification-emails/{id}/test-notify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["NotificationEmailsController_sendTest"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1307,15 +1435,43 @@ export interface components {
             name?: string;
         };
         ProjectChannelResponseDto: {
-            type: "email" | "telegram" | "max";
+            type: "email" | "telegram" | "max" | "chat_webhook";
+            provider?: "mattermost" | "rocketchat" | "pachca" | "discord" | "slack";
             id: number;
             title: string;
             is_enabled: boolean;
         };
         UpdateProjectChannelDto: {
-            type: "email" | "telegram" | "max";
+            type: "email" | "telegram" | "max" | "chat_webhook";
             channel_id: number;
             is_enabled: boolean;
+        };
+        ChannelProjectsResponseDto: {
+            type: "email" | "telegram" | "max" | "chat_webhook";
+            provider?: "mattermost" | "rocketchat" | "pachca" | "discord" | "slack";
+            id: number;
+            title: string;
+            project_ids: number[];
+        };
+        ChatWebhookResponseDto: {
+            id: number;
+            provider: "mattermost" | "rocketchat" | "pachca" | "discord" | "slack";
+            name: string | null;
+            url: string;
+            created_at: string;
+        };
+        CreateChatWebhookDto: {
+            provider: "mattermost" | "rocketchat" | "pachca" | "discord" | "slack";
+            url: string;
+            name?: string | null;
+        };
+        UpdateChatWebhookDto: {
+            url?: string;
+            name?: string | null;
+        };
+        TestChatWebhookDto: {
+            provider: "mattermost" | "rocketchat" | "pachca" | "discord" | "slack";
+            url: string;
         };
         NotificationRuleResponseDto: {
             type: "updates" | "weekly_reports" | "service_alerts" | "test_alerts" | "ssl_alerts" | "domain_alerts" | "dns_alerts" | "blocklist_alerts" | "ideas" | "billing_alerts" | "holiday_mode" | "api_key_alerts" | "security_alerts" | "receipt";
@@ -1324,6 +1480,11 @@ export interface components {
                 email?: boolean;
                 telegram?: boolean;
                 max?: boolean;
+                mattermost?: boolean;
+                rocketchat?: boolean;
+                pachca?: boolean;
+                discord?: boolean;
+                slack?: boolean;
             };
         };
         CreateNotificationRuleDto: {
@@ -1331,6 +1492,11 @@ export interface components {
             email: boolean;
             telegram: boolean;
             max: boolean;
+            mattermost?: boolean;
+            rocketchat?: boolean;
+            pachca?: boolean;
+            discord?: boolean;
+            slack?: boolean;
             project_id?: number;
         };
         WebhookEndpointResponseDto: {
@@ -1776,7 +1942,7 @@ export interface components {
         ActivityLogEntryResponseDto: {
             id: string;
             created_at: string;
-            action: "project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed";
+            action: "project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "notification_email.test" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "telegram.test" | "max.link" | "max.unlink" | "max.set_2fa_account" | "max.test" | "chat_webhook.link" | "chat_webhook.update" | "chat_webhook.unlink" | "chat_webhook.test" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "chat_webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed";
             actor_type: "user" | "api_key" | "support" | "system";
             actor_label: string | null;
             source: "panel" | "api" | "mcp" | "telegram" | "max" | "ai_chat" | "system" | "staff" | null;
@@ -1832,6 +1998,37 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TelegramResponseDto"][];
                 };
+            };
+        };
+    };
+    TelegramClientController_sendTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -2368,6 +2565,163 @@ export interface operations {
             };
         };
     };
+    ChannelProjectsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelProjectsResponseDto"][];
+                };
+            };
+        };
+    };
+    ChatWebhookController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatWebhookResponseDto"][];
+                };
+            };
+        };
+    };
+    ChatWebhookController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateChatWebhookDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatWebhookResponseDto"];
+                };
+            };
+        };
+    };
+    ChatWebhookController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ChatWebhookController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateChatWebhookDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatWebhookResponseDto"];
+                };
+            };
+        };
+    };
+    ChatWebhookController_sendTestToUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestChatWebhookDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ChatWebhookController_sendTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     NotificationRuleController_getNotificationRules: {
         parameters: {
             query?: {
@@ -2613,6 +2967,37 @@ export interface operations {
             };
         };
     };
+    MaxClientController_sendTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     MaxClientController_update2faAccount: {
         parameters: {
             query?: never;
@@ -2725,6 +3110,49 @@ export interface operations {
                 content?: never;
             };
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationEmailsController_sendTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            502: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3948,7 +4376,7 @@ export interface operations {
                 actor_type?: ("user" | "api_key" | "support" | "system")[];
                 target_type?: "project" | "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer";
                 target_id?: string;
-                action?: ("project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
+                action?: ("project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "notification_email.test" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "telegram.test" | "max.link" | "max.unlink" | "max.set_2fa_account" | "max.test" | "chat_webhook.link" | "chat_webhook.update" | "chat_webhook.unlink" | "chat_webhook.test" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "chat_webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
                 from?: string;
                 to?: string;
                 search?: string;
@@ -3978,7 +4406,7 @@ export interface operations {
                 actor_type?: ("user" | "api_key" | "support" | "system")[];
                 target_type?: "project" | "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer";
                 target_id?: string;
-                action?: ("project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "max.link" | "max.unlink" | "max.set_2fa_account" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
+                action?: ("project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "notification_email.test" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "telegram.test" | "max.link" | "max.unlink" | "max.set_2fa_account" | "max.test" | "chat_webhook.link" | "chat_webhook.update" | "chat_webhook.unlink" | "chat_webhook.test" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "chat_webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
                 from?: string;
                 to?: string;
                 search?: string;
