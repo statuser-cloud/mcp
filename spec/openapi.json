@@ -6738,7 +6738,7 @@
               "chat_webhook"
             ],
             "example": "telegram",
-            "description": "Тип канала. `chat_webhook` — рабочий чат (Mattermost, Rocket.Chat, Пачка, Discord), какой именно — в поле `provider`"
+            "description": "Тип канала. `chat_webhook` — рабочий чат (Mattermost, Rocket.Chat, Пачка, Discord, Slack), какой именно — в поле `provider`"
           },
           "provider": {
             "type": "string",
