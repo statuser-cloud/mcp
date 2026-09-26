@@ -30,7 +30,7 @@ type ProjectChannelSetResponse = OkResponseBody<
   'patch'
 >;
 
-const channelTypeEnum = z.enum(['email', 'telegram', 'max']);
+const channelTypeEnum = z.enum(['email', 'telegram', 'max', 'chat_webhook']);
 
 // Copied from the API; pinned so a new channel kind fails the build instead of
 // being rejected by the tool.
@@ -154,7 +154,7 @@ export function registerProjectTools(
     name: 'project_channel_list',
     title: 'List channels of a project',
     description:
-      'Lists the notification channels of the account (confirmed emails, linked Telegram and MAX chats) together with whether this project uses them. A channel is connected once for the whole account; a project only switches it on or off for its own monitoring notifications. Account-level notifications — invoices, security, API keys — reach every channel regardless of this setting. Webhooks are not here: their scope is stored on the subscription, see `webhook_update`.',
+      'Lists the notification channels of the account (confirmed emails, linked Telegram and MAX chats, work chats — `type: chat_webhook` with the chat in `provider`: Mattermost, Rocket.Chat, Pachca, Discord, Slack) together with whether this project uses them. A channel is connected once for the whole account; a project only switches it on or off for its own monitoring notifications. Account-level notifications — invoices, security, API keys — reach every channel regardless of this setting. Webhooks are not here: their scope is stored on the subscription, see `webhook_update`.',
     inputSchema: {
       project_id: z.number().int().positive(),
     },
@@ -179,7 +179,7 @@ export function registerProjectTools(
         .int()
         .positive()
         .describe(
-          'Id of the channel inside its own list — as returned by `project_channel_list`, `notification_email_list`, `telegram_linked_list` or `max_linked_list`.',
+          'Id of the channel inside its own list — as returned by `project_channel_list`, `notification_email_list`, `telegram_linked_list` or `max_linked_list`. For work chats (`chat_webhook`) take it from `project_channel_list`.',
         ),
       is_enabled: z.boolean(),
     },

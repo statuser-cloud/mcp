@@ -32,6 +32,42 @@
         ]
       }
     },
+    "/v1/telegram/linked/{id}/test-notify": {
+      "post": {
+        "operationId": "TelegramClientController_sendTest",
+        "summary": "Отправить тестовое сообщение в привязанный чат",
+        "description": "Отправляет в привязанный Телеграм-аккаунт или группу тестовое сообщение — в выбранный топик, если он задан. `id` — поле `id` из ответа `GET /v1/telegram/linked`. Правила уведомлений и настройки проектов на тест не влияют — проверяется сам чат. Если Телеграм отказал в доставке, возвращается его код ошибки (`telegram_bot_blocked_by_user`, `telegram_chat_not_found`, `telegram_user_not_found`, `telegram_user_is_deactivated`); прочие неудачи доставки — 502.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Тестовое сообщение отправлено"
+          },
+          "404": {
+            "description": "Телеграм-аккаунт не найден"
+          },
+          "502": {
+            "description": "Сообщение не доставлено"
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/v1/telegram/set-topic": {
       "patch": {
         "operationId": "TelegramClientController_setTopic",
@@ -601,7 +637,7 @@
       "post": {
         "operationId": "ServersController_sendTestNotification",
         "summary": "Отправить тестовую уведомление для сервера",
-        "description": "Отправляет тестовое сообщение по настроенным на аккаунте каналам (email/Telegram/MAX согласно правилам уведомлений и вебхукам, подписанным на соответствующий тип). Тип теста зависит от протокола сервера: для `dns` — DNS-тест, для `heartbeat` — heartbeat-тест, для остальных — обычный сервис-тест. Удобно для проверки конфигурации без ожидания реального инцидента.",
+        "description": "Отправляет тестовое сообщение в каналы, включённые в проекте сервера: email, Telegram, MAX и рабочие чаты — согласно правилам уведомлений проекта, вебхуки — те, у которых проект сервера есть в `project_ids`. Проверить отдельный канал, не трогая остальные, — `POST /v1/notification-emails/{id}/test-notify`, `POST /v1/telegram/linked/{id}/test-notify`, `POST /v1/max/linked/{id}/test-notify`, `POST /v1/chat-webhooks/{id}/test-notify` и `POST /v1/webhooks/{id}/test-notify`. Тип теста зависит от протокола сервера: для `dns` — DNS-тест, для `heartbeat` — heartbeat-тест, для остальных — обычный сервис-тест. Удобно для проверки конфигурации без ожидания реального инцидента.",
         "parameters": [
           {
             "name": "id",
@@ -826,7 +862,7 @@
       "get": {
         "operationId": "ProjectChannelsController_getChannels",
         "summary": "Каналы аккаунта и их состояние в проекте",
-        "description": "Возвращает каналы уведомлений аккаунта (подтверждённые адреса, привязки Телеграма и MAX) с признаком, пользуется ли ими этот проект. Канал подключается один раз на аккаунт — здесь он только включается и выключается. Уведомления о мониторинге уходят только во включённые каналы; события аккаунта (счета, безопасность, вход) приходят во все, независимо от проекта. Вебхуки в список не входят: у них своя модель — подписка хранит и проект, и тип события, поэтому тумблера «включён в проекте» у них нет. Чтобы собрать полную картину доставки проекта, возьмите вебхуки из `GET /v1/webhooks` и отберите те, у кого этот проект есть в `project_ids`.",
+        "description": "Возвращает каналы уведомлений аккаунта (подтверждённые адреса, привязки Телеграма и MAX, рабочие чаты) с признаком, пользуется ли ими этот проект. Канал подключается один раз на аккаунт — здесь он только включается и выключается. Уведомления о мониторинге уходят только во включённые каналы; события аккаунта (счета, безопасность, вход) приходят во все, независимо от проекта. Вебхуки в список не входят: у них своя модель — подписка хранит и проект, и тип события, поэтому тумблера «включён в проекте» у них нет. Чтобы собрать полную картину доставки проекта, возьмите вебхуки из `GET /v1/webhooks` и отберите те, у кого этот проект есть в `project_ids`.",
         "parameters": [
           {
             "name": "projectId",
@@ -902,6 +938,246 @@
         },
         "tags": [
           "Проекты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/project-channels": {
+      "get": {
+        "operationId": "ChannelProjectsController_list",
+        "summary": "Каналы аккаунта и проекты, в которых они включены",
+        "description": "Возвращает каналы уведомлений аккаунта (подтверждённые адреса, привязки Телеграма и MAX, рабочие чаты) и для каждого — проекты, уведомления о мониторинге которых в него уходят. Включить или выключить канал в проекте — `PATCH /v1/projects/{projectId}/channels`. Вебхуков в списке нет: их проекты — поле `project_ids` в `GET /v1/webhooks`.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChannelProjectsResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Проекты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/chat-webhooks": {
+      "get": {
+        "operationId": "ChatWebhookController_list",
+        "summary": "Подключённые рабочие чаты",
+        "description": "Возвращает рабочие чаты аккаунта — Mattermost, Rocket.Chat, Пачку, Discord и Slack, подключённые через их входящие вебхуки. Какие события уходят в чат, задают правила уведомлений (`GET /v1/notification-rules`, колонка с именем чата), а в каких проектах он включён — `GET /v1/projects/{projectId}/channels`.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChatWebhookResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Рабочие чаты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ChatWebhookController_create",
+        "summary": "Подключить рабочий чат",
+        "description": "Подключает Mattermost, Rocket.Chat, Пачку, Discord или Slack по адресу входящего вебхука, созданного в самом чате. Для Slack адрес — `https://hooks.slack.com/services/…`, другой отклоняется с `chat_webhook_url_provider_mismatch` (400). Сразу после подключения в чат уходят уведомления по правилам уведомлений; канал включён в самом старом проекте и выключен в остальных — включить его в других проектах можно через `PATCH /v1/projects/{projectId}/channels` с `type: chat_webhook`. Требует тарифа с включёнными вебхук-уведомлениями (`webhook_notifications_enabled`).",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChatWebhookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatWebhookResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Рабочие чаты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/chat-webhooks/{id}": {
+      "patch": {
+        "operationId": "ChatWebhookController_update",
+        "summary": "Изменить подключение рабочего чата",
+        "description": "Меняет подпись или адрес входящего вебхука. Передавайте только меняющиеся поля. Чат (`provider`) не меняется — для другого чата заведите новое подключение.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateChatWebhookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatWebhookResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Рабочие чаты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ChatWebhookController_remove",
+        "summary": "Отключить рабочий чат",
+        "description": "Statuser перестаёт отправлять уведомления в этот чат. Сам входящий вебхук остаётся в настройках чата — удалите его там, если он больше не нужен.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Рабочие чаты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/chat-webhooks/test-notify": {
+      "post": {
+        "operationId": "ChatWebhookController_sendTestToUrl",
+        "summary": "Отправить тестовое сообщение на адрес",
+        "description": "Отправляет тестовое сообщение во входящий вебхук чата, не подключая его. Нужно, чтобы проверить адрес прямо в форме — до подключения. Если доставка не удалась — возвращается 502 с подробностями (`reason`, `chat_status`).",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestChatWebhookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "502": {
+            "description": "Не удалось доставить сообщение"
+          }
+        },
+        "tags": [
+          "Рабочие чаты"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/chat-webhooks/{id}/test-notify": {
+      "post": {
+        "operationId": "ChatWebhookController_sendTest",
+        "summary": "Отправить тестовое сообщение в подключённый чат",
+        "description": "Отправляет в чат тестовое сообщение. Если доставка не удалась — возвращается 502 с подробностями (`reason`, `chat_status`).",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "502": {
+            "description": "Не удалось доставить сообщение"
+          }
+        },
+        "tags": [
+          "Рабочие чаты"
         ],
         "security": [
           {
@@ -1311,6 +1587,42 @@
         ]
       }
     },
+    "/v1/max/linked/{id}/test-notify": {
+      "post": {
+        "operationId": "MaxClientController_sendTest",
+        "summary": "Отправить тестовое сообщение в привязанный чат MAX",
+        "description": "Отправляет в привязанный MAX-аккаунт или группу тестовое сообщение. `id` — поле `id` из ответа `GET /v1/max/linked`. Правила уведомлений и настройки проектов на тест не влияют — проверяется сам чат. Если сообщение не удалось доставить — возвращается 502.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Тестовое сообщение отправлено"
+          },
+          "404": {
+            "description": "MAX-аккаунт не найден"
+          },
+          "502": {
+            "description": "Сообщение не доставлено"
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/v1/max/2fa-account": {
       "patch": {
         "operationId": "MaxClientController_update2faAccount",
@@ -1480,6 +1792,48 @@
           },
           "404": {
             "description": "Емейл не найден"
+          }
+        },
+        "tags": [
+          "Аккаунт"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/notification-emails/{id}/test-notify": {
+      "post": {
+        "operationId": "NotificationEmailsController_sendTest",
+        "summary": "Отправить тестовое письмо на адрес",
+        "description": "Отправляет на подтверждённый адрес тестовое письмо. Правила уведомлений и настройки проектов на тест не влияют — проверяется сам адрес. Если адрес ещё не подтверждён или отключён после ошибок доставки — возвращается 409; если тестовое письмо на этот адрес уходило меньше минуты назад — 429; если письмо не удалось отправить — 502.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Тестовое письмо отправлено"
+          },
+          "404": {
+            "description": "Емейл не найден"
+          },
+          "409": {
+            "description": "Адрес не подтверждён или отключён"
+          },
+          "429": {
+            "description": "Тест отправлялся недавно"
+          },
+          "502": {
+            "description": "Письмо не удалось отправить"
           }
         },
         "tags": [
@@ -3847,6 +4201,7 @@
                   "notification_email.confirm",
                   "notification_email.resend",
                   "notification_email.remove",
+                  "notification_email.test",
                   "webhook.create",
                   "webhook.update",
                   "webhook.delete",
@@ -3855,9 +4210,15 @@
                   "telegram.unlink",
                   "telegram.set_topic",
                   "telegram.set_2fa_account",
+                  "telegram.test",
                   "max.link",
                   "max.unlink",
                   "max.set_2fa_account",
+                  "max.test",
+                  "chat_webhook.link",
+                  "chat_webhook.update",
+                  "chat_webhook.unlink",
+                  "chat_webhook.test",
                   "holiday_mode.enable",
                   "holiday_mode.disable",
                   "status_page.create",
@@ -3932,6 +4293,7 @@
                   "status_page.feature_reset_by_plan",
                   "status_page_announcement.deleted_by_limit",
                   "webhook.disabled_by_limit",
+                  "chat_webhook.disabled_by_limit",
                   "plan.activate",
                   "plan.expired",
                   "plan.pending_downgrade_applied",
@@ -4136,6 +4498,7 @@
                   "notification_email.confirm",
                   "notification_email.resend",
                   "notification_email.remove",
+                  "notification_email.test",
                   "webhook.create",
                   "webhook.update",
                   "webhook.delete",
@@ -4144,9 +4507,15 @@
                   "telegram.unlink",
                   "telegram.set_topic",
                   "telegram.set_2fa_account",
+                  "telegram.test",
                   "max.link",
                   "max.unlink",
                   "max.set_2fa_account",
+                  "max.test",
+                  "chat_webhook.link",
+                  "chat_webhook.update",
+                  "chat_webhook.unlink",
+                  "chat_webhook.test",
                   "holiday_mode.enable",
                   "holiday_mode.disable",
                   "status_page.create",
@@ -4221,6 +4590,7 @@
                   "status_page.feature_reset_by_plan",
                   "status_page_announcement.deleted_by_limit",
                   "webhook.disabled_by_limit",
+                  "chat_webhook.disabled_by_limit",
                   "plan.activate",
                   "plan.expired",
                   "plan.pending_downgrade_applied",
@@ -6364,10 +6734,23 @@
             "enum": [
               "email",
               "telegram",
-              "max"
+              "max",
+              "chat_webhook"
             ],
             "example": "telegram",
-            "description": "Тип канала"
+            "description": "Тип канала. `chat_webhook` — рабочий чат (Mattermost, Rocket.Chat, Пачка, Discord), какой именно — в поле `provider`"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "mattermost",
+              "rocketchat",
+              "pachca",
+              "discord",
+              "slack"
+            ],
+            "example": "mattermost",
+            "description": "Рабочий чат — только у каналов `type: chat_webhook`"
           },
           "id": {
             "type": "number",
@@ -6401,7 +6784,8 @@
             "enum": [
               "email",
               "telegram",
-              "max"
+              "max",
+              "chat_webhook"
             ],
             "example": "telegram",
             "description": "Тип канала"
@@ -6423,6 +6807,186 @@
           "is_enabled"
         ],
         "title": "UpdateProjectChannelDto"
+      },
+      "ChannelProjectsResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "email",
+              "telegram",
+              "max",
+              "chat_webhook"
+            ],
+            "example": "telegram",
+            "description": "Тип канала. `chat_webhook` — рабочий чат (Mattermost, Rocket.Chat, Discord, Slack, Пачка), какой именно — в поле `provider`"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "mattermost",
+              "rocketchat",
+              "pachca",
+              "discord",
+              "slack"
+            ],
+            "example": "mattermost",
+            "description": "Рабочий чат — только у каналов `type: chat_webhook`"
+          },
+          "id": {
+            "type": "number",
+            "example": 12,
+            "description": "ID канала в своём справочнике (адреса, привязки, чаты)"
+          },
+          "title": {
+            "type": "string",
+            "example": "@ops_alerts",
+            "description": "Подпись канала: адрес, имя чата или привязки"
+          },
+          "project_ids": {
+            "example": [
+              100000,
+              100023
+            ],
+            "description": "Проекты, уведомления о мониторинге которых уходят в этот канал. Пустой список — канал получает только события аккаунта: счета, безопасность, вход",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "title",
+          "project_ids"
+        ],
+        "title": "ChannelProjectsResponseDto"
+      },
+      "ChatWebhookResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID подключения"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "mattermost",
+              "rocketchat",
+              "pachca",
+              "discord",
+              "slack"
+            ],
+            "example": "mattermost",
+            "description": "Рабочий чат"
+          },
+          "name": {
+            "type": "string",
+            "example": "#incidents",
+            "nullable": true,
+            "description": "Подпись канала, если задана"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://mattermost.example.com/hooks/xxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "description": "Адрес входящего вебхука"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-23T12:00:00.000Z",
+            "description": "Дата подключения"
+          }
+        },
+        "required": [
+          "id",
+          "provider",
+          "name",
+          "url",
+          "created_at"
+        ],
+        "title": "ChatWebhookResponseDto"
+      },
+      "CreateChatWebhookDto": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "mattermost",
+              "rocketchat",
+              "pachca",
+              "discord",
+              "slack"
+            ],
+            "example": "mattermost",
+            "description": "Рабочий чат: `mattermost`, `rocketchat`, `pachca`, `discord` или `slack`. Задаётся при подключении и потом не меняется"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://mattermost.example.com/hooks/xxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "description": "Адрес входящего вебхука, созданного в самом чате. В него приходят готовые сообщения в формате этого чата"
+          },
+          "name": {
+            "type": "string",
+            "example": "#incidents",
+            "nullable": true,
+            "description": "Подпись, чтобы различать несколько каналов одного чата. Без неё канал показывается названием чата и адресом его сервера"
+          }
+        },
+        "required": [
+          "provider",
+          "url"
+        ],
+        "title": "CreateChatWebhookDto"
+      },
+      "UpdateChatWebhookDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "https://mattermost.example.com/hooks/xxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "description": "Адрес входящего вебхука, созданного в самом чате. В него приходят готовые сообщения в формате этого чата"
+          },
+          "name": {
+            "type": "string",
+            "example": "#incidents",
+            "nullable": true,
+            "description": "Подпись канала. `null` или пустая строка убирают её"
+          }
+        },
+        "title": "UpdateChatWebhookDto"
+      },
+      "TestChatWebhookDto": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "mattermost",
+              "rocketchat",
+              "pachca",
+              "discord",
+              "slack"
+            ],
+            "example": "mattermost",
+            "description": "Рабочий чат — от него зависит формат тестового сообщения"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://mattermost.example.com/hooks/xxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "description": "Адрес входящего вебхука, на который отправить тестовое сообщение"
+          }
+        },
+        "required": [
+          "provider",
+          "url"
+        ],
+        "title": "TestChatWebhookDto"
       },
       "NotificationRuleResponseDto": {
         "type": "object",
@@ -6475,6 +7039,31 @@
                 "type": "boolean",
                 "example": true,
                 "description": "Включены ли уведомления в MAX для данного типа подписки"
+              },
+              "mattermost": {
+                "type": "boolean",
+                "example": true,
+                "description": "Включены ли уведомления в подключённые чаты Mattermost для данного типа подписки"
+              },
+              "rocketchat": {
+                "type": "boolean",
+                "example": true,
+                "description": "Включены ли уведомления в подключённые чаты Rocket.Chat для данного типа подписки"
+              },
+              "pachca": {
+                "type": "boolean",
+                "example": true,
+                "description": "Включены ли уведомления в подключённые чаты Пачки для данного типа подписки"
+              },
+              "discord": {
+                "type": "boolean",
+                "example": true,
+                "description": "Включены ли уведомления в подключённые каналы Discord для данного типа подписки"
+              },
+              "slack": {
+                "type": "boolean",
+                "example": true,
+                "description": "Включены ли уведомления в подключённые каналы Slack для данного типа подписки"
               }
             }
           }
@@ -6524,6 +7113,31 @@
             "type": "boolean",
             "example": true,
             "description": "Включены ли уведомления в MAX для данного типа подписки"
+          },
+          "mattermost": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включены ли уведомления в подключённые чаты Mattermost для данного типа подписки. Без поля текущее значение не меняется"
+          },
+          "rocketchat": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включены ли уведомления в подключённые чаты Rocket.Chat для данного типа подписки. Без поля текущее значение не меняется"
+          },
+          "pachca": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включены ли уведомления в подключённые чаты Пачки для данного типа подписки. Без поля текущее значение не меняется"
+          },
+          "discord": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включены ли уведомления в подключённые каналы Discord для данного типа подписки. Без поля текущее значение не меняется"
+          },
+          "slack": {
+            "type": "boolean",
+            "example": true,
+            "description": "Включены ли уведомления в подключённые каналы Slack для данного типа подписки. Без поля текущее значение не меняется"
           },
           "project_id": {
             "type": "number",
@@ -9285,6 +9899,7 @@
               "notification_email.confirm",
               "notification_email.resend",
               "notification_email.remove",
+              "notification_email.test",
               "webhook.create",
               "webhook.update",
               "webhook.delete",
@@ -9293,9 +9908,15 @@
               "telegram.unlink",
               "telegram.set_topic",
               "telegram.set_2fa_account",
+              "telegram.test",
               "max.link",
               "max.unlink",
               "max.set_2fa_account",
+              "max.test",
+              "chat_webhook.link",
+              "chat_webhook.update",
+              "chat_webhook.unlink",
+              "chat_webhook.test",
               "holiday_mode.enable",
               "holiday_mode.disable",
               "status_page.create",
@@ -9370,6 +9991,7 @@
               "status_page.feature_reset_by_plan",
               "status_page_announcement.deleted_by_limit",
               "webhook.disabled_by_limit",
+              "chat_webhook.disabled_by_limit",
               "plan.activate",
               "plan.expired",
               "plan.pending_downgrade_applied",
