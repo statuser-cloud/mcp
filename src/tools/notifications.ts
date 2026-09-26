@@ -217,7 +217,7 @@ export function registerNotificationTools(
     name: 'notification_rule_list',
     title: 'List notification rules',
     description:
-      'Returns the current matrix of notification rules: for each subscription type (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `blocklist_alerts`, `weekly_reports`, `updates`, `billing_alerts`, `holiday_mode`, `api_key_alerts`, `security_alerts`, `ideas`) — three boolean flags `email` / `telegram` / `max` indicating whether that channel is enabled. Every rule carries a `scope`: monitoring types (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `blocklist_alerts`, `weekly_reports`) belong to a PROJECT and differ from project to project, the rest belong to the account. Without `project_id` the monitoring half is read from the oldest project. Webhooks have their own per-webhook `subscriptions` field and do not appear here.',
+      'Returns the current matrix of notification rules: for each subscription type (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `blocklist_alerts`, `weekly_reports`, `updates`, `billing_alerts`, `holiday_mode`, `api_key_alerts`, `security_alerts`, `ideas`) — boolean flags `email` / `telegram` / `max` and one per work chat (`mattermost`, `rocketchat`, `pachca`, `discord`, `slack`) indicating whether that kind of channel gets the event. Account-level types are off for work chats by default: a work chat is usually shared with a team or a client. Every rule carries a `scope`: monitoring types (`service_alerts`, `ssl_alerts`, `domain_alerts`, `dns_alerts`, `blocklist_alerts`, `weekly_reports`) belong to a PROJECT and differ from project to project, the rest belong to the account. Without `project_id` the monitoring half is read from the oldest project. Webhooks have their own per-webhook `subscriptions` field and do not appear here.',
     inputSchema: {
       project_id: z
         .number()
@@ -240,13 +240,20 @@ export function registerNotificationTools(
     name: 'notification_rule_set',
     title: 'Set notification rule for a subscription type',
     description:
-      'Creates or updates the rule for a single subscription type: toggles channels `email`, `telegram`, `max`. Selecting individual recipients or chats is not possible — the toggle is on/off per kind of channel; which exact addresses and chats a project uses is decided by `project_channel_set`. Monitoring types apply to ONE project (the oldest one unless `project_id` says otherwise), account types (`billing_alerts`, `security_alerts`, `api_key_alerts`, `updates`, `ideas`, `holiday_mode`) apply to the account as a whole. Returns the full updated list of rules.',
+      'Creates or updates the rule for a single subscription type: toggles channels `email`, `telegram`, `max` and, optionally, the work chats `mattermost`, `rocketchat`, `pachca`, `discord`, `slack` — a work-chat flag that is not passed stays as it is. Selecting individual recipients or chats is not possible — the toggle is on/off per kind of channel; which exact addresses and chats a project uses is decided by `project_channel_set`. Monitoring types apply to ONE project (the oldest one unless `project_id` says otherwise), account types (`billing_alerts`, `security_alerts`, `api_key_alerts`, `updates`, `ideas`, `holiday_mode`) apply to the account as a whole. Returns the full updated list of rules.',
     write: true,
     inputSchema: {
       type: notificationRuleSubscriptionEnum,
       email: z.boolean(),
       telegram: z.boolean(),
       max: z.boolean(),
+      // Optional on purpose: the API leaves an omitted work-chat flag as it is,
+      // and clients written before work chats keep sending three flags
+      mattermost: z.boolean().optional(),
+      rocketchat: z.boolean().optional(),
+      pachca: z.boolean().optional(),
+      discord: z.boolean().optional(),
+      slack: z.boolean().optional(),
       project_id: z
         .number()
         .int()
