@@ -1,13 +1,40 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerTool, type ToolContext } from '../tool.js';
-import type { OkResponseBody, RequestBody } from '../generated/helpers.js';
+import type {
+  Expect,
+  OkResponseBody,
+  RequestBody,
+  SameValues,
+  SpecEnum,
+} from '../generated/helpers.js';
 
 type StatusPageCreateBody = RequestBody<'/v1/status-pages', 'post'>;
 type StatusPageUpdateBody = RequestBody<'/v1/status-pages/{id}', 'patch'>;
 type StatusPageSetGroupsBody = RequestBody<
   '/v1/status-pages/{id}/servers',
   'patch'
+>;
+
+const statusPageLanguageEnum = z.enum([
+  'ru',
+  'en',
+  'kk',
+  'uz',
+  'tr',
+  'zh',
+  'es',
+  'de',
+  'fr',
+]);
+
+// Copied from the API; pinned so an added language fails the build instead of
+// being rejected by the tool.
+type _StatusPageLanguagesMatchApi = Expect<
+  SameValues<
+    z.infer<typeof statusPageLanguageEnum>,
+    SpecEnum<StatusPageCreateBody['language']>
+  >
 >;
 
 type StatusPageListResponse = OkResponseBody<'/v1/status-pages', 'get'>;
@@ -129,6 +156,11 @@ const optionalStatusPageFields = {
     .optional()
     .describe(
       '`user` — follow viewer preference; `light` / `dark` — force theme.',
+    ),
+  language: statusPageLanguageEnum
+    .optional()
+    .describe(
+      'Language of the public page, subscriber emails and RSS/Atom feeds: `ru`, `en`, `kk` (Kazakh, Cyrillic), `uz` (Uzbek, Latin), `tr`, `zh` (Simplified Chinese), `es`, `de`, `fr`. Visitors cannot switch it. Server names, incident reports and announcements are not translated — write them in the page language. Omitted on create, the page is in Russian.',
     ),
   is_not_monitored_operational: z.boolean().optional(),
   minimum_incident_duration: z
