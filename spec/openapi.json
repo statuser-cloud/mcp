@@ -8213,6 +8213,22 @@
               "dark"
             ]
           },
+          "language": {
+            "type": "string",
+            "example": "ru",
+            "description": "Язык страницы статуса: интерфейс страницы, письма подписчикам и RSS/Atom",
+            "enum": [
+              "ru",
+              "en",
+              "kk",
+              "uz",
+              "tr",
+              "zh",
+              "es",
+              "de",
+              "fr"
+            ]
+          },
           "is_not_monitored_operational": {
             "type": "boolean",
             "example": false,
@@ -8306,6 +8322,7 @@
           "timezone",
           "uptime_decimal_places",
           "theme_mode",
+          "language",
           "is_not_monitored_operational",
           "minimum_incident_duration",
           "is_password_protected",
@@ -8442,6 +8459,22 @@
               "dark"
             ]
           },
+          "language": {
+            "type": "string",
+            "example": "ru",
+            "description": "Язык страницы статуса: интерфейс страницы, письма подписчикам и RSS/Atom",
+            "enum": [
+              "ru",
+              "en",
+              "kk",
+              "uz",
+              "tr",
+              "zh",
+              "es",
+              "de",
+              "fr"
+            ]
+          },
           "is_not_monitored_operational": {
             "type": "boolean",
             "example": false,
@@ -8575,6 +8608,22 @@
               "user",
               "light",
               "dark"
+            ]
+          },
+          "language": {
+            "type": "string",
+            "example": "ru",
+            "description": "Язык страницы статуса: интерфейс страницы, письма подписчикам и RSS/Atom",
+            "enum": [
+              "ru",
+              "en",
+              "kk",
+              "uz",
+              "tr",
+              "zh",
+              "es",
+              "de",
+              "fr"
             ]
           },
           "is_not_monitored_operational": {

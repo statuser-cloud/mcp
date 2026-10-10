@@ -1670,6 +1670,7 @@ export interface components {
             timezone: string;
             uptime_decimal_places: number;
             theme_mode: "user" | "light" | "dark";
+            language: "ru" | "en" | "kk" | "uz" | "tr" | "zh" | "es" | "de" | "fr";
             is_not_monitored_operational: boolean;
             minimum_incident_duration: number;
             is_password_protected: boolean;
@@ -1703,6 +1704,7 @@ export interface components {
             timezone?: string;
             uptime_decimal_places?: number;
             theme_mode?: "user" | "light" | "dark";
+            language?: "ru" | "en" | "kk" | "uz" | "tr" | "zh" | "es" | "de" | "fr";
             is_not_monitored_operational?: boolean;
             minimum_incident_duration?: number;
             password?: string | null;
@@ -1727,6 +1729,7 @@ export interface components {
             timezone?: string;
             uptime_decimal_places?: number;
             theme_mode?: "user" | "light" | "dark";
+            language?: "ru" | "en" | "kk" | "uz" | "tr" | "zh" | "es" | "de" | "fr";
             is_not_monitored_operational?: boolean;
             minimum_incident_duration?: number;
             password?: string | null;
