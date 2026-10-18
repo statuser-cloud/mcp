@@ -29,6 +29,10 @@ type IncidentServerResponse = OkResponseBody<
   '/v1/incidents/{incidentId}/server',
   'get'
 >;
+type IncidentScenarioDetailsResponse = OkResponseBody<
+  '/v1/incidents/{id}/scenario-details',
+  'get'
+>;
 type IncidentAiSummaryResponse = OkResponseBody<
   '/v1/incidents/{incidentId}/ai-summary',
   'post'
@@ -163,6 +167,21 @@ export function registerIncidentTools(
       client.call<IncidentServerResponse>({
         method: 'GET',
         path: `/v1/incidents/${id}/server`,
+      }),
+  });
+
+  registerTool(server, ctx, {
+    name: 'incident_get_scenario_details',
+    title: 'Get scenario incident diagnostics',
+    description:
+      'Diagnostics of an incident of a `scenario` monitor: the run that opened it — location, duration, the failed test, the Playwright error with its call log and the test console output — and whether a screenshot, video and trace were saved. The files themselves open on the incident page in the panel. Recorded once, by the run that opened the incident; 404 for incidents of other protocols.',
+    inputSchema: {
+      id: z.number().int().positive(),
+    },
+    handler: async ({ id }, { client }) =>
+      client.call<IncidentScenarioDetailsResponse>({
+        method: 'GET',
+        path: `/v1/incidents/${id}/scenario-details`,
       }),
   });
 
