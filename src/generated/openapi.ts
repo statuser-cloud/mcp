@@ -212,6 +212,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/incidents/{id}/scenario-details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ScenarioRunsController_getDetails"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/servers/{id}/scenario-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ScenarioRunsController_runNow"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/servers/{id}/scenario-run/latest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ScenarioRunsController_getLatestManualRun"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/projects": {
         parameters: {
             query?: never;
@@ -1225,6 +1273,9 @@ export interface components {
             heartbeat_monitoring_enabled: boolean;
             ai_monitoring_enabled: boolean;
             ai_inference_enabled: boolean;
+            scenarios_limit: number;
+            scenario_min_check_interval_seconds: number;
+            scenario_max_timeout_seconds: number;
             latency_alerts_enabled: boolean;
             custom_success_http_codes_enabled: boolean;
             incident_retention_days: number;
@@ -1271,7 +1322,7 @@ export interface components {
         CreateServerDto: {
             project_id?: number;
             host: string;
-            protocol: "ping" | "http" | "keyword" | "tcp" | "dns" | "heartbeat" | "llm";
+            protocol: "ping" | "http" | "keyword" | "tcp" | "dns" | "heartbeat" | "llm" | "scenario";
             port?: number;
             http_method?: "head" | "get" | "options" | "post" | "put" | "patch";
             body?: string | null;
@@ -1296,6 +1347,10 @@ export interface components {
             llm_provider?: "openai_compatible" | "anthropic_compatible";
             llm_model?: string;
             llm_api_key?: string | null;
+            scenario_script?: string;
+            scenario_env?: {
+                [key: string]: string;
+            };
         };
         SslInfo: {
             valid_to: string;
@@ -1369,12 +1424,14 @@ export interface components {
             llm_check_mode: "availability" | "inference" | null;
             llm_model: string | null;
             llm_api_key_masked: string | null;
+            scenario_script: string | null;
+            scenario_env_keys: string[] | null;
             created_at: string;
         };
         UpdateServerDto: {
             project_id?: number;
             host?: string;
-            protocol?: "ping" | "http" | "keyword" | "tcp" | "dns" | "heartbeat" | "llm";
+            protocol?: "ping" | "http" | "keyword" | "tcp" | "dns" | "heartbeat" | "llm" | "scenario";
             port?: number;
             http_method?: "head" | "get" | "options" | "post" | "put" | "patch";
             body?: string | null;
@@ -1399,12 +1456,16 @@ export interface components {
             llm_provider?: "openai_compatible" | "anthropic_compatible";
             llm_model?: string;
             llm_api_key?: string | null;
+            scenario_script?: string;
+            scenario_env?: {
+                [key: string]: string | null;
+            };
         };
         ServerCheckResponseDto: Record<string, never>;
         ServerHeartbeatAggregatedResponseDto: {
             occurred_at: string;
             status: "online" | "offline" | "pending" | "paused" | "failed";
-            error: "host_is_missing" | "port_is_missing" | "check_function_not_found" | "unsupported_protocol" | "connection_timeout" | "heartbeat_timeout" | "heartbeat_failure" | "unknown_ping_error" | "unknown_tcp_error" | "unknown_http_error" | "status_code_mismatch" | "keyword_not_found" | "keyword_found" | "unknown_error" | "host_not_found" | "dns_temporary_failure" | "address_not_available" | "self_signed_cert" | "self_signed_cert_chain" | "invalid_tls_cert" | "unable_to_verify_cert" | "cert_expired" | "cert_not_yet_valid" | "dh_param_size_too_small" | "tls_renegotiation_disabled" | "connection_refused" | "connection_reset" | "network_unreachable" | "broken_pipe" | "access_denied" | "host_unreachable" | "socket_closed" | "connection_timed_out" | "multiple_choices" | "moved_permanently" | "found" | "see_other" | "not_modified" | "use_proxy" | "switch_proxy" | "temporary_redirect" | "permanent_redirect" | "bad_request" | "unauthorized" | "payment_required" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "proxy_auth_required" | "request_timeout" | "conflict" | "gone" | "length_required" | "precondition_failed" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "range_not_satisfiable" | "expectation_failed" | "im_a_teapot" | "misdirected_request" | "unprocessable_entity" | "locked" | "failed_dependency" | "too_early" | "upgrade_required" | "precondition_required" | "too_many_requests" | "header_fields_too_large" | "legal_block" | "internal_server_error" | "not_implemented" | "bad_gateway" | "service_unavailable" | "gateway_timeout" | "http_version_not_supported" | "variant_negotiates" | "insufficient_storage" | "loop_detected" | "not_extended" | "network_auth_required" | "overloaded" | "llm_insufficient_funds" | "nginx_no_response" | "nginx_header_too_large" | "nginx_ssl_certificate_error" | "nginx_ssl_certificate_required" | "nginx_http_to_https" | "nginx_client_closed_request" | "cloudflare_unknown_error" | "cloudflare_server_down" | "cloudflare_connection_timeout" | "cloudflare_origin_unreachable" | "cloudflare_timeout_occurred" | "cloudflare_ssl_handshake_failed" | "cloudflare_invalid_ssl_certificate" | "aws_client_timeout" | "aws_x_forwarded_too_many_ips" | "aws_protocol_mismatch" | "aws_unauthorized" | "curl_unsupported_protocol" | "curl_failed_init" | "curl_url_malformed" | "curl_not_built_in" | "curl_couldnt_resolve_proxy" | "curl_couldnt_resolve_host" | "curl_couldnt_connect" | "curl_weird_server_reply" | "curl_ftp_access_denied" | "curl_ftp_accept_failed" | "curl_ftp_weird_pass_reply" | "curl_ftp_accept_timeout" | "curl_ftp_weird_pasv_reply" | "curl_ftp_weird_227_format" | "curl_ftp_cant_get_host" | "curl_http2_error" | "curl_ftp_couldnt_set_binary" | "curl_partial_file" | "curl_ftp_couldnt_retr_file" | "curl_ftp_quote_error" | "curl_http_returned_error" | "curl_write_error" | "curl_ftp_couldnt_stor_file" | "curl_read_error" | "curl_out_of_memory" | "curl_operation_timedout" | "curl_ftp_port_failed" | "curl_ftp_couldnt_use_rest" | "curl_http_range_error" | "curl_http_post_error" | "curl_ssl_connect_error" | "curl_bad_download_resume" | "curl_file_couldnt_read_file" | "curl_ldap_cannot_bind" | "curl_ldap_search_failed" | "curl_function_not_found" | "curl_aborted_by_callback" | "curl_bad_function_argument" | "curl_interface_failed" | "curl_too_many_redirects" | "curl_unknown_option" | "curl_telnet_option_syntax" | "curl_peer_failed_verification" | "curl_got_nothing" | "curl_ssl_engine_notfound" | "curl_ssl_engine_setfailed" | "curl_send_error" | "curl_recv_error" | "curl_ssl_certproblem" | "curl_ssl_cipher" | "curl_ssl_cacert" | "curl_bad_content_encoding" | "curl_ldap_invalid_url" | "curl_filesize_exceeded" | "curl_use_ssl_failed" | "curl_send_fail_rewind" | "curl_ssl_engine_initfailed" | "curl_login_denied" | "curl_tftp_notfound" | "curl_tftp_perm" | "curl_remote_disk_full" | "curl_tftp_illegal" | "curl_tftp_unknownid" | "curl_remote_file_exists" | "curl_tftp_nosuchuser" | "curl_conv_failed" | "curl_conv_reqd" | "curl_ssl_cacert_badfile" | "curl_remote_file_not_found" | "curl_ssh" | "curl_ssl_shutdown_failed" | "curl_again" | "curl_ssl_crl_badfile" | "curl_ssl_issuer_error" | "curl_ftp_pret_failed" | "curl_rtsp_cseq_error" | "curl_rtsp_session_error" | "curl_ftp_bad_file_list" | "curl_chunk_failed" | "curl_no_connection_available" | "curl_ssl_pinnedpubkeynotmatch" | "curl_ssl_invalidcertstatus" | "curl_http2_stream" | null;
+            error: "host_is_missing" | "port_is_missing" | "check_function_not_found" | "unsupported_protocol" | "connection_timeout" | "heartbeat_timeout" | "heartbeat_failure" | "scenario_failed" | "scenario_timeout" | "unknown_ping_error" | "unknown_tcp_error" | "unknown_http_error" | "status_code_mismatch" | "keyword_not_found" | "keyword_found" | "unknown_error" | "host_not_found" | "dns_temporary_failure" | "address_not_available" | "self_signed_cert" | "self_signed_cert_chain" | "invalid_tls_cert" | "unable_to_verify_cert" | "cert_expired" | "cert_not_yet_valid" | "dh_param_size_too_small" | "tls_renegotiation_disabled" | "connection_refused" | "connection_reset" | "network_unreachable" | "broken_pipe" | "access_denied" | "host_unreachable" | "socket_closed" | "connection_timed_out" | "multiple_choices" | "moved_permanently" | "found" | "see_other" | "not_modified" | "use_proxy" | "switch_proxy" | "temporary_redirect" | "permanent_redirect" | "bad_request" | "unauthorized" | "payment_required" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "proxy_auth_required" | "request_timeout" | "conflict" | "gone" | "length_required" | "precondition_failed" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "range_not_satisfiable" | "expectation_failed" | "im_a_teapot" | "misdirected_request" | "unprocessable_entity" | "locked" | "failed_dependency" | "too_early" | "upgrade_required" | "precondition_required" | "too_many_requests" | "header_fields_too_large" | "legal_block" | "internal_server_error" | "not_implemented" | "bad_gateway" | "service_unavailable" | "gateway_timeout" | "http_version_not_supported" | "variant_negotiates" | "insufficient_storage" | "loop_detected" | "not_extended" | "network_auth_required" | "overloaded" | "llm_insufficient_funds" | "nginx_no_response" | "nginx_header_too_large" | "nginx_ssl_certificate_error" | "nginx_ssl_certificate_required" | "nginx_http_to_https" | "nginx_client_closed_request" | "cloudflare_unknown_error" | "cloudflare_server_down" | "cloudflare_connection_timeout" | "cloudflare_origin_unreachable" | "cloudflare_timeout_occurred" | "cloudflare_ssl_handshake_failed" | "cloudflare_invalid_ssl_certificate" | "aws_client_timeout" | "aws_x_forwarded_too_many_ips" | "aws_protocol_mismatch" | "aws_unauthorized" | "curl_unsupported_protocol" | "curl_failed_init" | "curl_url_malformed" | "curl_not_built_in" | "curl_couldnt_resolve_proxy" | "curl_couldnt_resolve_host" | "curl_couldnt_connect" | "curl_weird_server_reply" | "curl_ftp_access_denied" | "curl_ftp_accept_failed" | "curl_ftp_weird_pass_reply" | "curl_ftp_accept_timeout" | "curl_ftp_weird_pasv_reply" | "curl_ftp_weird_227_format" | "curl_ftp_cant_get_host" | "curl_http2_error" | "curl_ftp_couldnt_set_binary" | "curl_partial_file" | "curl_ftp_couldnt_retr_file" | "curl_ftp_quote_error" | "curl_http_returned_error" | "curl_write_error" | "curl_ftp_couldnt_stor_file" | "curl_read_error" | "curl_out_of_memory" | "curl_operation_timedout" | "curl_ftp_port_failed" | "curl_ftp_couldnt_use_rest" | "curl_http_range_error" | "curl_http_post_error" | "curl_ssl_connect_error" | "curl_bad_download_resume" | "curl_file_couldnt_read_file" | "curl_ldap_cannot_bind" | "curl_ldap_search_failed" | "curl_function_not_found" | "curl_aborted_by_callback" | "curl_bad_function_argument" | "curl_interface_failed" | "curl_too_many_redirects" | "curl_unknown_option" | "curl_telnet_option_syntax" | "curl_peer_failed_verification" | "curl_got_nothing" | "curl_ssl_engine_notfound" | "curl_ssl_engine_setfailed" | "curl_send_error" | "curl_recv_error" | "curl_ssl_certproblem" | "curl_ssl_cipher" | "curl_ssl_cacert" | "curl_bad_content_encoding" | "curl_ldap_invalid_url" | "curl_filesize_exceeded" | "curl_use_ssl_failed" | "curl_send_fail_rewind" | "curl_ssl_engine_initfailed" | "curl_login_denied" | "curl_tftp_notfound" | "curl_tftp_perm" | "curl_remote_disk_full" | "curl_tftp_illegal" | "curl_tftp_unknownid" | "curl_remote_file_exists" | "curl_tftp_nosuchuser" | "curl_conv_failed" | "curl_conv_reqd" | "curl_ssl_cacert_badfile" | "curl_remote_file_not_found" | "curl_ssh" | "curl_ssl_shutdown_failed" | "curl_again" | "curl_ssl_crl_badfile" | "curl_ssl_issuer_error" | "curl_ftp_pret_failed" | "curl_rtsp_cseq_error" | "curl_rtsp_session_error" | "curl_ftp_bad_file_list" | "curl_chunk_failed" | "curl_no_connection_available" | "curl_ssl_pinnedpubkeynotmatch" | "curl_ssl_invalidcertstatus" | "curl_http2_stream" | null;
         };
         DnsRecordDiffResponseDto: {
             id: number;
@@ -1418,6 +1479,37 @@ export interface components {
             }[] | null;
             change_type: "added" | "modified" | "removed";
             changed_at: string;
+        };
+        ScenarioConsoleEntryDto: {
+            type: string;
+            text: string;
+        };
+        IncidentScenarioDetailsResponseDto: {
+            started_at: string;
+            duration_ms: number | null;
+            location: "msk-1" | "spb-1" | "ala-1" | "nyc-1" | "ams-1";
+            error: string | null;
+            failed_test: string | null;
+            console: components["schemas"]["ScenarioConsoleEntryDto"][] | null;
+            is_screenshot_available: boolean;
+            is_video_available: boolean;
+            is_trace_available: boolean;
+        };
+        ScenarioRunResponseDto: {
+            status: "passed" | "failed" | "timed_out" | "runner_error";
+            duration_ms: number | null;
+            error: string | null;
+            failed_test: string | null;
+            console: components["schemas"]["ScenarioConsoleEntryDto"][] | null;
+            artifact_urls: Record<string, never>;
+            trace_proxy_path: string | null;
+            location: "msk-1" | "spb-1" | "ala-1" | "nyc-1" | "ams-1" | null;
+        };
+        ScenarioManualRunLatestResponseDto: {
+            state: "none" | "running" | "done";
+            started_at: string | null;
+            finished_at: string | null;
+            result: components["schemas"]["ScenarioRunResponseDto"] | null;
         };
         ProjectResponseDto: {
             id: number;
@@ -1945,7 +2037,7 @@ export interface components {
         ActivityLogEntryResponseDto: {
             id: string;
             created_at: string;
-            action: "project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "notification_email.test" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "telegram.test" | "max.link" | "max.unlink" | "max.set_2fa_account" | "max.test" | "chat_webhook.link" | "chat_webhook.update" | "chat_webhook.unlink" | "chat_webhook.test" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "chat_webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed";
+            action: "project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "server.scenario_run" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "notification_email.test" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "telegram.test" | "max.link" | "max.unlink" | "max.set_2fa_account" | "max.test" | "chat_webhook.link" | "chat_webhook.update" | "chat_webhook.unlink" | "chat_webhook.test" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.bind" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "chat_webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed";
             actor_type: "user" | "api_key" | "support" | "system";
             actor_label: string | null;
             source: "panel" | "api" | "mcp" | "telegram" | "max" | "ai_chat" | "system" | "staff" | null;
@@ -2402,6 +2494,111 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ScenarioRunsController_getDetails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentScenarioDetailsResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ScenarioRunsController_runNow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioRunResponseDto"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ScenarioRunsController_getLatestManualRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioManualRunLatestResponseDto"];
+                };
             };
             404: {
                 headers: {
@@ -3451,6 +3648,12 @@ export interface operations {
                 };
                 content?: never;
             };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -4379,7 +4582,7 @@ export interface operations {
                 actor_type?: ("user" | "api_key" | "support" | "system")[];
                 target_type?: "project" | "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer";
                 target_id?: string;
-                action?: ("project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "notification_email.test" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "telegram.test" | "max.link" | "max.unlink" | "max.set_2fa_account" | "max.test" | "chat_webhook.link" | "chat_webhook.update" | "chat_webhook.unlink" | "chat_webhook.test" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "chat_webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
+                action?: ("project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "server.scenario_run" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "notification_email.test" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "telegram.test" | "max.link" | "max.unlink" | "max.set_2fa_account" | "max.test" | "chat_webhook.link" | "chat_webhook.update" | "chat_webhook.unlink" | "chat_webhook.test" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.bind" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "chat_webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
                 from?: string;
                 to?: string;
                 search?: string;
@@ -4409,7 +4612,7 @@ export interface operations {
                 actor_type?: ("user" | "api_key" | "support" | "system")[];
                 target_type?: "project" | "server" | "notification_rule" | "notification_email" | "webhook" | "integration" | "account" | "session" | "api_key" | "passkey" | "status_page" | "status_page_report" | "status_page_maintenance" | "status_page_announcement" | "incident" | "plan" | "payment_card" | "payer";
                 target_id?: string;
-                action?: ("project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "notification_email.test" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "telegram.test" | "max.link" | "max.unlink" | "max.set_2fa_account" | "max.test" | "chat_webhook.link" | "chat_webhook.update" | "chat_webhook.unlink" | "chat_webhook.test" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "chat_webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
+                action?: ("project.create" | "project.update" | "project.delete" | "project.avatar_update" | "project.avatar_delete" | "project.channel_update" | "project.reorder" | "server.create" | "server.update" | "server.delete" | "server.pause" | "server.unpause" | "server.test_notify" | "server.scenario_run" | "notification_rule.update" | "notification_email.add" | "notification_email.confirm" | "notification_email.resend" | "notification_email.remove" | "notification_email.test" | "webhook.create" | "webhook.update" | "webhook.delete" | "webhook.test" | "telegram.link" | "telegram.unlink" | "telegram.set_topic" | "telegram.set_2fa_account" | "telegram.test" | "max.link" | "max.unlink" | "max.set_2fa_account" | "max.test" | "chat_webhook.link" | "chat_webhook.update" | "chat_webhook.unlink" | "chat_webhook.test" | "holiday_mode.enable" | "holiday_mode.disable" | "status_page.create" | "status_page.update" | "status_page.delete" | "status_page.publish" | "status_page.unpublish" | "status_page.groups_update" | "status_page.domain_attach" | "status_page.domain_detach" | "status_page.subscriber_delete" | "status_page.subscribers_export" | "status_page_report.create" | "status_page_report.update" | "status_page_report.delete" | "status_page_report.update_add" | "status_page_report.update_edit" | "status_page_report.update_delete" | "status_page_maintenance.create" | "status_page_maintenance.update" | "status_page_maintenance.delete" | "status_page_maintenance.update_add" | "status_page_maintenance.update_edit" | "status_page_maintenance.update_delete" | "status_page_announcement.create" | "status_page_announcement.update" | "status_page_announcement.delete" | "incident.delete" | "incident.report_download" | "incident.export" | "incident.ai_summary_generate" | "incident_comment.create" | "incident_comment.update" | "incident_comment.delete" | "account.create" | "auth.login" | "auth.login_2fa_confirm" | "auth.logout" | "auth.password_reset_request" | "auth.password_reset_complete" | "account.password_change" | "account.email_change_request" | "account.email_change_confirm" | "account.email_change_cancel" | "account.update" | "account.avatar_update" | "account.avatar_delete" | "session.terminate" | "session.terminate_others" | "api_key.create" | "api_key.update" | "api_key.revoke" | "api_key.rotate" | "passkey.register" | "passkey.delete" | "totp.bind" | "totp.unbind" | "two_factor.update" | "support.impersonate" | "activity_log.export" | "plan.change" | "plan.change_cancel" | "plan.trial_activate" | "payment_card.bind" | "payment_card.delete" | "payer.create" | "payer.update" | "payer.delete" | "plan.downgrade_enforced" | "server.paused_by_limit" | "server.feature_disabled_by_plan" | "status_page.unpublished_by_limit" | "status_page.feature_reset_by_plan" | "status_page_announcement.deleted_by_limit" | "webhook.disabled_by_limit" | "chat_webhook.disabled_by_limit" | "plan.activate" | "plan.expired" | "plan.pending_downgrade_applied" | "plan.autopay_charged" | "plan.autopay_failed" | "holiday_mode.expired" | "api_key.expired" | "status_page.domain_verified" | "status_page.domain_verification_failed")[];
                 from?: string;
                 to?: string;
                 search?: string;
