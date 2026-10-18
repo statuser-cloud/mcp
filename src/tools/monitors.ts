@@ -36,6 +36,14 @@ type MonitorDnsHistoryResponse = OkResponseBody<
   '/v1/servers/{id}/dns-history',
   'get'
 >;
+type ScenarioRunResponse = OkResponseBody<
+  '/v1/servers/{id}/scenario-run',
+  'post'
+>;
+type ScenarioRunLatestResponse = OkResponseBody<
+  '/v1/servers/{id}/scenario-run/latest',
+  'get'
+>;
 
 // Mirrors the public enum from PlanFeaturesResponseDto / ServerProtocol.
 const protocolEnum = z.enum([
@@ -46,6 +54,7 @@ const protocolEnum = z.enum([
   'dns',
   'heartbeat',
   'llm',
+  'scenario',
 ]);
 
 const locationEnum = z.enum(['msk-1', 'spb-1', 'ala-1', 'nyc-1', 'ams-1']);
@@ -100,10 +109,10 @@ const baseMonitorFields = {
   host: z
     .string()
     .describe(
-      'Host to monitor: URL for http/keyword, hostname or IP for ping/tcp/dns, identifier for heartbeat, API endpoint for llm (domain, versioned base or a full method path — the method path is appended when missing).',
+      'Host to monitor: URL for http/keyword, hostname or IP for ping/tcp/dns, API endpoint for llm (domain, versioned base or a full method path — the method path is appended when missing). For heartbeat and scenario the address is assigned by the server: pass any non-empty string, e.g. the monitor name.',
     ),
   protocol: protocolEnum.describe(
-    'Monitor type. SSL/domain checks are flags layered on top of `http`. `llm` watches an AI endpoint and is configured by the `llm_*` fields.',
+    'Monitor type. SSL/domain checks are flags layered on top of `http`. `llm` watches an AI endpoint and is configured by the `llm_*` fields. `scenario` runs a Playwright test (`scenario_script`) in a real browser on schedule — for flows a single request cannot prove: logging in, a cart, a chain of API calls.',
   ),
   port: z
     .number()
@@ -148,16 +157,18 @@ const baseMonitorFields = {
     .number()
     .int()
     .min(1)
-    .max(60)
+    .max(120)
     .optional()
-    .describe('Request timeout in seconds. Defaults to 30, as in the panel.'),
+    .describe(
+      'Request timeout in seconds, 1–60. Defaults to 30, as in the panel. For `scenario` it is the limit for the whole run, one of 15, 30, 45, 60 or 120, and no more than `scenario_max_timeout_seconds` of the current plan.',
+    ),
   check_interval: z
     .number()
     .int()
     .min(60)
     .optional()
     .describe(
-      'Interval between checks in seconds. Defaults to 300 — the smallest value every plan allows. Anything shorter needs `min_check_interval_seconds` of the current plan to permit it (60 on paid plans).',
+      'Interval between checks in seconds. Defaults to 300 — the smallest value every plan allows. Anything shorter needs `min_check_interval_seconds` of the current plan to permit it (60 on paid plans). For `scenario` the floor is `scenario_min_check_interval_seconds` of the plan, the ceiling is 86400 (a day), and the default is 900.',
     ),
   heartbeat_grace_interval: z
     .number()
@@ -202,7 +213,7 @@ const baseMonitorFields = {
     .array(locationEnum)
     .optional()
     .describe(
-      'Locations to run checks from. Allowed values are the codes from `current_plan_get` -> `features.available_locations`.',
+      'Locations to run checks from. Allowed values are the codes from `current_plan_get` -> `features.available_locations`. A `scenario` runs from exactly one location (defaults to `msk-1`): there is no fallback, because the address the site sees is often what the scenario checks — allowlists, geo blocks, prices.',
     ),
   dns_record_types: z
     .array(dnsRecordTypeEnum)
@@ -228,6 +239,19 @@ const baseMonitorFields = {
     .optional()
     .describe(
       'Provider API key, for `llm`. Its presence picks the check mode: with a key the monitor sends the model a real one-token request and verifies the answer (`inference` — billed by the provider, requires `ai_inference_enabled` on the plan); without a key only endpoint availability is checked (`availability`, spends no tokens). On update omit the field to keep the stored key, pass `null` to delete it and fall back to availability, pass a string to replace it. Stored encrypted and never returned: responses carry only `llm_api_key_masked`.',
+    ),
+  scenario_script: z
+    .string()
+    .max(65536)
+    .optional()
+    .describe(
+      'Playwright test in JavaScript or TypeScript, one file, using `test` and `expect` from `@playwright/test`. Required for `scenario`. The run fails if any test fails. Locate elements by role and label (`getByRole`, `getByLabel`), put an `expect` after every important step, read logins and passwords from `process.env`, and leave out `playwright.config` and per-step timeouts — Statuser sets them. Every run starts in a fresh browser with no cookies. Requires `scenarios_limit` above zero on the current plan (Pro and Team). Before relying on it, suggest trying the script with the Run button (Запустить) in the panel form: a selector guessed without seeing the page is the usual reason a new scenario fails.',
+    ),
+  scenario_env: z
+    .record(z.string(), z.string())
+    .optional()
+    .describe(
+      'Environment variables of the scenario — logins, passwords, tokens — read in the script as `process.env.NAME`. Names are upper-case Latin letters, digits and `_`; up to 20 variables, 4 KB each. Stored encrypted and never returned: responses carry only the names (`scenario_env_keys`). A typed password is visible in the run trace, so suggest a dedicated account with minimal rights.',
     ),
 };
 
@@ -279,7 +303,7 @@ export function registerMonitorTools(
     name: 'monitor_create',
     title: 'Create monitor',
     description:
-      'Creates a new monitor. Only `host` and `protocol` are required — timeout, interval and redirect handling fall back to the same defaults the panel uses (30 s, 300 s, redirects followed for `http`/`keyword`), and the paid SSL and domain checks stay off unless asked for. Returns 403 if the account is over the servers limit or if a requested feature is not on the current plan (DNS/keyword/heartbeat, AI monitoring and its model response check as two separate gates, latency alerts, custom success codes, non-default locations, blocklist monitoring, incident confirmation delay).',
+      'Creates a new monitor. Only `host` and `protocol` are required (plus `scenario_script` for `scenario`) — timeout, interval and redirect handling fall back to the same defaults the panel uses (30 s, 300 s — 900 s for a scenario, redirects followed for `http`/`keyword`), and the paid SSL and domain checks stay off unless asked for. Returns 403 if the account is over the servers limit or if a requested feature is not on the current plan (DNS/keyword/heartbeat, AI monitoring and its model response check as two separate gates, scenarios with their own limit, minimum interval and maximum timeout, latency alerts, custom success codes, non-default locations, blocklist monitoring, incident confirmation delay).',
     write: true,
     inputSchema: baseMonitorFields,
     handler: async (args, { client }) => {
@@ -291,6 +315,9 @@ export function registerMonitorTools(
       // off, otherwise creation would fail on Free.
       const isHttpLike =
         args.protocol === 'http' || args.protocol === 'keyword';
+      // 300 s is below the scenario floor on every plan (600 s on Team,
+      // 900 s on Pro), so the general default would fail with 403.
+      const defaultInterval = args.protocol === 'scenario' ? 900 : 300;
       const body: CreateMonitorBody = {
         ...args,
         // The API rejects http/keyword without a method, and the panel starts
@@ -299,7 +326,7 @@ export function registerMonitorTools(
         http_method: args.http_method ?? (isHttpLike ? 'head' : undefined),
         is_follow_redirects: args.is_follow_redirects ?? isHttpLike,
         request_timeout: args.request_timeout ?? 30,
-        check_interval: args.check_interval ?? 300,
+        check_interval: args.check_interval ?? defaultInterval,
         is_ssl_check: args.is_ssl_check ?? false,
         is_domain_check: args.is_domain_check ?? false,
       };
@@ -325,6 +352,12 @@ export function registerMonitorTools(
           (v as z.ZodTypeAny).optional(),
         ]),
       ),
+      scenario_env: z
+        .record(z.string(), z.string().nullable())
+        .optional()
+        .describe(
+          'Partial edit of the scenario environment variables: a string sets a variable, `null` removes it, a name left out keeps its stored value. Values are never returned, so to keep a secret simply do not mention it. A typed password is visible in the run trace, so suggest a dedicated account with minimal rights.',
+        ),
     },
     handler: async ({ id, ...patch }, { client }) => {
       const body: UpdateMonitorBody = patch;
@@ -384,6 +417,37 @@ export function registerMonitorTools(
       });
       return { sent: true, id };
     },
+  });
+
+  registerTool(server, ctx, {
+    name: 'monitor_run_scenario',
+    title: 'Run scenario now',
+    description:
+      'Runs the saved Playwright test of a `scenario` monitor now, off schedule, with the same consequences as a scheduled run: a point on the graph, and an incident opened or closed. Waits for the run to finish — up to the monitor `request_timeout` plus browser start-up — and returns the verdict, the failed test, the Playwright error and the test console output. The screenshot, video and trace links in the response work for an hour. One on-demand run per account at a time and at most 30 in 10 minutes (409 and 429 otherwise). If the client gives up waiting, `monitor_get_scenario_run_latest` returns the result.',
+    write: true,
+    inputSchema: {
+      id: z.number().int().positive(),
+    },
+    handler: async ({ id }, { client }) =>
+      client.call<ScenarioRunResponse>({
+        method: 'POST',
+        path: `/v1/servers/${id}/scenario-run`,
+      }),
+  });
+
+  registerTool(server, ctx, {
+    name: 'monitor_get_scenario_run_latest',
+    title: 'Get latest on-demand scenario run',
+    description:
+      'Whether an on-demand run started by `monitor_run_scenario` is still going, and its result once it finished within the last hour. Scheduled runs are not here: their outcome is the graph (`monitor_get_checks`) and, for a failure, the incident diagnostics (`incident_get_scenario_details`).',
+    inputSchema: {
+      id: z.number().int().positive(),
+    },
+    handler: async ({ id }, { client }) =>
+      client.call<ScenarioRunLatestResponse>({
+        method: 'GET',
+        path: `/v1/servers/${id}/scenario-run/latest`,
+      }),
   });
 
   registerTool(server, ctx, {

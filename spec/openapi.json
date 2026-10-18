@@ -217,7 +217,7 @@
       "post": {
         "operationId": "ServersController_addServer",
         "summary": "Добавить в мониторинг новый сервер",
-        "description": "Создаёт новый мониторинг. Тип проверки задаётся полем `protocol` (`ping`, `http`, `keyword`, `tcp`, `dns`, `heartbeat`). Дополнительные проверки SSL и домена включаются флагами `is_ssl_check` / `is_domain_check` поверх HTTP-протокола. Учитывается лимит серверов на тарифе и доступность отдельных фич (DNS/keyword/heartbeat-мониторинг, latency-alerts, кастомные success-коды, набор локаций) — при недоступности возвращается 403. Поле `project_id` кладёт сервер в конкретный проект; без него — проект по умолчанию. Лимит серверов при этом считается по аккаунту целиком.",
+        "description": "Создаёт новый мониторинг. Тип проверки задаётся полем `protocol` (`ping`, `http`, `keyword`, `tcp`, `dns`, `heartbeat`, `llm`, `scenario`). Дополнительные проверки SSL и домена включаются флагами `is_ssl_check` / `is_domain_check` поверх HTTP-протокола. Учитывается лимит серверов на тарифе и доступность отдельных фич (DNS/keyword/heartbeat-мониторинг, latency-alerts, кастомные success-коды, набор локаций) — при недоступности возвращается 403. Поле `project_id` кладёт сервер в конкретный проект; без него — проект по умолчанию. Лимит серверов при этом считается по аккаунту целиком.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -658,6 +658,138 @@
         },
         "tags": [
           "Серверы"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/incidents/{id}/scenario-details": {
+      "get": {
+        "operationId": "ScenarioRunsController_getDetails",
+        "summary": "Диагностика инцидента сценария",
+        "description": "Прогон, открывший инцидент сервера с `protocol = scenario`: город, длительность, упавший тест, текст ошибки Playwright, вывод теста и есть ли у прогона скриншот, видео и трейс. Сами файлы открываются на странице инцидента в панели",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentScenarioDetailsResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Инцидент сценария не найден (`incident_not_found`)"
+          }
+        },
+        "tags": [
+          "Сценарии"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/servers/{id}/scenario-run": {
+      "post": {
+        "operationId": "ScenarioRunsController_runNow",
+        "summary": "Проверить сценарий сейчас",
+        "description": "Внеплановый прогон сохранённого сценария с теми же последствиями, что у прогона по расписанию: результат попадает в историю проверок, открывает или закрывает инцидент. Ответ приходит, когда прогон закончится, — до таймаута сценария (`request_timeout`) плюс время на запуск. Ссылки на скриншот, видео и трейс в ответе действуют час. На аккаунт — один прогон по требованию одновременно и не больше 30 за 10 минут; итог последнего прогона — `GET /v1/servers/{id}/scenario-run/latest`",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioRunResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Сценарии недоступны на тарифе (`server_scenario_monitoring_not_allowed`)"
+          },
+          "404": {
+            "description": "Сервер не найден (`server_not_found`)"
+          },
+          "409": {
+            "description": "Сценарий на паузе (`scenario_monitor_paused`) или другой прогон по требованию ещё идёт (`scenario_run_in_progress`)"
+          },
+          "429": {
+            "description": "Больше 30 прогонов за 10 минут (`scenario_run_limit_exceeded`)"
+          },
+          "503": {
+            "description": "Прогон не удалось запустить, повторите позже (`scenario_runner_unavailable`)"
+          }
+        },
+        "tags": [
+          "Сценарии"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/servers/{id}/scenario-run/latest": {
+      "get": {
+        "operationId": "ScenarioRunsController_getLatestManualRun",
+        "summary": "Последняя проверка сценария по требованию",
+        "description": "Идёт ли сейчас прогон, запущенный `POST /v1/servers/{id}/scenario-run`, и его итог, если он закончился в течение последнего часа",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioManualRunLatestResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Сервер не найден (`server_not_found`)"
+          }
+        },
+        "tags": [
+          "Сценарии"
         ],
         "security": [
           {
@@ -2295,6 +2427,9 @@
           "200": {
             "description": "Группы и серверы обновлены"
           },
+          "400": {
+            "description": "Группы с переданным `id` нет на этой странице (`status_page_group_not_found`, идентификаторы — в `meta.group_ids`) или сервер из другого проекта (`status_page_server_foreign_project`). Страница при этом не меняется."
+          },
           "404": {
             "description": "Страница не найдена"
           }
@@ -3354,7 +3489,7 @@
       "get": {
         "operationId": "IncidentsController_exportIncidentsCsv",
         "summary": "Выгрузить инциденты аккаунта в CSV",
-        "description": "Те же инциденты, что у `GET /v1/incidents`, файлом CSV: фильтры `status`, `server_ids` (один или несколько через запятую), `project_id`, `from`/`to`; выгружается не более 50000 инцидентов от новых к старым, при обрезке ответ несёт заголовок `X-Export-Truncated: true`. Глубина ограничена окном тарифа `incident_retention_days`; без явного `from` идущие инциденты попадают в файл, даже если начались раньше окна. Колонки: id, server_id, server_name, server_host, protocol, status, started_at, ended_at, duration_seconds, error_code, error_description, keyword, failed_regions, incident_url; время — UTC (ISO 8601), `duration_seconds` пустая у открытого инцидента, `error_description` — подпись кода ошибки как в интерфейсе, `failed_regions` — города, из которых проверка провалилась за время инцидента (пусто у `heartbeat`: сигнал присылает сам сервис). Контракт: имена колонок не переименовываются, новые добавляются в конец.",
+        "description": "Те же инциденты, что у `GET /v1/incidents`, файлом CSV: фильтры `status`, `server_ids` (один или несколько через запятую), `project_id`, `from`/`to`; выгружается не более 50000 инцидентов от новых к старым, при обрезке ответ несёт заголовок `X-Export-Truncated: true`. Глубина ограничена окном тарифа `incident_retention_days`; без явного `from` идущие инциденты попадают в файл, даже если начались раньше окна. Колонки: id, server_id, server_name, server_host, protocol, status, started_at, ended_at, duration_seconds, error_code, error_description, keyword, failed_regions, incident_url, failed_test, scenario_error; время — UTC (ISO 8601), `duration_seconds` пустая у открытого инцидента, `server_host` пустая у `heartbeat` и `scenario`: у них нет адреса проверки. `error_description` — подпись кода ошибки как в интерфейсе, `failed_regions` — города, из которых проверка провалилась за время инцидента (пусто у `heartbeat`: сигнал присылает сам сервис). `failed_test` и `scenario_error` — упавший тест и первая строка ошибки сценария (до 500 символов), у остальных протоколов пустые. Контракт: имена колонок не переименовываются, новые добавляются в конец.",
         "parameters": [
           {
             "name": "status",
@@ -4166,7 +4301,7 @@
             "name": "target_id",
             "required": false,
             "in": "query",
-            "description": "ID объекта. Вместе с `target_type` даёт историю одного монитора или страницы статуса",
+            "description": "ID объекта. Вместе с `target_type` даёт историю одного сервера или страницы статуса",
             "schema": {
               "example": "412",
               "type": "string"
@@ -4176,7 +4311,7 @@
             "name": "action",
             "required": false,
             "in": "query",
-            "description": "Коды действий через запятую. Вместе с `search` работает как ИЛИ: панель переводит текст запроса в коды по своему словарю и передаёт их сюда, чтобы «пауза» находила и монитор с таким именем, и все постановки на паузу",
+            "description": "Коды действий через запятую. Вместе с `search` работает как ИЛИ: панель переводит текст запроса в коды по своему словарю и передаёт их сюда, чтобы «пауза» находила и сервер с таким именем, и все постановки на паузу",
             "schema": {
               "example": "server.pause,server.unpause",
               "type": "array",
@@ -4196,6 +4331,7 @@
                   "server.pause",
                   "server.unpause",
                   "server.test_notify",
+                  "server.scenario_run",
                   "notification_rule.update",
                   "notification_email.add",
                   "notification_email.confirm",
@@ -4282,6 +4418,7 @@
                   "plan.change",
                   "plan.change_cancel",
                   "plan.trial_activate",
+                  "payment_card.bind",
                   "payment_card.delete",
                   "payer.create",
                   "payer.update",
@@ -4463,7 +4600,7 @@
             "name": "target_id",
             "required": false,
             "in": "query",
-            "description": "ID объекта. Вместе с `target_type` даёт историю одного монитора или страницы статуса",
+            "description": "ID объекта. Вместе с `target_type` даёт историю одного сервера или страницы статуса",
             "schema": {
               "example": "412",
               "type": "string"
@@ -4473,7 +4610,7 @@
             "name": "action",
             "required": false,
             "in": "query",
-            "description": "Коды действий через запятую. Вместе с `search` работает как ИЛИ: панель переводит текст запроса в коды по своему словарю и передаёт их сюда, чтобы «пауза» находила и монитор с таким именем, и все постановки на паузу",
+            "description": "Коды действий через запятую. Вместе с `search` работает как ИЛИ: панель переводит текст запроса в коды по своему словарю и передаёт их сюда, чтобы «пауза» находила и сервер с таким именем, и все постановки на паузу",
             "schema": {
               "example": "server.pause,server.unpause",
               "type": "array",
@@ -4493,6 +4630,7 @@
                   "server.pause",
                   "server.unpause",
                   "server.test_notify",
+                  "server.scenario_run",
                   "notification_rule.update",
                   "notification_email.add",
                   "notification_email.confirm",
@@ -4579,6 +4717,7 @@
                   "plan.change",
                   "plan.change_cancel",
                   "plan.trial_activate",
+                  "payment_card.bind",
                   "payment_card.delete",
                   "payer.create",
                   "payer.update",
@@ -4683,7 +4822,7 @@
   },
   "info": {
     "title": "Statuser API",
-    "description": "\nОфициальный API для интеграции с платформой Statuser.\n\nStatuser — сервис мониторинга доступности серверов, сайтов и приложений. С помощью публичного API вы можете интегрировать мониторинг в свою систему, управлять проверками, получать инциденты, настраивать уведомления и страницы статуса.\n\n---\n\n### Аутентификация\n\nВсе запросы требуют аутентификации с помощью API ключа, который можно создать в <a href=\"https://statuser.cloud/my/account/api-keys\" target=\"_blank\" rel=\"noopener noreferrer\">панели управления</a>. API ключ необходимо передавать в заголовке каждого запроса:\n\n```\nAuthorization: Bearer <ваш токен>\n```\n\n---\n\n### Версионирование\n\nВсе эндпоинты и примеры в документации используют явную версию. Версионирование задаётся на уровне каждого эндпоинта и не является глобальным.\n\nВерсия указывается в пути запроса сразу после базового URL. Например:\n\n```\nGET /v1/account\n```\n\nЭтот запрос обращается к первой версии метода получения данных об аккаунте.\n\nAPI Statuser следует принципам [семантического версионирования](https://semver.org/lang/ru/), при этом добавление новых полей в ответ может происходить без изменения версии эндпоинта.\n\nРекомендуется обрабатывать только нужные поля, а не весь ответ целиком. Не передавайте ответы API сторонним системам без валидации.\n\nРазрабатывайте интеграции так, чтобы они были устойчивы к добавлению новых полей и не полагались на порядок ключей в JSON-объекте.\n\n---\n\n### Ограничение частоты запросов\n\nЧтобы обеспечить стабильность для всех пользователей, Statuser защищает API от всплесков входящего трафика, анализируя количество запросов c каждого аккаунта к каждой конечной точке.\n\nВ каждом ответе API возвращаются заголовки, содержащие информацию о текущем лимите:\n\n| Заголовок              | Описание                                                                 |\n|------------------------|--------------------------------------------------------------------------|\n| `ratelimit-limit`      | Максимальное количество запросов в рамках текущего окна                  |\n| `ratelimit-policy`     | Политика лимитов, например `3000;w=900` означает 3000 запросов на 900 сек |\n| `ratelimit-remaining`  | Количество оставшихся запросов в текущем окне                            |\n| `ratelimit-reset`      | Через сколько секунд произойдёт сброс лимита                             |\n\nЕсли лимит превышен, API вернёт ошибку в формате:\n\n```json\n{\n  \"status\": 429,\n  \"error_code\": \"too_many_requests\"\n  \"message\": \"Too many requests from this IP, try again later\",\n}\n```\n\nДля корректной работы с ограничениями частоты запросов используйте значение `ratelimit-reset`, чтобы отложить повторный запрос до завершения текущего окна лимита.\n\n---\n\n### MCP-сервер\n\nДля интеграции с AI-ассистентами (Claude, Cursor и другими клиентами, поддерживающими Model Context Protocol) Statuser предоставляет MCP-сервер. Он работает поверх публичного API и использует тот же API ключ для аутентификации.\n\nИсходный код, инструкции по установке и примеры конфигурации доступны в репозитории <a href=\"https://github.com/statuser-cloud/mcp\" target=\"_blank\" rel=\"noopener noreferrer\">github.com/statuser-cloud/mcp</a>. Готовый пакет опубликован в npm: <a href=\"https://www.npmjs.com/package/@statuser/mcp\" target=\"_blank\" rel=\"noopener noreferrer\">npmjs.com/package/@statuser/mcp</a>.\n\n---\n",
+    "description": "\nОфициальный API для интеграции с платформой Statuser.\n\nStatuser — сервис мониторинга доступности серверов, сайтов и приложений. С помощью публичного API вы можете интегрировать мониторинг в свою систему, управлять проверками, получать инциденты, настраивать уведомления и страницы статуса. Те же возможности доступны AI-ассистентам через MCP-сервер — о подключении в разделе «MCP-сервер» ниже.\n\n---\n\n### Аутентификация\n\nВсе запросы требуют аутентификации с помощью API ключа, который можно создать в <a href=\"https://statuser.cloud/my/account/api-keys\" target=\"_blank\" rel=\"noopener noreferrer\">панели управления</a>. API ключ необходимо передавать в заголовке каждого запроса:\n\n```\nAuthorization: Bearer <ваш токен>\n```\n\n---\n\n### Версионирование\n\nВсе эндпоинты и примеры в документации используют явную версию. Версионирование задаётся на уровне каждого эндпоинта и не является глобальным.\n\nВерсия указывается в пути запроса сразу после базового URL. Например:\n\n```\nGET /v1/account\n```\n\nЭтот запрос обращается к первой версии метода получения данных об аккаунте.\n\nAPI Statuser следует принципам [семантического версионирования](https://semver.org/lang/ru/), при этом добавление новых полей в ответ может происходить без изменения версии эндпоинта.\n\nРекомендуется обрабатывать только нужные поля, а не весь ответ целиком. Не передавайте ответы API сторонним системам без валидации.\n\nРазрабатывайте интеграции так, чтобы они были устойчивы к добавлению новых полей и не полагались на порядок ключей в JSON-объекте.\n\n---\n\n### Ограничение частоты запросов\n\nЧтобы обеспечить стабильность для всех пользователей, Statuser защищает API от всплесков входящего трафика, анализируя количество запросов c каждого аккаунта к каждой конечной точке.\n\nВ каждом ответе API возвращаются заголовки, содержащие информацию о текущем лимите:\n\n| Заголовок              | Описание                                                                 |\n|------------------------|--------------------------------------------------------------------------|\n| `ratelimit-limit`      | Максимальное количество запросов в рамках текущего окна                  |\n| `ratelimit-policy`     | Политика лимитов, например `3000;w=900` означает 3000 запросов на 900 сек |\n| `ratelimit-remaining`  | Количество оставшихся запросов в текущем окне                            |\n| `ratelimit-reset`      | Через сколько секунд произойдёт сброс лимита                             |\n\nЕсли лимит превышен, API вернёт ошибку в формате:\n\n```json\n{\n  \"status\": 429,\n  \"error_code\": \"too_many_requests\"\n  \"message\": \"Too many requests from this IP, try again later\",\n}\n```\n\nДля корректной работы с ограничениями частоты запросов используйте значение `ratelimit-reset`, чтобы отложить повторный запрос до завершения текущего окна лимита.\n\n---\n\n### MCP-сервер\n\nДля интеграции с AI-ассистентами (Claude, Cursor и другими клиентами, поддерживающими Model Context Protocol) Statuser предоставляет MCP-сервер. Он работает поверх публичного API и использует тот же API ключ для аутентификации.\n\nПодключить его можно двумя способами:\n\n- **удалённо** — по адресу `https://mcp.statuser.cloud`, API ключ передаётся в заголовке `Authorization: Bearer <ваш токен>`;\n- **локально** — через npm-пакет <a href=\"https://www.npmjs.com/package/@statuser/mcp\" target=\"_blank\" rel=\"noopener noreferrer\">@statuser/mcp</a>.\n\nИнструкции и примеры конфигурации для разных клиентов — в репозитории <a href=\"https://github.com/statuser-cloud/mcp\" target=\"_blank\" rel=\"noopener noreferrer\">github.com/statuser-cloud/mcp</a>.\n\n---\n",
     "version": "1.0.0",
     "contact": {
       "name": "Поддержка",
@@ -5011,7 +5150,22 @@
           "ai_inference_enabled": {
             "type": "boolean",
             "example": true,
-            "description": "Поддержка проверки ответа модели (inference-режим LLM-монитора с API-ключом)"
+            "description": "Поддержка проверки ответа модели (режим `inference` у сервера с `protocol = llm` и API-ключом)"
+          },
+          "scenarios_limit": {
+            "type": "number",
+            "example": 5,
+            "description": "Сколько серверов со сценарием (protocol = scenario) можно завести. 0 — тип недоступен"
+          },
+          "scenario_min_check_interval_seconds": {
+            "type": "number",
+            "example": 300,
+            "description": "Минимальный интервал проверки сценария в секундах"
+          },
+          "scenario_max_timeout_seconds": {
+            "type": "number",
+            "example": 60,
+            "description": "Максимальный таймаут сценария в секундах"
           },
           "latency_alerts_enabled": {
             "type": "boolean",
@@ -5132,6 +5286,9 @@
           "heartbeat_monitoring_enabled",
           "ai_monitoring_enabled",
           "ai_inference_enabled",
+          "scenarios_limit",
+          "scenario_min_check_interval_seconds",
+          "scenario_max_timeout_seconds",
           "latency_alerts_enabled",
           "custom_success_http_codes_enabled",
           "incident_retention_days",
@@ -5303,7 +5460,7 @@
           "host": {
             "type": "string",
             "example": "192.168.1.1",
-            "description": "Адрес нового сервера. При `protocol = llm` — эндпоинт LLM-API (домен, база с версией или готовый путь метода)"
+            "description": "Адрес нового сервера. При `protocol = llm` — эндпоинт LLM-API (домен, база с версией или готовый путь метода). У `heartbeat` и `scenario` адрес системный: передайте любую непустую строку, сервер заменит её сам"
           },
           "protocol": {
             "type": "string",
@@ -5316,7 +5473,8 @@
               "tcp",
               "dns",
               "heartbeat",
-              "llm"
+              "llm",
+              "scenario"
             ]
           },
           "port": {
@@ -5384,13 +5542,13 @@
           },
           "request_timeout": {
             "type": "number",
-            "example": "10",
-            "description": "Таймаут запроса"
+            "example": 10,
+            "description": "Таймаут проверки в секундах: 1–60. У сценария (`protocol = scenario`) — таймаут на весь прогон: 15, 30, 45, 60 или 120 и не больше `scenario_max_timeout_seconds` тарифа"
           },
           "check_interval": {
             "type": "number",
             "example": 60,
-            "description": "Интервал проверки сервера в секундах: 60–3600 для всех протоколов, кроме heartbeat — там до 31536000 (год)",
+            "description": "Интервал проверки сервера в секундах: 60–3600; у сценария — до 86400 (сутки), у heartbeat — до 31536000 (год)",
             "minimum": 60,
             "maximum": 31536000
           },
@@ -5501,8 +5659,25 @@
           "llm_api_key": {
             "type": "string",
             "example": "sk-proj-…",
-            "description": "API-ключ провайдера. Необязателен — им определяется режим проверки: с ключом монитор отправляет модели настоящий запрос и проверяет ответ (режим `inference`), без ключа — только доступность эндпоинта (режим `availability`, токены не расходуются). Хранится в зашифрованном виде и никогда не возвращается в ответах — наружу отдаётся только маска `llm_api_key_masked`",
+            "description": "API-ключ провайдера. Необязателен — им определяется режим проверки: с ключом сервер отправляет модели настоящий запрос и проверяет ответ (режим `inference`), без ключа — только доступность эндпоинта (режим `availability`, токены не расходуются). Хранится в зашифрованном виде и никогда не возвращается в ответах — наружу отдаётся только маска `llm_api_key_masked`",
             "nullable": true
+          },
+          "scenario_script": {
+            "type": "string",
+            "example": "import { test, expect } from '@playwright/test';\n\ntest('вход в кабинет', async ({ page }) => {\n  await page.goto('https://example.com/login');\n  await page.fill('#email', process.env.LOGIN);\n  await page.fill('#password', process.env.PASSWORD);\n  await page.click('button[type=submit]');\n  await expect(page.getByText('Мои заказы')).toBeVisible();\n});",
+            "description": "Код Playwright-теста на JavaScript или TypeScript: `test()` и `expect()` из `@playwright/test`. Обязателен при `protocol = scenario`. Проверка считается упавшей, если не прошёл хотя бы один тест. Повторы задаются в самом тесте: `test.describe.configure({ retries: 2 })`",
+            "maxLength": 65536
+          },
+          "scenario_env": {
+            "type": "object",
+            "example": {
+              "LOGIN": "user@example.com",
+              "PASSWORD": "passw0rd"
+            },
+            "description": "Переменные окружения сценария — пароли, токены, логины. В коде доступны как `process.env.ИМЯ`. Хранятся в зашифрованном виде и не возвращаются в ответах: наружу отдаются только имена (`scenario_env_keys`). Применимо к `protocol = scenario`",
+            "additionalProperties": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -5806,8 +5981,8 @@
           },
           "request_timeout": {
             "type": "number",
-            "example": "10",
-            "description": "Таймаут запроса"
+            "example": 10,
+            "description": "Таймаут проверки в секундах; у сценария — таймаут на весь прогон"
           },
           "check_interval": {
             "type": "number",
@@ -6043,7 +6218,7 @@
           "llm_check_mode": {
             "type": "string",
             "example": "inference",
-            "description": "Что именно проверяется (только для protocol=llm). `inference` — монитору задан ключ, он отправляет модели настоящий запрос и проверяет ответ. `availability` — ключа нет, проверяется только доступность эндпоинта: это не гарантирует работоспособность самой модели. Режим определяется наличием сохранённого ключа и отдельным полем не задаётся",
+            "description": "Что именно проверяется (только для protocol=llm). `inference` — серверу задан ключ, он отправляет модели настоящий запрос и проверяет ответ. `availability` — ключа нет, проверяется только доступность эндпоинта: это не гарантирует работоспособность самой модели. Режим определяется наличием сохранённого ключа и отдельным полем не задаётся",
             "enum": [
               "availability",
               "inference"
@@ -6061,6 +6236,23 @@
             "example": "sk-…x4Qb",
             "description": "Маска сохранённого API-ключа (только для protocol=llm). Сам ключ не возвращается ни при каких условиях",
             "nullable": true
+          },
+          "scenario_script": {
+            "type": "string",
+            "description": "Код Playwright-теста (только для protocol=scenario)",
+            "nullable": true
+          },
+          "scenario_env_keys": {
+            "example": [
+              "LOGIN",
+              "PASSWORD"
+            ],
+            "description": "Имена переменных окружения сценария (только для protocol=scenario). Значения не возвращаются ни при каких условиях",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "created_at": {
             "format": "date-time",
@@ -6111,6 +6303,8 @@
           "llm_check_mode",
           "llm_model",
           "llm_api_key_masked",
+          "scenario_script",
+          "scenario_env_keys",
           "created_at"
         ],
         "title": "ServerResponseDto"
@@ -6139,7 +6333,8 @@
               "tcp",
               "dns",
               "heartbeat",
-              "llm"
+              "llm",
+              "scenario"
             ]
           },
           "port": {
@@ -6213,12 +6408,12 @@
           "request_timeout": {
             "type": "number",
             "example": 10,
-            "description": "Таймаут запроса в секундах"
+            "description": "Таймаут проверки в секундах: 1–60. У сценария (`protocol = scenario`) — таймаут на весь прогон: 15, 30, 45, 60 или 120 и не больше `scenario_max_timeout_seconds` тарифа"
           },
           "check_interval": {
             "type": "number",
             "example": 60,
-            "description": "Интервал проверки сервера в секундах: 60–3600 для всех протоколов, кроме heartbeat — там до 31536000 (год)",
+            "description": "Интервал проверки сервера в секундах: 60–3600; у сценария — до 86400 (сутки), у heartbeat — до 31536000 (год)",
             "minimum": 60,
             "maximum": 31536000
           },
@@ -6329,8 +6524,25 @@
           "llm_api_key": {
             "type": "string",
             "example": "sk-proj-…",
-            "description": "API-ключ провайдера. Применимо к `protocol = llm`. Поле не передано — сохранённый ключ остаётся прежним; `null` — ключ удаляется и монитор переходит в режим проверки доступности (`availability`); непустая строка — ключ заменяется, режим `inference`.",
+            "description": "API-ключ провайдера. Применимо к `protocol = llm`. Поле не передано — сохранённый ключ остаётся прежним; `null` — ключ удаляется и сервер переходит в режим проверки доступности (`availability`); непустая строка — ключ заменяется, режим `inference`.",
             "nullable": true
+          },
+          "scenario_script": {
+            "type": "string",
+            "description": "Код Playwright-теста. Применимо к `protocol = scenario`. Поле не передано — сценарий не меняется",
+            "maxLength": 65536
+          },
+          "scenario_env": {
+            "type": "object",
+            "example": {
+              "PASSWORD": "new-passw0rd",
+              "OLD_TOKEN": null
+            },
+            "description": "Правка переменных окружения сценария. Строка задаёт переменную, `null` удаляет её, переменные, которых нет в запросе, не меняются. Применимо к `protocol = scenario`",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            }
           }
         },
         "title": "UpdateServerDto"
@@ -6370,6 +6582,8 @@
               "connection_timeout",
               "heartbeat_timeout",
               "heartbeat_failure",
+              "scenario_failed",
+              "scenario_timeout",
               "unknown_ping_error",
               "unknown_tcp_error",
               "unknown_http_error",
@@ -6644,6 +6858,213 @@
           "changed_at"
         ],
         "title": "DnsRecordDiffResponseDto"
+      },
+      "ScenarioConsoleEntryDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "log",
+            "description": "log или error"
+          },
+          "text": {
+            "type": "string",
+            "example": "заказ создан"
+          }
+        },
+        "required": [
+          "type",
+          "text"
+        ],
+        "title": "ScenarioConsoleEntryDto"
+      },
+      "IncidentScenarioDetailsResponseDto": {
+        "type": "object",
+        "properties": {
+          "started_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T12:00:00.000Z",
+            "description": "Когда начался прогон"
+          },
+          "duration_ms": {
+            "type": "number",
+            "example": 4200,
+            "nullable": true,
+            "description": "Длительность прогона в миллисекундах"
+          },
+          "location": {
+            "type": "string",
+            "enum": [
+              "msk-1",
+              "spb-1",
+              "ala-1",
+              "nyc-1",
+              "ams-1"
+            ],
+            "description": "Город, из которого шёл прогон"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "description": "Текст ошибки Playwright, если прогон не прошёл"
+          },
+          "failed_test": {
+            "type": "string",
+            "nullable": true,
+            "example": "вход в кабинет",
+            "description": "Название упавшего теста"
+          },
+          "console": {
+            "nullable": true,
+            "description": "Что тест вывел в консоль (`console.log`)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScenarioConsoleEntryDto"
+            }
+          },
+          "is_screenshot_available": {
+            "type": "boolean",
+            "description": "Есть скриншот момента падения"
+          },
+          "is_video_available": {
+            "type": "boolean",
+            "description": "Есть видео прогона"
+          },
+          "is_trace_available": {
+            "type": "boolean",
+            "description": "Есть трейс Playwright"
+          }
+        },
+        "required": [
+          "started_at",
+          "duration_ms",
+          "location",
+          "error",
+          "failed_test",
+          "console",
+          "is_screenshot_available",
+          "is_video_available",
+          "is_trace_available"
+        ],
+        "title": "IncidentScenarioDetailsResponseDto"
+      },
+      "ScenarioRunResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "timed_out",
+              "runner_error"
+            ],
+            "description": "Итог прогона"
+          },
+          "duration_ms": {
+            "type": "number",
+            "nullable": true,
+            "description": "Длительность прогона в миллисекундах"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "description": "Текст ошибки Playwright, если прогон не прошёл"
+          },
+          "failed_test": {
+            "type": "string",
+            "nullable": true,
+            "description": "Название упавшего теста"
+          },
+          "console": {
+            "nullable": true,
+            "description": "Что тест вывел в консоль (`console.log`)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScenarioConsoleEntryDto"
+            }
+          },
+          "artifact_urls": {
+            "type": "object",
+            "description": "Временные ссылки на скриншот, видео и трейс прогона",
+            "example": {
+              "screenshot": "https://…",
+              "video": "https://…",
+              "trace": "https://…"
+            }
+          },
+          "trace_proxy_path": {
+            "type": "string",
+            "nullable": true,
+            "description": "Путь на API к файлу трейса, действует час и открывается без авторизации — например, в Playwright Trace Viewer"
+          },
+          "location": {
+            "type": "string",
+            "enum": [
+              "msk-1",
+              "spb-1",
+              "ala-1",
+              "nyc-1",
+              "ams-1"
+            ],
+            "nullable": true,
+            "description": "Город, из которого шёл прогон"
+          }
+        },
+        "required": [
+          "status",
+          "duration_ms",
+          "error",
+          "failed_test",
+          "console",
+          "artifact_urls",
+          "trace_proxy_path",
+          "location"
+        ],
+        "title": "ScenarioRunResponseDto"
+      },
+      "ScenarioManualRunLatestResponseDto": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "none",
+              "running",
+              "done"
+            ],
+            "description": "Последняя ручная проверка сценария за последний час: идёт, закончилась или её не было"
+          },
+          "started_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Когда запущен прогон"
+          },
+          "finished_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Когда прогон закончился"
+          },
+          "result": {
+            "nullable": true,
+            "description": "Итог прогона, когда он закончился",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScenarioRunResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "started_at",
+          "finished_at",
+          "result"
+        ],
+        "title": "ScenarioManualRunLatestResponseDto"
       },
       "ProjectResponseDto": {
         "type": "object",
@@ -9943,6 +10364,7 @@
               "server.pause",
               "server.unpause",
               "server.test_notify",
+              "server.scenario_run",
               "notification_rule.update",
               "notification_email.add",
               "notification_email.confirm",
@@ -10029,6 +10451,7 @@
               "plan.change",
               "plan.change_cancel",
               "plan.trial_activate",
+              "payment_card.bind",
               "payment_card.delete",
               "payer.create",
               "payer.update",
