@@ -5664,7 +5664,7 @@
           },
           "scenario_script": {
             "type": "string",
-            "example": "import { test, expect } from '@playwright/test';\n\ntest('вход в кабинет', async ({ page }) => {\n  await page.goto('https://example.com/login');\n  await page.fill('#email', process.env.LOGIN);\n  await page.fill('#password', process.env.PASSWORD);\n  await page.click('button[type=submit]');\n  await expect(page.getByText('Мои заказы')).toBeVisible();\n});",
+            "example": "import { test, expect } from '@playwright/test';\n\ntest('вход в кабинет', async ({ page }) => {\n  await page.goto('https://example.com/login');\n  await page.getByLabel('Email').fill(process.env.LOGIN!);\n  await page.getByLabel('Пароль').fill(process.env.PASSWORD!);\n  await page.getByRole('button', { name: 'Войти' }).click();\n  await expect(page.getByText('Мои заказы')).toBeVisible();\n});",
             "description": "Код Playwright-теста на JavaScript или TypeScript: `test()` и `expect()` из `@playwright/test`. Обязателен при `protocol = scenario`. Проверка считается упавшей, если не прошёл хотя бы один тест. Повторы задаются в самом тесте: `test.describe.configure({ retries: 2 })`",
             "maxLength": 65536
           },
