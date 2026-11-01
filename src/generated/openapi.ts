@@ -1329,6 +1329,10 @@ export interface components {
             keyword?: string | null;
             keyword_mode?: "present" | "absent" | null;
             headers?: components["schemas"]["ServerHeader"][];
+            http_auth_type?: "none" | "basic" | "bearer";
+            http_auth_username?: string;
+            http_auth_password?: string;
+            http_auth_token?: string;
             is_follow_redirects: boolean;
             success_http_codes?: string[];
             request_timeout: number;
@@ -1403,6 +1407,9 @@ export interface components {
             keyword: string | null;
             keyword_mode: "present" | "absent" | null;
             headers: components["schemas"]["ServerHeader"][];
+            http_auth_type: "none" | "basic" | "bearer";
+            http_auth_username: string | null;
+            http_auth_secret_masked: string | null;
             is_follow_redirects: boolean;
             success_http_codes: string[];
             last_unavailable_at: string | null;
@@ -1438,6 +1445,10 @@ export interface components {
             keyword?: string | null;
             keyword_mode?: "present" | "absent" | null;
             headers?: components["schemas"]["ServerHeader"][];
+            http_auth_type?: "none" | "basic" | "bearer";
+            http_auth_username?: string;
+            http_auth_password?: string;
+            http_auth_token?: string;
             is_follow_redirects?: boolean;
             success_http_codes?: string[];
             request_timeout?: number;
@@ -4412,6 +4423,12 @@ export interface operations {
                 };
             };
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
