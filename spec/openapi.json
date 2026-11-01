@@ -3912,6 +3912,9 @@
           },
           "404": {
             "description": "Инцидент не найден"
+          },
+          "503": {
+            "description": "Разбор сейчас недоступен, повторите запрос позже"
           }
         },
         "tags": [
@@ -5525,6 +5528,34 @@
               "$ref": "#/components/schemas/ServerHeader"
             }
           },
+          "http_auth_type": {
+            "type": "string",
+            "enum": [
+              "none",
+              "basic",
+              "bearer"
+            ],
+            "example": "basic",
+            "description": "Авторизация запроса проверки: `none` — без авторизации, `basic` — логин и пароль, `bearer` — токен в заголовке `Authorization: Bearer`. Применимо к `protocol = http` или `keyword`. Если не задано — без авторизации."
+          },
+          "http_auth_username": {
+            "type": "string",
+            "example": "monitor",
+            "maxLength": 256,
+            "description": "Логин для `http_auth_type = basic`."
+          },
+          "http_auth_password": {
+            "type": "string",
+            "example": "secret",
+            "maxLength": 4096,
+            "description": "Пароль для `http_auth_type = basic`. Хранится в зашифрованном виде и в ответах не возвращается."
+          },
+          "http_auth_token": {
+            "type": "string",
+            "example": "eyJhbGciOi...",
+            "maxLength": 4096,
+            "description": "Токен для `http_auth_type = bearer`. Хранится в зашифрованном виде и в ответах не возвращается."
+          },
           "is_follow_redirects": {
             "type": "boolean",
             "example": true,
@@ -6058,6 +6089,28 @@
               "$ref": "#/components/schemas/ServerHeader"
             }
           },
+          "http_auth_type": {
+            "type": "string",
+            "enum": [
+              "none",
+              "basic",
+              "bearer"
+            ],
+            "example": "basic",
+            "description": "Авторизация запроса проверки: `none`, `basic` (логин и пароль) или `bearer` (токен)"
+          },
+          "http_auth_username": {
+            "type": "string",
+            "example": "monitor",
+            "description": "Логин для `basic`",
+            "nullable": true
+          },
+          "http_auth_secret_masked": {
+            "type": "string",
+            "example": "••••••••",
+            "description": "Маска сохранённого пароля или токена. Сам секрет в ответах не возвращается",
+            "nullable": true
+          },
           "is_follow_redirects": {
             "type": "boolean",
             "example": true,
@@ -6282,6 +6335,9 @@
           "keyword",
           "keyword_mode",
           "headers",
+          "http_auth_type",
+          "http_auth_username",
+          "http_auth_secret_masked",
           "is_follow_redirects",
           "success_http_codes",
           "last_unavailable_at",
@@ -6389,6 +6445,34 @@
             "items": {
               "$ref": "#/components/schemas/ServerHeader"
             }
+          },
+          "http_auth_type": {
+            "type": "string",
+            "enum": [
+              "none",
+              "basic",
+              "bearer"
+            ],
+            "example": "basic",
+            "description": "Авторизация запроса проверки: `none` — без авторизации, `basic` — логин и пароль, `bearer` — токен в заголовке `Authorization: Bearer`. Применимо к `protocol = http` или `keyword`. Если не задано — не меняется."
+          },
+          "http_auth_username": {
+            "type": "string",
+            "example": "monitor",
+            "maxLength": 256,
+            "description": "Логин для `http_auth_type = basic`."
+          },
+          "http_auth_password": {
+            "type": "string",
+            "example": "secret",
+            "maxLength": 4096,
+            "description": "Пароль для `http_auth_type = basic`. Хранится в зашифрованном виде и в ответах не возвращается. Если не передан — сохранённый пароль не меняется."
+          },
+          "http_auth_token": {
+            "type": "string",
+            "example": "eyJhbGciOi...",
+            "maxLength": 4096,
+            "description": "Токен для `http_auth_type = bearer`. Хранится в зашифрованном виде и в ответах не возвращается. Если не передан — сохранённый токен не меняется."
           },
           "is_follow_redirects": {
             "type": "boolean",
