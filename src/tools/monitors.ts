@@ -59,6 +59,8 @@ const protocolEnum = z.enum([
 
 const locationEnum = z.enum(['msk-1', 'spb-1', 'ala-1', 'nyc-1', 'ams-1']);
 
+const httpAuthTypeEnum = z.enum(['none', 'basic', 'bearer']);
+
 const dnsRecordTypeEnum = z.enum([
   'A',
   'AAAA',
@@ -83,6 +85,12 @@ type _LocationsMatchApi = Expect<
   SameValues<
     z.infer<typeof locationEnum>,
     SpecEnum<CreateMonitorBody['locations']>
+  >
+>;
+type _HttpAuthTypesMatchApi = Expect<
+  SameValues<
+    z.infer<typeof httpAuthTypeEnum>,
+    SpecEnum<CreateMonitorBody['http_auth_type']>
   >
 >;
 type _DnsRecordTypesMatchApi = Expect<
@@ -140,7 +148,38 @@ const baseMonitorFields = {
     .enum(['present', 'absent'])
     .optional()
     .describe('Whether the keyword should be present or absent.'),
-  headers: z.array(headerSchema).optional(),
+  headers: z
+    .array(headerSchema)
+    .optional()
+    .describe(
+      'Custom request headers for `http`/`keyword`. For Basic or Bearer authentication use the `http_auth_*` fields instead of an `Authorization` header: the secret is then stored encrypted and masked in incident replays, and the API rejects an `Authorization` header while `http_auth_type` is set.',
+    ),
+  http_auth_type: httpAuthTypeEnum
+    .optional()
+    .describe(
+      'Authentication sent with every check of an `http`/`keyword` monitor, for sites and APIs behind a password: `basic` — login and password, `bearer` — a token in `Authorization: Bearer`, `none` — no authentication (the default). Other protocols accept only `none`. On update omit it to keep the current setting, pass `none` to remove authentication; switching between `basic` and `bearer` needs the new secret.',
+    ),
+  http_auth_username: z
+    .string()
+    .max(256)
+    .optional()
+    .describe(
+      'Login for `basic`. Required when switching to `basic`; a colon is not allowed. Returned in responses as is.',
+    ),
+  http_auth_password: z
+    .string()
+    .max(4096)
+    .optional()
+    .describe(
+      'Password for `basic`. Required when switching to `basic`; on update omit it to keep the stored one. Stored encrypted and never returned: responses carry only `http_auth_secret_masked`.',
+    ),
+  http_auth_token: z
+    .string()
+    .max(4096)
+    .optional()
+    .describe(
+      'Token for `bearer`, sent as `Authorization: Bearer <token>`. Required when switching to `bearer`; on update omit it to keep the stored one. Stored encrypted and never returned: responses carry only `http_auth_secret_masked`.',
+    ),
   is_follow_redirects: z
     .boolean()
     .optional()
