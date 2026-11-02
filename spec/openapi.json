@@ -4431,9 +4431,15 @@
                   "server.feature_disabled_by_plan",
                   "status_page.unpublished_by_limit",
                   "status_page.feature_reset_by_plan",
-                  "status_page_announcement.deleted_by_limit",
+                  "status_page_announcement.disabled_by_limit",
                   "webhook.disabled_by_limit",
                   "chat_webhook.disabled_by_limit",
+                  "status_page_announcement.enabled_by_plan",
+                  "webhook.enabled_by_plan",
+                  "chat_webhook.enabled_by_plan",
+                  "status_page.domain_restored_by_plan",
+                  "plan.restore_applied",
+                  "plan.restore_dismissed",
                   "plan.activate",
                   "plan.expired",
                   "plan.pending_downgrade_applied",
@@ -4730,9 +4736,15 @@
                   "server.feature_disabled_by_plan",
                   "status_page.unpublished_by_limit",
                   "status_page.feature_reset_by_plan",
-                  "status_page_announcement.deleted_by_limit",
+                  "status_page_announcement.disabled_by_limit",
                   "webhook.disabled_by_limit",
                   "chat_webhook.disabled_by_limit",
+                  "status_page_announcement.enabled_by_plan",
+                  "webhook.enabled_by_plan",
+                  "chat_webhook.enabled_by_plan",
+                  "status_page.domain_restored_by_plan",
+                  "plan.restore_applied",
+                  "plan.restore_dismissed",
                   "plan.activate",
                   "plan.expired",
                   "plan.pending_downgrade_applied",
@@ -7271,13 +7283,19 @@
             "type": "boolean",
             "example": true,
             "description": "Пользуется ли этим каналом проект. Уведомления о мониторинге уходят только во включённые; события аккаунта (счета, безопасность) приходят во все каналы независимо от проекта"
+          },
+          "is_disabled_by_plan": {
+            "type": "boolean",
+            "example": false,
+            "description": "Отключён ли канал тарифом — бывает только у рабочих чатов на тарифе без вебхуков. Пока он отключён, уведомления в него не уходят, а включение в проектах сохраняется до смены тарифа"
           }
         },
         "required": [
           "type",
           "id",
           "title",
-          "is_enabled"
+          "is_enabled",
+          "is_disabled_by_plan"
         ],
         "title": "ProjectChannelResponseDto"
       },
@@ -7359,13 +7377,19 @@
             "items": {
               "type": "number"
             }
+          },
+          "is_disabled_by_plan": {
+            "type": "boolean",
+            "example": false,
+            "description": "Отключён ли канал тарифом — бывает только у рабочих чатов на тарифе без вебхуков. Пока он отключён, уведомления в него не уходят, а включение в проектах сохраняется до смены тарифа"
           }
         },
         "required": [
           "type",
           "id",
           "title",
-          "project_ids"
+          "project_ids",
+          "is_disabled_by_plan"
         ],
         "title": "ChannelProjectsResponseDto"
       },
@@ -7400,6 +7424,11 @@
             "example": "https://mattermost.example.com/hooks/xxxxxxxxxxxxxxxxxxxxxxxxxx",
             "description": "Адрес входящего вебхука"
           },
+          "is_disabled_by_plan": {
+            "type": "boolean",
+            "example": false,
+            "description": "Отключён ли чат тарифом. На тарифе без вебхуков сообщения в чат не уходят, а адрес и включение в проектах сохраняются и снова работают после перехода на тариф с вебхуками"
+          },
           "created_at": {
             "format": "date-time",
             "type": "string",
@@ -7412,6 +7441,7 @@
           "provider",
           "name",
           "url",
+          "is_disabled_by_plan",
           "created_at"
         ],
         "title": "ChatWebhookResponseDto"
@@ -7718,6 +7748,11 @@
             "example": true,
             "description": "Указан ли секрет для подписи запросов вебхука"
           },
+          "is_disabled_by_plan": {
+            "type": "boolean",
+            "example": false,
+            "description": "Отключён ли вебхук тарифом. На тарифе без вебхуков события в него не уходят, а адрес, секрет и подписки сохраняются и снова работают после перехода на тариф с вебхуками"
+          },
           "created_at": {
             "format": "date-time",
             "type": "string",
@@ -7732,6 +7767,7 @@
           "subscriptions",
           "project_ids",
           "is_secret_set",
+          "is_disabled_by_plan",
           "created_at"
         ],
         "title": "WebhookEndpointResponseDto"
@@ -8123,8 +8159,14 @@
           },
           "status": {
             "type": "string",
+            "enum": [
+              "active",
+              "pending",
+              "failed",
+              "disabled_by_plan"
+            ],
             "example": "active",
-            "description": "Статус домена"
+            "description": "Статус домена. `disabled_by_plan` — на текущем тарифе своего домена нет: страница по нему не открывается, а сам домен остаётся за страницей и после перехода на тариф с доменами снова проходит проверку"
           }
         },
         "required": [
@@ -8594,6 +8636,11 @@
             "description": "Ссылка с подробной информацией",
             "nullable": true
           },
+          "is_disabled_by_plan": {
+            "type": "boolean",
+            "example": false,
+            "description": "Скрыто ли объявление тарифом. На тарифе без объявлений оно не показывается на странице, а текст и период показа сохраняются и снова работают после перехода на тариф с объявлениями"
+          },
           "created_at": {
             "format": "date-time",
             "type": "string",
@@ -8609,6 +8656,7 @@
           "started_at",
           "ended_at",
           "link",
+          "is_disabled_by_plan",
           "created_at"
         ],
         "title": "StatusPageAnnouncementResponseDto"
@@ -10545,9 +10593,15 @@
               "server.feature_disabled_by_plan",
               "status_page.unpublished_by_limit",
               "status_page.feature_reset_by_plan",
-              "status_page_announcement.deleted_by_limit",
+              "status_page_announcement.disabled_by_limit",
               "webhook.disabled_by_limit",
               "chat_webhook.disabled_by_limit",
+              "status_page_announcement.enabled_by_plan",
+              "webhook.enabled_by_plan",
+              "chat_webhook.enabled_by_plan",
+              "status_page.domain_restored_by_plan",
+              "plan.restore_applied",
+              "plan.restore_dismissed",
               "plan.activate",
               "plan.expired",
               "plan.pending_downgrade_applied",

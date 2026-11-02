@@ -39,7 +39,7 @@ export function registerStatusPageAnnouncementTools(
     name: 'status_page_announcement_list',
     title: 'List announcements for a status page',
     description:
-      'Lists announcements (banner notices shown on top of the public status page): title, body, type/severity, optional display window (`started_at`/`ended_at`) and optional link. Includes scheduled, active and ended entries — filter by time on the client side.',
+      'Lists announcements (banner notices shown on top of the public status page): title, body, type/severity, optional display window (`started_at`/`ended_at`) and optional link. Includes scheduled, active and ended entries — filter by time on the client side. `is_disabled_by_plan: true` means the current plan has no announcements: the entry is not shown on the page, but is kept and shows again after an upgrade.',
     inputSchema: {
       status_page_id: z.number().int().positive(),
     },

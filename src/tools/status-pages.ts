@@ -256,7 +256,7 @@ export function registerStatusPageTools(
     name: 'status_page_get',
     title: 'Get status page',
     description:
-      'Returns the full configuration of one status page by id: settings, groups, linked monitors and custom domains.',
+      'Returns the full configuration of one status page by id: settings, groups, linked monitors and custom domains. A custom domain in status `disabled_by_plan` does not serve the page on the current plan; it stays attached to the page and is verified again after an upgrade.',
     inputSchema: {
       id: z.number().int().positive(),
     },
