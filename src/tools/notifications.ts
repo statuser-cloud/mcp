@@ -103,7 +103,7 @@ export function registerNotificationTools(
     name: 'webhook_list',
     title: 'List webhooks',
     description:
-      'Lists all webhook endpoints configured on the account: name, URL, and the set of `subscriptions` (event types delivered to that webhook). The secret set on creation is not returned.',
+      'Lists all webhook endpoints configured on the account: name, URL, and the set of `subscriptions` (event types delivered to that webhook). The secret set on creation is not returned. `is_disabled_by_plan: true` means the current plan has no webhooks: no events are delivered, but the URL, secret and subscriptions are kept and work again after an upgrade.',
     inputSchema: {},
     handler: async (_args, { client }) =>
       client.call<WebhookListResponse>({
