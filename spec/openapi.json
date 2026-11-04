@@ -36,7 +36,7 @@
       "post": {
         "operationId": "TelegramClientController_sendTest",
         "summary": "Отправить тестовое сообщение в привязанный чат",
-        "description": "Отправляет в привязанный Телеграм-аккаунт или группу тестовое сообщение — в выбранный топик, если он задан. `id` — поле `id` из ответа `GET /v1/telegram/linked`. Правила уведомлений и настройки проектов на тест не влияют — проверяется сам чат. Если Телеграм отказал в доставке, возвращается его код ошибки (`telegram_bot_blocked_by_user`, `telegram_chat_not_found`, `telegram_user_not_found`, `telegram_user_is_deactivated`); прочие неудачи доставки — 502.",
+        "description": "Отправляет в привязанный Телеграм-аккаунт или группу тестовое сообщение — в выбранный топик, если он задан. `id` — поле `id` из ответа `GET /v1/telegram/linked`. Правила уведомлений и настройки проектов на тест не влияют — проверяется сам чат. Тест уходит и в чат с непустым `disabled_reason`: удачная отправка очищает это поле, и уведомления снова уходят в чат. Если Телеграм отказал в доставке, возвращается его код ошибки (`telegram_bot_blocked_by_user`, `telegram_bot_kicked`, `telegram_bot_no_rights`, `telegram_chat_not_found`, `telegram_user_not_found`, `telegram_user_is_deactivated`); прочие неудачи доставки — 502.",
         "parameters": [
           {
             "name": "id",
@@ -1723,7 +1723,7 @@
       "post": {
         "operationId": "MaxClientController_sendTest",
         "summary": "Отправить тестовое сообщение в привязанный чат MAX",
-        "description": "Отправляет в привязанный MAX-аккаунт или группу тестовое сообщение. `id` — поле `id` из ответа `GET /v1/max/linked`. Правила уведомлений и настройки проектов на тест не влияют — проверяется сам чат. Если сообщение не удалось доставить — возвращается 502.",
+        "description": "Отправляет в привязанный MAX-аккаунт или группу тестовое сообщение. `id` — поле `id` из ответа `GET /v1/max/linked`. Правила уведомлений и настройки проектов на тест не влияют — проверяется сам чат. Тест уходит и в чат с непустым `disabled_reason`: удачная отправка очищает это поле, и уведомления снова уходят в чат. Если MAX отказал в доставке, возвращается его код ошибки (`max_bot_blocked_by_user`, `max_chat_not_found`); прочие неудачи доставки — 502.",
         "parameters": [
           {
             "name": "id",
@@ -4350,10 +4350,14 @@
                   "telegram.set_topic",
                   "telegram.set_2fa_account",
                   "telegram.test",
+                  "telegram.delivery_blocked",
+                  "telegram.delivery_restored",
                   "max.link",
                   "max.unlink",
                   "max.set_2fa_account",
                   "max.test",
+                  "max.delivery_blocked",
+                  "max.delivery_restored",
                   "chat_webhook.link",
                   "chat_webhook.update",
                   "chat_webhook.unlink",
@@ -4655,10 +4659,14 @@
                   "telegram.set_topic",
                   "telegram.set_2fa_account",
                   "telegram.test",
+                  "telegram.delivery_blocked",
+                  "telegram.delivery_restored",
                   "max.link",
                   "max.unlink",
                   "max.set_2fa_account",
                   "max.test",
+                  "max.delivery_blocked",
+                  "max.delivery_restored",
                   "chat_webhook.link",
                   "chat_webhook.update",
                   "chat_webhook.unlink",
@@ -4909,6 +4917,18 @@
         ],
         "title": "TelegramTopic"
       },
+      "MessengerDeliveryBlockReason": {
+        "type": "string",
+        "description": "Почему сообщения в чат не доставляются, или null — чат принимает сообщения. `bot_blocked` — бот заблокирован или в нём не нажата кнопка «Начать», `user_deactivated` — аккаунт удалён, `chat_not_found` — чат не найден, `bot_kicked` — бота удалили из группы, `no_rights` — боту запрещено писать в группу. Пока поле не пустое, уведомления в чат не уходят; после того как причина устранена, отправьте тест — удачная отправка очищает поле.",
+        "enum": [
+          "bot_blocked",
+          "user_deactivated",
+          "chat_not_found",
+          "bot_kicked",
+          "no_rights"
+        ],
+        "title": "MessengerDeliveryBlockReason"
+      },
       "TelegramResponseDto": {
         "type": "object",
         "properties": {
@@ -4968,6 +4988,11 @@
             "items": {
               "$ref": "#/components/schemas/TelegramTopic"
             }
+          },
+          "disabled_reason": {
+            "example": null,
+            "nullable": true,
+            "$ref": "#/components/schemas/MessengerDeliveryBlockReason"
           }
         },
         "required": [
@@ -4979,7 +5004,8 @@
           "is_2fa_account",
           "avatar_url",
           "message_thread_id",
-          "available_topics"
+          "available_topics",
+          "disabled_reason"
         ],
         "title": "TelegramResponseDto"
       },
@@ -7288,6 +7314,11 @@
             "type": "boolean",
             "example": false,
             "description": "Отключён ли канал тарифом — бывает только у рабочих чатов на тарифе без вебхуков. Пока он отключён, уведомления в него не уходят, а включение в проектах сохраняется до смены тарифа"
+          },
+          "disabled_reason": {
+            "example": null,
+            "nullable": true,
+            "$ref": "#/components/schemas/MessengerDeliveryBlockReason"
           }
         },
         "required": [
@@ -7295,7 +7326,8 @@
           "id",
           "title",
           "is_enabled",
-          "is_disabled_by_plan"
+          "is_disabled_by_plan",
+          "disabled_reason"
         ],
         "title": "ProjectChannelResponseDto"
       },
@@ -7382,6 +7414,11 @@
             "type": "boolean",
             "example": false,
             "description": "Отключён ли канал тарифом — бывает только у рабочих чатов на тарифе без вебхуков. Пока он отключён, уведомления в него не уходят, а включение в проектах сохраняется до смены тарифа"
+          },
+          "disabled_reason": {
+            "example": null,
+            "nullable": true,
+            "$ref": "#/components/schemas/MessengerDeliveryBlockReason"
           }
         },
         "required": [
@@ -7389,7 +7426,8 @@
           "id",
           "title",
           "project_ids",
-          "is_disabled_by_plan"
+          "is_disabled_by_plan",
+          "disabled_reason"
         ],
         "title": "ChannelProjectsResponseDto"
       },
@@ -7974,6 +8012,11 @@
             "type": "boolean",
             "description": "Используется ли аккаунт для двухфакторной аутентификации",
             "example": true
+          },
+          "disabled_reason": {
+            "example": null,
+            "nullable": true,
+            "$ref": "#/components/schemas/MessengerDeliveryBlockReason"
           }
         },
         "required": [
@@ -7983,7 +8026,8 @@
           "avatar_url",
           "type",
           "created_at",
-          "is_2fa_account"
+          "is_2fa_account",
+          "disabled_reason"
         ],
         "title": "MaxResponseDto"
       },
@@ -10512,10 +10556,14 @@
               "telegram.set_topic",
               "telegram.set_2fa_account",
               "telegram.test",
+              "telegram.delivery_blocked",
+              "telegram.delivery_restored",
               "max.link",
               "max.unlink",
               "max.set_2fa_account",
               "max.test",
+              "max.delivery_blocked",
+              "max.delivery_restored",
               "chat_webhook.link",
               "chat_webhook.update",
               "chat_webhook.unlink",

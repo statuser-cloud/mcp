@@ -311,7 +311,7 @@ export function registerAccountTools(
     name: 'telegram_linked_list',
     title: 'List linked Telegram chats',
     description:
-      'Returns all Telegram personal accounts and group chats linked to the Statuser account with their settings: chat id, type, username, avatar, 2FA flag, selected topic and available topics for supergroup-forum groups.',
+      'Returns all Telegram personal accounts and group chats linked to the Statuser account with their settings: chat id, type, username, avatar, 2FA flag, selected topic and available topics for supergroup-forum groups. A non-null `disabled_reason` means the messenger refuses delivery to this chat (`bot_blocked`, `user_deactivated`, `chat_not_found`, `bot_kicked`, `no_rights`): no notifications go there. It is fixed in the messenger and confirmed by a channel test in the Statuser panel.',
     inputSchema: {},
     handler: async (_args, { client }) =>
       client.call<TelegramLinkedListResponse>({
@@ -346,7 +346,7 @@ export function registerAccountTools(
     name: 'max_linked_list',
     title: 'List linked MAX accounts',
     description:
-      'Returns all MAX accounts and group chats linked to the Statuser account, with status and the "used for 2FA" flag. Available as a notification channel in notification rules.',
+      'Returns all MAX accounts and group chats linked to the Statuser account, with status and the "used for 2FA" flag. Available as a notification channel in notification rules. A non-null `disabled_reason` means the messenger refuses delivery to this chat (`bot_blocked`, `user_deactivated`, `chat_not_found`, `bot_kicked`, `no_rights`): no notifications go there. It is fixed in the messenger and confirmed by a channel test in the Statuser panel.',
     inputSchema: {},
     handler: async (_args, { client }) =>
       client.call<MaxLinkedListResponse>({
