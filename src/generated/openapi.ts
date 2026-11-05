@@ -212,6 +212,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/heartbeat/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["HeartbeatController_heartbeatGet"];
+        put?: never;
+        post: operations["HeartbeatController_heartbeatPost"];
+        delete?: never;
+        options?: never;
+        head: operations["HeartbeatController_heartbeatHead"];
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/heartbeat/{token}/fail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["HeartbeatController_failureGet"];
+        put?: never;
+        post: operations["HeartbeatController_failurePost"];
+        delete?: never;
+        options?: never;
+        head: operations["HeartbeatController_failureHead"];
+        patch?: never;
+        trace?: never;
+    };
     "/v1/incidents/{id}/scenario-details": {
         parameters: {
             query?: never;
@@ -254,6 +286,22 @@ export interface paths {
         get: operations["ScenarioRunsController_getLatestManualRun"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/scenario-runs/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ScenarioRunsController_preview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1524,6 +1572,15 @@ export interface components {
             finished_at: string | null;
             result: components["schemas"]["ScenarioRunResponseDto"] | null;
         };
+        ScenarioPreviewDto: {
+            scenario_script: string;
+            request_timeout: 15 | 30 | 45 | 60 | 120;
+            locations?: ("msk-1" | "spb-1" | "ala-1" | "nyc-1" | "ams-1")[];
+            server_id?: number;
+            scenario_env?: {
+                [key: string]: string | null;
+            };
+        };
         ProjectResponseDto: {
             id: number;
             name: string;
@@ -1694,6 +1751,7 @@ export interface components {
             current_status: "operational" | "downtime" | "not_monitored" | "degraded" | "under_maintenance";
             order: number;
             group_id: number;
+            server_id: number;
             availability: unknown[][];
         };
         ReportServerGroupStatusPage: {
@@ -2524,6 +2582,156 @@ export interface operations {
             };
         };
     };
+    HeartbeatController_heartbeatGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HeartbeatController_heartbeatPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HeartbeatController_heartbeatHead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HeartbeatController_failureGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HeartbeatController_failurePost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HeartbeatController_failureHead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ScenarioRunsController_getDetails: {
         parameters: {
             query?: never;
@@ -2622,6 +2830,59 @@ export interface operations {
                 };
             };
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ScenarioRunsController_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScenarioPreviewDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioRunResponseDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
