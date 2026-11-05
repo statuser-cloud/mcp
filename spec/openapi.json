@@ -666,6 +666,172 @@
         ]
       }
     },
+    "/v1/heartbeat/{token}": {
+      "head": {
+        "operationId": "HeartbeatController_heartbeatHead",
+        "summary": "Отправить сигнал heartbeat",
+        "description": "Сообщает, что задача отработала, и закрывает открытый инцидент. Если следующий сигнал не придёт за `check_interval` плюс `heartbeat_grace_interval` сервера, откроется инцидент. Пропуски считаются с первого сигнала. Авторизация — токеном в адресе (поле `heartbeat_token` сервера), API-ключ не нужен. GET, POST и HEAD равнозначны.",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "description": "Токен heartbeat — поле `heartbeat_token` сервера",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Сигнал принят"
+          },
+          "404": {
+            "description": "Токен не найден"
+          }
+        },
+        "tags": [
+          "Heartbeat"
+        ]
+      },
+      "get": {
+        "operationId": "HeartbeatController_heartbeatGet",
+        "summary": "Отправить сигнал heartbeat",
+        "description": "Сообщает, что задача отработала, и закрывает открытый инцидент. Если следующий сигнал не придёт за `check_interval` плюс `heartbeat_grace_interval` сервера, откроется инцидент. Пропуски считаются с первого сигнала. Авторизация — токеном в адресе (поле `heartbeat_token` сервера), API-ключ не нужен. GET, POST и HEAD равнозначны.",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "description": "Токен heartbeat — поле `heartbeat_token` сервера",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Сигнал принят"
+          },
+          "404": {
+            "description": "Токен не найден"
+          }
+        },
+        "tags": [
+          "Heartbeat"
+        ]
+      },
+      "post": {
+        "operationId": "HeartbeatController_heartbeatPost",
+        "summary": "Отправить сигнал heartbeat",
+        "description": "Сообщает, что задача отработала, и закрывает открытый инцидент. Если следующий сигнал не придёт за `check_interval` плюс `heartbeat_grace_interval` сервера, откроется инцидент. Пропуски считаются с первого сигнала. Авторизация — токеном в адресе (поле `heartbeat_token` сервера), API-ключ не нужен. GET, POST и HEAD равнозначны.",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "description": "Токен heartbeat — поле `heartbeat_token` сервера",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Сигнал принят"
+          },
+          "404": {
+            "description": "Токен не найден"
+          }
+        },
+        "tags": [
+          "Heartbeat"
+        ]
+      }
+    },
+    "/v1/heartbeat/{token}/fail": {
+      "head": {
+        "operationId": "HeartbeatController_failureHead",
+        "summary": "Сообщить об ошибке задачи",
+        "description": "Сообщает, что задача завершилась ошибкой: инцидент открывается сразу, не дожидаясь пропуска сигнала. Закрывает его следующий обычный сигнал. Авторизация — токеном в адресе, API-ключ не нужен. GET, POST и HEAD равнозначны.",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "description": "Токен heartbeat — поле `heartbeat_token` сервера",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Ошибка зафиксирована"
+          },
+          "404": {
+            "description": "Токен не найден"
+          }
+        },
+        "tags": [
+          "Heartbeat"
+        ]
+      },
+      "get": {
+        "operationId": "HeartbeatController_failureGet",
+        "summary": "Сообщить об ошибке задачи",
+        "description": "Сообщает, что задача завершилась ошибкой: инцидент открывается сразу, не дожидаясь пропуска сигнала. Закрывает его следующий обычный сигнал. Авторизация — токеном в адресе, API-ключ не нужен. GET, POST и HEAD равнозначны.",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "description": "Токен heartbeat — поле `heartbeat_token` сервера",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Ошибка зафиксирована"
+          },
+          "404": {
+            "description": "Токен не найден"
+          }
+        },
+        "tags": [
+          "Heartbeat"
+        ]
+      },
+      "post": {
+        "operationId": "HeartbeatController_failurePost",
+        "summary": "Сообщить об ошибке задачи",
+        "description": "Сообщает, что задача завершилась ошибкой: инцидент открывается сразу, не дожидаясь пропуска сигнала. Закрывает его следующий обычный сигнал. Авторизация — токеном в адресе, API-ключ не нужен. GET, POST и HEAD равнозначны.",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "description": "Токен heartbeat — поле `heartbeat_token` сервера",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Ошибка зафиксирована"
+          },
+          "404": {
+            "description": "Токен не найден"
+          }
+        },
+        "tags": [
+          "Heartbeat"
+        ]
+      }
+    },
     "/v1/incidents/{id}/scenario-details": {
       "get": {
         "operationId": "ScenarioRunsController_getDetails",
@@ -786,6 +952,59 @@
           },
           "404": {
             "description": "Сервер не найден (`server_not_found`)"
+          }
+        },
+        "tags": [
+          "Сценарии"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/scenario-runs/preview": {
+      "post": {
+        "operationId": "ScenarioRunsController_preview",
+        "summary": "Прогнать сценарий, не сохраняя",
+        "description": "Выполняет Playwright-тест так же, как по расписанию, и возвращает итог со скриншотом, видео и трейсом — например, чтобы проверить сценарий до сохранения или в CI перед выкладкой. Сервер не создаётся, история проверок и инциденты не меняются. Ответ приходит, когда прогон закончится, — до `request_timeout` плюс время на запуск. Ссылки на файлы действуют час. Итог `runner_error` значит, что прогон не состоялся по нашей стороне, и в лимит он не засчитывается. На аккаунт — один прогон по требованию одновременно и не больше 30 пробных за 10 минут",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioPreviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioRunResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверный сценарий, таймаут, город или переменные окружения (`scenario_script_invalid`, `scenario_misconfigured`, `scenario_single_location`, `scenario_env_invalid`)"
+          },
+          "403": {
+            "description": "Сценарии недоступны на тарифе (`server_scenario_monitoring_not_allowed`)"
+          },
+          "404": {
+            "description": "Сервер из `server_id` не найден (`server_not_found`)"
+          },
+          "409": {
+            "description": "Другой прогон по требованию ещё идёт (`scenario_run_in_progress`)"
+          },
+          "429": {
+            "description": "Исчерпан лимит пробных прогонов (`scenario_run_limit_exceeded`)"
           }
         },
         "tags": [
@@ -7188,6 +7407,60 @@
         ],
         "title": "ScenarioManualRunLatestResponseDto"
       },
+      "ScenarioPreviewDto": {
+        "type": "object",
+        "properties": {
+          "scenario_script": {
+            "type": "string",
+            "description": "Код Playwright-теста"
+          },
+          "request_timeout": {
+            "type": "number",
+            "enum": [
+              15,
+              30,
+              45,
+              60,
+              120
+            ],
+            "default": 30,
+            "description": "Таймаут на весь прогон в секундах, как `request_timeout` сценария"
+          },
+          "locations": {
+            "type": "array",
+            "example": [
+              "msk-1"
+            ],
+            "description": "Город, из которого идёт прогон, — ровно один, как в `locations` сервера. Не передано — Москва",
+            "items": {
+              "type": "string",
+              "enum": [
+                "msk-1",
+                "spb-1",
+                "ala-1",
+                "nyc-1",
+                "ams-1"
+              ]
+            }
+          },
+          "server_id": {
+            "type": "number",
+            "description": "Сохранённый сервер со сценарием, переменные которого подставляются в прогон. Переменные из `scenario_env` поверх них: строка задаёт, `null` убирает"
+          },
+          "scenario_env": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": "Переменные окружения прогона: в коде доступны как `process.env.ИМЯ`"
+          }
+        },
+        "required": [
+          "scenario_script"
+        ],
+        "title": "ScenarioPreviewDto"
+      },
       "ProjectResponseDto": {
         "type": "object",
         "properties": {
@@ -8252,13 +8525,18 @@
           },
           "order": {
             "type": "number",
-            "description": "Общее время безотказной работы сервера в процентах",
-            "example": 99.93
+            "description": "Порядок сервера внутри группы",
+            "example": 1
           },
           "group_id": {
             "type": "number",
             "description": "Идентификатор группы серверов",
             "example": 1
+          },
+          "server_id": {
+            "type": "number",
+            "description": "Идентификатор сервера — тот же `id`, что в `GET /v1/servers`. По нему сервер указывают в плановых работах и отчётах об инцидентах страницы",
+            "example": 101
           },
           "availability": {
             "description": "Доступность сервера по датам",
@@ -8275,6 +8553,7 @@
           "current_status",
           "order",
           "group_id",
+          "server_id",
           "availability"
         ],
         "title": "ReportServerStatusPage"
