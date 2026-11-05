@@ -7290,6 +7290,27 @@
         ],
         "title": "IncidentScenarioDetailsResponseDto"
       },
+      "ScenarioArtifactUrlsDto": {
+        "type": "object",
+        "properties": {
+          "screenshot": {
+            "type": "string",
+            "description": "Скриншот страницы",
+            "example": "https://…"
+          },
+          "video": {
+            "type": "string",
+            "description": "Видео прогона",
+            "example": "https://…"
+          },
+          "trace": {
+            "type": "string",
+            "description": "Трейс Playwright — открывается в Trace Viewer",
+            "example": "https://…"
+          }
+        },
+        "title": "ScenarioArtifactUrlsDto"
+      },
       "ScenarioRunResponseDto": {
         "type": "object",
         "properties": {
@@ -7327,13 +7348,12 @@
             }
           },
           "artifact_urls": {
-            "type": "object",
-            "description": "Временные ссылки на скриншот, видео и трейс прогона",
-            "example": {
-              "screenshot": "https://…",
-              "video": "https://…",
-              "trace": "https://…"
-            }
+            "description": "Временные ссылки на скриншот, видео и трейс прогона, действуют час",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScenarioArtifactUrlsDto"
+              }
+            ]
           },
           "trace_proxy_path": {
             "type": "string",

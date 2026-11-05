@@ -1556,13 +1556,18 @@ export interface components {
             is_video_available: boolean;
             is_trace_available: boolean;
         };
+        ScenarioArtifactUrlsDto: {
+            screenshot?: string;
+            video?: string;
+            trace?: string;
+        };
         ScenarioRunResponseDto: {
             status: "passed" | "failed" | "timed_out" | "runner_error";
             duration_ms: number | null;
             error: string | null;
             failed_test: string | null;
             console: components["schemas"]["ScenarioConsoleEntryDto"][] | null;
-            artifact_urls: Record<string, never>;
+            artifact_urls: components["schemas"]["ScenarioArtifactUrlsDto"];
             trace_proxy_path: string | null;
             location: "msk-1" | "spb-1" | "ala-1" | "nyc-1" | "ams-1" | null;
         };
