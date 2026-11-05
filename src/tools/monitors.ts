@@ -44,6 +44,11 @@ type ScenarioRunLatestResponse = OkResponseBody<
   '/v1/servers/{id}/scenario-run/latest',
   'get'
 >;
+type ScenarioPreviewBody = RequestBody<'/v1/scenario-runs/preview', 'post'>;
+type ScenarioPreviewResponse = OkResponseBody<
+  '/v1/scenario-runs/preview',
+  'post'
+>;
 
 // Mirrors the public enum from PlanFeaturesResponseDto / ServerProtocol.
 const protocolEnum = z.enum([
@@ -97,6 +102,26 @@ type _DnsRecordTypesMatchApi = Expect<
   SameValues<
     z.infer<typeof dnsRecordTypeEnum>,
     SpecEnum<CreateMonitorBody['dns_record_types']>
+  >
+>;
+
+const scenarioTimeoutEnum = z.union([
+  z.literal(15),
+  z.literal(30),
+  z.literal(45),
+  z.literal(60),
+  z.literal(120),
+]);
+type _ScenarioTimeoutsMatchApi = Expect<
+  SameValues<
+    z.infer<typeof scenarioTimeoutEnum>,
+    SpecEnum<ScenarioPreviewBody['request_timeout']>
+  >
+>;
+type _ScenarioLocationsMatchApi = Expect<
+  SameValues<
+    z.infer<typeof locationEnum>,
+    SpecEnum<ScenarioPreviewBody['locations']>
   >
 >;
 
@@ -284,7 +309,7 @@ const baseMonitorFields = {
     .max(65536)
     .optional()
     .describe(
-      'Playwright test in JavaScript or TypeScript, one file, using `test` and `expect` from `@playwright/test`. Required for `scenario`. The run fails if any test fails. Locate elements by role and label (`getByRole`, `getByLabel`), put an `expect` after every important step, read logins and passwords from `process.env`, and leave out `playwright.config` and per-step timeouts — Statuser sets them. Every run starts in a fresh browser with no cookies. Requires `scenarios_limit` above zero on the current plan (Pro and Team). Before relying on it, suggest trying the script with the Run button (Запустить) in the panel form: a selector guessed without seeing the page is the usual reason a new scenario fails.',
+      'Playwright test in JavaScript or TypeScript, one file, using `test` and `expect` from `@playwright/test`. Required for `scenario`. The run fails if any test fails. Locate elements by role and label (`getByRole`, `getByLabel`), put an `expect` after every important step, read logins and passwords from `process.env`, and leave out `playwright.config` and per-step timeouts — Statuser sets them. Every run starts in a fresh browser with no cookies. Requires `scenarios_limit` above zero on the current plan (Pro and Team). Before saving it, try the script with `scenario_test` (or the Run button, Запустить, in the panel form): a selector guessed without seeing the page is the usual reason a new scenario fails.',
     ),
   scenario_env: z
     .record(z.string(), z.string())
@@ -490,6 +515,63 @@ export function registerMonitorTools(
   });
 
   registerTool(server, ctx, {
+    name: 'scenario_test',
+    title: 'Test a scenario without saving',
+    description:
+      'Runs a Playwright test in the Statuser sandbox exactly like a scheduled scenario run, without creating or changing a monitor: no point on the graph, no incident. Use it to check a script before `monitor_create`/`monitor_update`. Waits for the run to finish — up to `request_timeout` plus browser start-up — and returns the verdict (`passed`, `failed`, `timed_out`, or `runner_error` when the sandbox could not run it; that one does not count towards the limit), the failed test, the Playwright error, the console output, and screenshot, video and trace links that work for an hour. Requires `scenarios_limit` above zero on the current plan. One on-demand run per account at a time and at most 30 test runs in 10 minutes (409 and 429 otherwise).',
+    // Nothing changes in Statuser, but the script acts on a real site — with
+    // stored credentials when `server_id` is set — so it is gated like a write.
+    write: true,
+    inputSchema: {
+      scenario_script: z
+        .string()
+        .min(1)
+        .max(65536)
+        .describe(
+          'Playwright test, one file, using `test` and `expect` from `@playwright/test` — the same rules as `scenario_script` of `monitor_create`.',
+        ),
+      request_timeout: scenarioTimeoutEnum
+        .optional()
+        .describe(
+          'Limit for the whole run in seconds, no more than `scenario_max_timeout_seconds` of the plan. Default 30.',
+        ),
+      location: locationEnum
+        .optional()
+        .describe(
+          'Where the run goes from. Default `msk-1`. Use the location the monitor will run from: the address the site sees is often what the scenario checks.',
+        ),
+      server_id: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe(
+          'A saved `scenario` monitor whose environment variables are used for the run — so stored passwords need not be passed again.',
+        ),
+      scenario_env: z
+        .record(z.string(), z.string().nullable())
+        .optional()
+        .describe(
+          'Environment variables of the run, read in the test as `process.env.NAME`. With `server_id` they go on top of the stored ones: a string sets a variable, `null` drops it for this run.',
+        ),
+    },
+    handler: async (args, { client }) => {
+      const body: ScenarioPreviewBody = {
+        scenario_script: args.scenario_script,
+        request_timeout: args.request_timeout ?? 30,
+        locations: args.location ? [args.location] : undefined,
+        server_id: args.server_id,
+        scenario_env: args.scenario_env,
+      };
+      return client.call<ScenarioPreviewResponse>({
+        method: 'POST',
+        path: '/v1/scenario-runs/preview',
+        body,
+      });
+    },
+  });
+
+  registerTool(server, ctx, {
     name: 'monitor_get_checks',
     title: 'Get monitor checks (aggregated)',
     description:
@@ -529,6 +611,42 @@ export function registerMonitorTools(
         path: `/v1/servers/${id}/heartbeat/events`,
         query: { startDate: start_date, endDate: end_date },
       }),
+  });
+
+  registerTool(server, ctx, {
+    name: 'monitor_heartbeat_ping',
+    title: 'Send a heartbeat signal',
+    description:
+      'Sends a heartbeat signal to a `heartbeat` monitor, as the external job itself would — to check the setup or to close an incident by hand. A normal signal records the job as alive and closes an open incident; `fail: true` reports a failed run and opens an incident right away. A paused monitor accepts the signal and ignores it. The job itself calls `https://api.statuser.cloud/v1/heartbeat/<heartbeat_token>` (and `/fail`) with GET, POST or HEAD and needs no API key.',
+    write: true,
+    inputSchema: {
+      id: z.number().int().positive(),
+      fail: z
+        .boolean()
+        .optional()
+        .describe('Report a failed run instead of a successful one.'),
+    },
+    handler: async ({ id, fail }, { client }) => {
+      const monitor = await client.call<MonitorResponse>({
+        method: 'GET',
+        path: `/v1/servers/${id}`,
+      });
+      if (monitor.protocol !== 'heartbeat' || !monitor.heartbeat_token) {
+        throw new Error(
+          `Monitor ${id} is not a heartbeat monitor (protocol ${monitor.protocol}).`,
+        );
+      }
+      await client.call({
+        method: 'POST',
+        path: `/v1/heartbeat/${encodeURIComponent(monitor.heartbeat_token)}${fail ? '/fail' : ''}`,
+      });
+      // The token is a credential of the external job: not echoed back.
+      return {
+        id,
+        signal: fail ? 'fail' : 'ok',
+        is_paused: monitor.status === 'paused',
+      };
+    },
   });
 
   registerTool(server, ctx, {

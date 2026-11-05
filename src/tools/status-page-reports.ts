@@ -88,7 +88,9 @@ const reportServerSchema = z.object({
     .number()
     .int()
     .positive()
-    .describe('Status-page server id (from `status_page_get`).'),
+    .describe(
+      'Monitor id of a server on this page: `servers[].server_id` from `status_page_get`, the same id as in `monitor_list`.',
+    ),
   status: affectStatusEnum,
 });
 
@@ -97,7 +99,9 @@ const maintenanceServerSchema = z.object({
     .number()
     .int()
     .positive()
-    .describe('Status-page server id (from `status_page_get`).'),
+    .describe(
+      'Monitor id of a server on this page: `servers[].server_id` from `status_page_get`, the same id as in `monitor_list`.',
+    ),
 });
 
 export function registerStatusPageReportTools(

@@ -269,7 +269,7 @@ claude mcp add statuser --env STATUSER_API_KEY=ваш_ключ -- npx -y @status
 | ----------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `account`               | Профиль, тариф, режим отпуска, 2FA, привязки Telegram и MAX, история действий | `account_get`, `current_plan_get`, `activity_log_list`, `holiday_mode_set`, `telegram_linked_list`, `max_get_link` |
 | `projects`              | Проекты — области внутри аккаунта: свои серверы, страницы статуса и правила уведомлений | `project_list`, `project_create`, `project_delete`, `project_channel_list`, `project_channel_set` |
-| `monitors`              | Серверы, их проверки, heartbeat-события, история изменений DNS, ручной прогон сценария | `monitor_list`, `monitor_create`, `monitor_pause`, `monitor_get_checks`, `monitor_get_dns_history`              |
+| `monitors`              | Серверы, их проверки, heartbeat-события и тестовый сигнал, история изменений DNS, ручной и пробный прогон сценария | `monitor_list`, `monitor_create`, `monitor_pause`, `monitor_get_checks`, `monitor_get_dns_history`              |
 | `incidents`             | Инциденты, события, AI-саммари, PDF-отчёт, удаление                         | `incident_list`, `incident_get`, `incident_get_events`, `incident_generate_ai_summary`, `incident_get_report_pdf`, `incident_delete` |
 | `incident-comments`     | Комментарии к инцидентам с вложениями                                       | `incident_comment_create`, `incident_comment_upload_file`, `incident_comment_delete`                            |
 | `status-pages`          | Страницы статуса, группы, серверы, домены, slug, подписчики                 | `status_page_list`, `status_page_create`, `status_page_set_groups`, `status_page_subscriber_list`               |
@@ -358,7 +358,7 @@ API-ключ Statuser даёт полный доступ к аккаунту, п
 </details>
 
 <details>
-<summary><b>monitors</b> — 12 инструментов</summary>
+<summary><b>monitors</b> — 14 инструментов</summary>
 
 | Инструмент                       | Что делает                                                                                       | Изменяет данные |
 | -------------------------------- | ------------------------------------------------------------------------------------------------ | :-------------: |
@@ -371,8 +371,10 @@ API-ключ Statuser даёт полный доступ к аккаунту, п
 | `monitor_test_notify`            | Отправить тестовое уведомление по всем настроенным каналам                                       |       ✏️        |
 | `monitor_run_scenario`           | Проверить сценарий сейчас, вне расписания, — с теми же последствиями, что плановый прогон        |       ✏️        |
 | `monitor_get_scenario_run_latest` | Идёт ли ручной прогон сценария и чем закончился последний                                       |                 |
+| `scenario_test`                  | Прогнать сценарий в песочнице без сохранения — проверить скрипт до `monitor_create`             |       ✏️        |
 | `monitor_get_checks`             | Агрегированные результаты проверок для графиков uptime и latency                                 |                 |
 | `monitor_get_heartbeat_events`   | События heartbeat для серверов с `protocol: heartbeat`                                           |                 |
+| `monitor_heartbeat_ping`         | Отправить сигнал heartbeat — проверить настройку или закрыть инцидент вручную                    |       ✏️        |
 | `monitor_get_dns_history`        | История изменений DNS-записей для серверов с `protocol: dns`                                     |                 |
 
 </details>
