@@ -16,7 +16,7 @@ jobs:
 
     permissions:
       contents: write      # for creating a GitHub release
-      id-token: write      # for npm provenance (signed package)
+      id-token: write      # npm trusted publishing (OIDC) and provenance
 
     steps:
       - name: Checkout
@@ -25,7 +25,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          # Trusted publishing needs npm 11.5.1 or newer.
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
 
@@ -54,10 +55,10 @@ jobs:
       - name: Build
         run: npm run build
 
+      # No token: npm trusts this workflow (trusted publisher set up for
+      # statuser-cloud/mcp, publish.yml) and signs the provenance itself.
       - name: Publish to npm
         run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub release
         if: github.event_name == 'push'
