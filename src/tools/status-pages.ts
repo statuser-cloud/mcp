@@ -163,6 +163,12 @@ const optionalStatusPageFields = {
       'Language of the public page, subscriber emails and RSS/Atom feeds: `ru`, `en`, `kk` (Kazakh, Cyrillic), `uz` (Uzbek, Latin), `tr`, `zh` (Simplified Chinese), `es`, `de`, `fr`. Visitors cannot switch it. Server names, incident reports and announcements are not translated — write them in the page language. Omitted on create, the page is in Russian.',
     ),
   is_not_monitored_operational: z.boolean().optional(),
+  is_expiry_dates_shown: z
+    .boolean()
+    .optional()
+    .describe(
+      'Show SSL certificate and domain registration expiry dates under the servers on the public page. Dates appear for servers with SSL or domain checks enabled. Off by default.',
+    ),
   minimum_incident_duration: z
     .number()
     .int()
