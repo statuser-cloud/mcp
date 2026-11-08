@@ -16,6 +16,10 @@ type ProjectChannelSetBody = RequestBody<
   '/v1/projects/{projectId}/channels',
   'patch'
 >;
+type ProjectVoiceCallsUpdateBody = RequestBody<
+  '/v1/projects/{projectId}/voice-calls',
+  'patch'
+>;
 
 type ProjectListResponse = OkResponseBody<'/v1/projects', 'get'>;
 type ProjectCreateResponse = OkResponseBody<'/v1/projects', 'post'>;
@@ -29,8 +33,22 @@ type ProjectChannelSetResponse = OkResponseBody<
   '/v1/projects/{projectId}/channels',
   'patch'
 >;
+type ProjectVoiceCallsResponse = OkResponseBody<
+  '/v1/projects/{projectId}/voice-calls',
+  'get'
+>;
+type ProjectVoiceCallsUpdateResponse = OkResponseBody<
+  '/v1/projects/{projectId}/voice-calls',
+  'patch'
+>;
 
-const channelTypeEnum = z.enum(['email', 'telegram', 'max', 'chat_webhook']);
+const channelTypeEnum = z.enum([
+  'email',
+  'telegram',
+  'max',
+  'chat_webhook',
+  'phone',
+]);
 
 // Copied from the API; pinned so a new channel kind fails the build instead of
 // being rejected by the tool.
@@ -38,6 +56,28 @@ type _ChannelTypesMatchApi = Expect<
   SameValues<
     z.infer<typeof channelTypeEnum>,
     SpecEnum<ProjectChannelSetBody['type']>
+  >
+>;
+
+// Seconds of downtime before the call; copied from the API and pinned below.
+const voiceCallDelayEnum = z.union([
+  z.literal(0),
+  z.literal(120),
+  z.literal(300),
+  z.literal(600),
+]);
+const voiceServerScopeEnum = z.enum(['all', 'selected']);
+
+type _VoiceCallDelaysMatchApi = Expect<
+  SameValues<
+    z.infer<typeof voiceCallDelayEnum>,
+    SpecEnum<ProjectVoiceCallsUpdateBody['delay']>
+  >
+>;
+type _VoiceServerScopesMatchApi = Expect<
+  SameValues<
+    z.infer<typeof voiceServerScopeEnum>,
+    SpecEnum<ProjectVoiceCallsUpdateBody['server_scope']>
   >
 >;
 
@@ -154,7 +194,7 @@ export function registerProjectTools(
     name: 'project_channel_list',
     title: 'List channels of a project',
     description:
-      'Lists the notification channels of the account (confirmed emails, linked Telegram and MAX chats, work chats — `type: chat_webhook` with the chat in `provider`: Mattermost, Rocket.Chat, Pachca, Discord, Slack) together with whether this project uses them. A channel is connected once for the whole account; a project only switches it on or off for its own monitoring notifications. Account-level notifications — invoices, security, API keys — reach every channel regardless of this setting. Webhooks are not here: their scope is stored on the subscription, see `webhook_update`. A work chat with `is_disabled_by_plan: true` receives nothing on the current plan; its on/off state in projects is kept and applies again after an upgrade. A Telegram or MAX channel with a non-null `disabled_reason` receives nothing either, even when switched on here: the messenger refuses delivery until the chat is fixed and a channel test in the Statuser panel succeeds.',
+      'Lists the notification channels of the account (confirmed emails, linked Telegram and MAX chats, work chats — `type: chat_webhook` with the chat in `provider`: Mattermost, Rocket.Chat, Pachca, Discord, Slack — and confirmed phones for outage calls, `type: phone`) together with whether this project uses them. A phone switched on here is called only while voice calls are on in the project, see `project_voice_calls_get`. A channel is connected once for the whole account; a project only switches it on or off for its own monitoring notifications. Account-level notifications — invoices, security, API keys — reach every channel regardless of this setting. Webhooks are not here: their scope is stored on the subscription, see `webhook_update`. A work chat with `is_disabled_by_plan: true` receives nothing on the current plan; its on/off state in projects is kept and applies again after an upgrade. A Telegram or MAX channel with a non-null `disabled_reason` receives nothing either, even when switched on here: the messenger refuses delivery until the chat is fixed and a channel test in the Statuser panel succeeds.',
     inputSchema: {
       project_id: z.number().int().positive(),
     },
@@ -179,7 +219,7 @@ export function registerProjectTools(
         .int()
         .positive()
         .describe(
-          'Id of the channel inside its own list — as returned by `project_channel_list`, `notification_email_list`, `telegram_linked_list` or `max_linked_list`. For work chats (`chat_webhook`) take it from `project_channel_list`.',
+          'Id of the channel inside its own list — as returned by `project_channel_list`, `notification_email_list`, `telegram_linked_list` or `max_linked_list`. For work chats (`chat_webhook`) take it from `project_channel_list`, for phones — from `project_channel_list` or `notification_phone_list`.',
         ),
       is_enabled: z.boolean(),
     },
@@ -191,6 +231,60 @@ export function registerProjectTools(
       return client.call<ProjectChannelSetResponse>({
         method: 'PATCH',
         path: `/v1/projects/${project_id}/channels`,
+        body,
+      });
+    },
+  });
+
+  registerTool(server, ctx, {
+    name: 'project_voice_calls_get',
+    title: 'Get outage call settings of a project',
+    description:
+      'Returns how outage calls are set up in the project: whether calls are on (`is_enabled`), after how many seconds of downtime the call is placed (`delay`: 0, 120, 300 or 600 — shorter outages produce no call), and which monitors trigger it (`server_scope`: `all` — every monitor of the project including ones added later, `selected` — only `server_ids`; an empty `server_ids` with `selected` means no calls). Phones are not here: a call goes to confirmed phones switched on in the project (`type: phone` in `project_channel_list`). A call also needs calls left on the balance, see `call_balance_get`. Only outages are called about, not recoveries.',
+    inputSchema: {
+      project_id: z.number().int().positive(),
+    },
+    handler: async ({ project_id }, { client }) =>
+      client.call<ProjectVoiceCallsResponse>({
+        method: 'GET',
+        path: `/v1/projects/${project_id}/voice-calls`,
+      }),
+  });
+
+  registerTool(server, ctx, {
+    name: 'project_voice_calls_update',
+    title: 'Change outage call settings of a project',
+    description:
+      'Turns outage calls on or off in the project and changes when and for which monitors to call. Pass only the fields you want to change — an omitted field stays as it is. `server_ids` replaces the selection as a whole: to add a monitor to the selected ones, pass the previous ids too. Turning calls on requires a plan with voice calls or purchased calls on the balance (403 otherwise). Phones are switched on per project with `project_channel_set` (`type: phone`); a phone is added and confirmed in the Statuser panel only.',
+    write: true,
+    inputSchema: {
+      project_id: z.number().int().positive(),
+      is_enabled: z
+        .boolean()
+        .optional()
+        .describe('Call on outages in this project.'),
+      delay: voiceCallDelayEnum
+        .optional()
+        .describe(
+          'Seconds of downtime before the call: 0 calls right away. Other channels are notified immediately regardless.',
+        ),
+      server_scope: voiceServerScopeEnum
+        .optional()
+        .describe(
+          '`all` — every monitor of the project, including ones added later; `selected` — only `server_ids`.',
+        ),
+      server_ids: z
+        .array(z.number().int().positive())
+        .optional()
+        .describe(
+          'Monitors of this project to call about when `server_scope` is `selected`. Replaces the previous selection.',
+        ),
+    },
+    handler: async ({ project_id, ...args }, { client }) => {
+      const body: ProjectVoiceCallsUpdateBody = args;
+      return client.call<ProjectVoiceCallsUpdateResponse>({
+        method: 'PATCH',
+        path: `/v1/projects/${project_id}/voice-calls`,
         body,
       });
     },

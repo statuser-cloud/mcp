@@ -213,6 +213,65 @@
         ]
       }
     },
+    "/v1/billing/call-packs": {
+      "get": {
+        "operationId": "CallPacksController_getCallPacks",
+        "summary": "Получить пакеты звонков в продаже",
+        "description": "Пакеты звонков при сбоях: сколько звонков, цена и срок действия. Купить пакет можно в панели, на тарифах Pro и Team.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Пакеты звонков",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CallPackOfferResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Биллинг"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/billing/call-balance": {
+      "get": {
+        "operationId": "CallPacksController_getCallBalance",
+        "summary": "Получить остаток звонков",
+        "description": "Сколько звонков при сбоях осталось у аккаунта и до какого числа они действуют. Звонки кончатся — при сбоях звонить перестанем, остальные уведомления продолжат приходить.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Остаток звонков",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallBalanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Биллинг"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/v1/servers": {
       "post": {
         "operationId": "ServersController_addServer",
@@ -4422,6 +4481,264 @@
         ]
       }
     },
+    "/v1/notification-phones": {
+      "get": {
+        "operationId": "NotificationPhonesController_list",
+        "summary": "Получить список телефонов для звонков при сбоях",
+        "description": "Телефоны аккаунта, на которые Statuser звонит при сбое сервера. Звонок уходит только на подтверждённые номера (status: confirmed), включённые в проекте сервера. У номера, который ещё подтверждается, в confirmation — куда позвонить и до какого времени.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Телефоны аккаунта",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationPhoneResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Звонки при сбоях"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/notification-phones/{id}/test-notify": {
+      "post": {
+        "operationId": "NotificationPhonesController_testNotify",
+        "summary": "Позвонить на телефон для проверки",
+        "description": "Ставит тестовый звонок на подтверждённый номер — тот же звонок, что при сбое. Списывает один звонок из остатка аккаунта. Правила уведомлений и настройки проектов на тест не влияют — проверяется сам номер. Итог звонка — GET /v1/notification-phones/{id}/test-calls/{callId}. Если номер не подтверждён, звонков не осталось или предыдущий тестовый звонок ещё идёт — 409; больше 5 тестовых звонков на номер за час — 429.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Звонок поставлен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestCallResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Звонки недоступны на тарифе"
+          },
+          "404": {
+            "description": "Телефон не найден"
+          },
+          "409": {
+            "description": "Номер не подтверждён, звонков не осталось или предыдущий тест ещё идёт"
+          },
+          "429": {
+            "description": "Слишком много тестовых звонков"
+          },
+          "503": {
+            "description": "Звонки временно недоступны"
+          }
+        },
+        "tags": [
+          "Звонки при сбоях"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/notification-phones/{id}/test-calls/{callId}": {
+      "get": {
+        "operationId": "NotificationPhonesController_testCallStatus",
+        "summary": "Получить итог тестового звонка",
+        "description": "Пока звонок идёт, status — calling; итог обычно приходит в течение минуты после постановки.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "callId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Статус звонка",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestCallStatusResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Звонок не найден"
+          }
+        },
+        "tags": [
+          "Звонки при сбоях"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/notification-phones/{id}": {
+      "delete": {
+        "operationId": "NotificationPhonesController_remove",
+        "summary": "Удалить телефон",
+        "description": "Удаляет номер из телефонов аккаунта: на него больше не звонят ни в одном проекте.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Телефон удалён"
+          },
+          "404": {
+            "description": "Телефон не найден"
+          }
+        },
+        "tags": [
+          "Звонки при сбоях"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/projects/{projectId}/voice-calls": {
+      "get": {
+        "operationId": "ProjectVoiceCallsController_get",
+        "summary": "Получить настройку звонков проекта",
+        "description": "Звонить ли при сбоях серверов проекта, через сколько секунд недоступности и по каким серверам. Номера, на которые звонить, включаются в каналах проекта (GET /v1/projects/{projectId}/channels, type: phone).",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Настройка звонков проекта",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectVoiceSettingResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Проект не найден"
+          }
+        },
+        "tags": [
+          "Звонки при сбоях"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "ProjectVoiceCallsController_update",
+        "summary": "Изменить настройку звонков проекта",
+        "description": "Непереданное поле не меняется. Список server_ids заменяет выбор целиком; пустой список при server_scope: selected — звонков нет ни по одному серверу. Если в server_ids есть сервер другого проекта — 400.",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectVoiceSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Настройка сохранена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectVoiceSettingResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверное значение поля или сервер другого проекта"
+          },
+          "403": {
+            "description": "Звонки недоступны на тарифе"
+          },
+          "404": {
+            "description": "Проект не найден"
+          }
+        },
+        "tags": [
+          "Звонки при сбоях"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/v1/activity-log": {
       "get": {
         "operationId": "ActivityLogController_list",
@@ -4501,6 +4818,7 @@
                 "server",
                 "notification_rule",
                 "notification_email",
+                "notification_phone",
                 "webhook",
                 "integration",
                 "account",
@@ -4560,6 +4878,12 @@
                   "notification_email.resend",
                   "notification_email.remove",
                   "notification_email.test",
+                  "notification_phone.add",
+                  "notification_phone.confirm",
+                  "notification_phone.resend",
+                  "notification_phone.remove",
+                  "notification_phone.test",
+                  "project.voice_settings_update",
                   "webhook.create",
                   "webhook.update",
                   "webhook.delete",
@@ -4810,6 +5134,7 @@
                 "server",
                 "notification_rule",
                 "notification_email",
+                "notification_phone",
                 "webhook",
                 "integration",
                 "account",
@@ -4869,6 +5194,12 @@
                   "notification_email.resend",
                   "notification_email.remove",
                   "notification_email.test",
+                  "notification_phone.add",
+                  "notification_phone.confirm",
+                  "notification_phone.resend",
+                  "notification_phone.remove",
+                  "notification_phone.test",
+                  "project.voice_settings_update",
                   "webhook.create",
                   "webhook.update",
                   "webhook.delete",
@@ -5432,6 +5763,11 @@
             "example": true,
             "description": "Поддержка уведомлений о медленном ответе"
           },
+          "voice_calls_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Доступны звонки при сбоях: телефоны, пакеты звонков и звонки в проектах"
+          },
           "custom_success_http_codes_enabled": {
             "type": "boolean",
             "example": true,
@@ -5550,6 +5886,7 @@
           "scenario_min_check_interval_seconds",
           "scenario_max_timeout_seconds",
           "latency_alerts_enabled",
+          "voice_calls_enabled",
           "custom_success_http_codes_enabled",
           "incident_retention_days",
           "network_diagnostics_enabled",
@@ -5688,6 +6025,77 @@
           "pending_plan_effective_at"
         ],
         "title": "CurrentPlanResponseDto"
+      },
+      "CallPackOfferResponseDto": {
+        "type": "object",
+        "properties": {
+          "pack_code": {
+            "type": "string",
+            "example": "calls_100",
+            "description": "Код пакета"
+          },
+          "calls": {
+            "type": "number",
+            "example": 100,
+            "description": "Звонков в пакете"
+          },
+          "price": {
+            "type": "number",
+            "example": 1390,
+            "description": "Цена, ₽"
+          },
+          "validity_months": {
+            "type": "number",
+            "example": 12,
+            "description": "Срок действия пакета, месяцев"
+          }
+        },
+        "required": [
+          "pack_code",
+          "calls",
+          "price",
+          "validity_months"
+        ],
+        "title": "CallPackOfferResponseDto"
+      },
+      "CallBalanceResponseDto": {
+        "type": "object",
+        "properties": {
+          "calls_left": {
+            "type": "number",
+            "example": 87,
+            "description": "Сколько звонков можно потратить сейчас. Купленные звонки работают на любом тарифе, бесплатные — только на тарифе со звонками"
+          },
+          "calls_total": {
+            "type": "number",
+            "example": 100,
+            "description": "Объём действующих пакетов, из которых тратится calls_left: сколько звонков в них было при покупке"
+          },
+          "purchased_calls_left": {
+            "type": "number",
+            "example": 80,
+            "description": "Сколько из остатка куплено"
+          },
+          "expires_at": {
+            "type": "object",
+            "example": "2027-10-31T12:00:00.000Z",
+            "nullable": true,
+            "description": "До какого момента действуют звонки. Новая покупка продлевает остаток до своего срока"
+          },
+          "is_trial_available": {
+            "type": "boolean",
+            "example": false,
+            "description": "Бесплатные звонки ещё не выдавались: их зачисляют при подтверждении первого номера"
+          }
+        },
+        "required": [
+          "calls_left",
+          "calls_total",
+          "purchased_calls_left",
+          "expires_at",
+          "is_trial_available"
+        ],
+        "title": "CallBalanceResponseDto"
       },
       "ServerHeader": {
         "type": "object",
@@ -7571,7 +7979,8 @@
               "email",
               "telegram",
               "max",
-              "chat_webhook"
+              "chat_webhook",
+              "phone"
             ],
             "example": "telegram",
             "description": "Тип канала. `chat_webhook` — рабочий чат (Mattermost, Rocket.Chat, Пачка, Discord, Slack), какой именно — в поле `provider`"
@@ -7633,7 +8042,8 @@
               "email",
               "telegram",
               "max",
-              "chat_webhook"
+              "chat_webhook",
+              "phone"
             ],
             "example": "telegram",
             "description": "Тип канала"
@@ -7665,7 +8075,8 @@
               "email",
               "telegram",
               "max",
-              "chat_webhook"
+              "chat_webhook",
+              "phone"
             ],
             "example": "telegram",
             "description": "Тип канала. `chat_webhook` — рабочий чат (Mattermost, Rocket.Chat, Discord, Slack, Пачка), какой именно — в поле `provider`"
@@ -10567,6 +10978,39 @@
         ],
         "title": "DiagnosticsMeta"
       },
+      "VoiceCallMeta": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "+7 999 000-00-00",
+            "description": "Номер, на который звонили"
+          },
+          "attempt": {
+            "type": "number",
+            "example": 1,
+            "description": "Номер попытки: 1 — первый звонок, 2 и 3 — повторы, если трубку не взяли"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "calling",
+              "answered",
+              "no_answer",
+              "failed",
+              "no_calls_left"
+            ],
+            "example": "answered",
+            "description": "calling — звонок идёт; answered — взяли трубку; no_answer — не взяли; failed — звонок не прошёл; no_calls_left — звонки закончились, звонка не было"
+          }
+        },
+        "required": [
+          "phone",
+          "attempt",
+          "result"
+        ],
+        "title": "VoiceCallMeta"
+      },
       "IncidentEventResponseDto": {
         "type": "object",
         "properties": {
@@ -10588,7 +11032,8 @@
               "start",
               "end",
               "screenshot",
-              "diagnostics"
+              "diagnostics",
+              "voice_call"
             ]
           },
           "meta": {
@@ -10611,6 +11056,9 @@
               },
               {
                 "$ref": "#/components/schemas/DiagnosticsMeta"
+              },
+              {
+                "$ref": "#/components/schemas/VoiceCallMeta"
               }
             ],
             "nullable": true
@@ -10809,6 +11257,204 @@
         },
         "title": "UpdateIncidentCommentDto"
       },
+      "NotificationPhoneConfirmationDto": {
+        "type": "object",
+        "properties": {
+          "call_to": {
+            "example": [
+              "+79863168770",
+              "+79863168810"
+            ],
+            "description": "Номера, на любой из которых нужно позвонить с подтверждаемого телефона",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expires_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-11-01T13:00:00.000Z",
+            "description": "До какого времени ждём звонка"
+          }
+        },
+        "required": [
+          "call_to",
+          "expires_at"
+        ],
+        "title": "NotificationPhoneConfirmationDto"
+      },
+      "NotificationPhoneResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 12,
+            "description": "ID телефона"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+79991234567",
+            "description": "Номер в формате E.164"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "confirmed"
+            ],
+            "example": "confirmed",
+            "description": "confirmed — номер подтверждён, на него звоним; pending — ждём звонка с этого номера для подтверждения"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-10-31T11:58:00.000Z",
+            "description": "Когда номер добавлен"
+          },
+          "confirmation": {
+            "nullable": true,
+            "description": "Открытое подтверждение: куда позвонить и до какого времени. У подтверждённого номера — null",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationPhoneConfirmationDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "phone",
+          "status",
+          "created_at",
+          "confirmation"
+        ],
+        "title": "NotificationPhoneResponseDto"
+      },
+      "TestCallResponseDto": {
+        "type": "object",
+        "properties": {
+          "call_id": {
+            "type": "number",
+            "example": 1234,
+            "description": "Идентификатор тестового звонка"
+          }
+        },
+        "required": [
+          "call_id"
+        ],
+        "title": "TestCallResponseDto"
+      },
+      "TestCallStatusResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "calling",
+              "answered",
+              "no_answer",
+              "failed"
+            ],
+            "example": "answered",
+            "description": "calling — звонок ещё идёт; answered — взяли трубку; no_answer — не взяли; failed — звонок не прошёл"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "TestCallStatusResponseDto"
+      },
+      "ProjectVoiceSettingResponseDto": {
+        "type": "object",
+        "properties": {
+          "is_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Звонить при сбоях серверов проекта"
+          },
+          "delay": {
+            "type": "number",
+            "example": 300,
+            "enum": [
+              0,
+              120,
+              300,
+              600
+            ],
+            "description": "Через сколько секунд недоступности позвонить: 0, 120, 300 или 600. Сообщения в остальные каналы приходят сразу"
+          },
+          "server_scope": {
+            "type": "string",
+            "enum": [
+              "all",
+              "selected"
+            ],
+            "example": "selected",
+            "description": "По каким серверам звонить: all — по всем серверам проекта, включая добавленные позже; selected — только по server_ids"
+          },
+          "server_ids": {
+            "example": [
+              101,
+              102
+            ],
+            "description": "Серверы проекта, по которым звонить при server_scope = selected. Пустой список при selected — звонков нет",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "is_enabled",
+          "delay",
+          "server_scope",
+          "server_ids"
+        ],
+        "title": "ProjectVoiceSettingResponseDto"
+      },
+      "UpdateProjectVoiceSettingDto": {
+        "type": "object",
+        "properties": {
+          "is_enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Звонить при сбоях серверов проекта"
+          },
+          "delay": {
+            "type": "number",
+            "example": 300,
+            "enum": [
+              0,
+              120,
+              300,
+              600
+            ],
+            "description": "Через сколько секунд недоступности позвонить: 0, 120, 300 или 600. Сообщения в остальные каналы приходят сразу"
+          },
+          "server_scope": {
+            "type": "string",
+            "enum": [
+              "all",
+              "selected"
+            ],
+            "example": "selected",
+            "description": "По каким серверам звонить: all — по всем серверам проекта, включая добавленные позже; selected — только по server_ids"
+          },
+          "server_ids": {
+            "example": [
+              101,
+              102
+            ],
+            "description": "Серверы проекта, по которым звонить при server_scope = selected. Пустой список при selected — звонков нет",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "title": "UpdateProjectVoiceSettingDto"
+      },
       "ActivityLogEntryResponseDto": {
         "type": "object",
         "properties": {
@@ -10846,6 +11492,12 @@
               "notification_email.resend",
               "notification_email.remove",
               "notification_email.test",
+              "notification_phone.add",
+              "notification_phone.confirm",
+              "notification_phone.resend",
+              "notification_phone.remove",
+              "notification_phone.test",
+              "project.voice_settings_update",
               "webhook.create",
               "webhook.update",
               "webhook.delete",
@@ -11002,6 +11654,7 @@
               "server",
               "notification_rule",
               "notification_email",
+              "notification_phone",
               "webhook",
               "integration",
               "account",
