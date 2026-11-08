@@ -27,6 +27,7 @@ type TelegramLinkedListResponse = OkResponseBody<'/v1/telegram/linked', 'get'>;
 type MaxLinkedListResponse = OkResponseBody<'/v1/max/linked', 'get'>;
 type MaxLinksResponse = OkResponseBody<'/v1/max/links', 'get'>;
 type ActivityLogListResponse = OkResponseBody<'/v1/activity-log', 'get'>;
+type CallBalanceResponse = OkResponseBody<'/v1/billing/call-balance', 'get'>;
 
 const ACTIVITY_LOG_CATEGORIES = [
   'monitoring',
@@ -40,6 +41,7 @@ const ACTIVITY_LOG_TARGET_TYPES = [
   'server',
   'notification_rule',
   'notification_email',
+  'notification_phone',
   'webhook',
   'integration',
   'account',
@@ -190,6 +192,19 @@ export function registerAccountTools(
       client.call<CurrentPlanResponse>({
         method: 'GET',
         path: '/v1/billing/current-plan',
+      }),
+  });
+
+  registerTool(server, ctx, {
+    name: 'call_balance_get',
+    title: 'Get voice call balance',
+    description:
+      'Returns how many voice calls the account can spend on outage calls right now (`calls_left`), how many of them were purchased, and when they expire. Free calls work only on a plan with voice calls (see `voice_calls_enabled` in `current_plan_get`); purchased calls work on any plan. Every call attempt spends one call: an unanswered call is retried twice, two minutes apart, and each retry spends another one. Calls are bought in the Statuser panel only. Use it to answer "will you call me", "how many calls are left" and "why was there no call".',
+    inputSchema: {},
+    handler: async (_args, { client }) =>
+      client.call<CallBalanceResponse>({
+        method: 'GET',
+        path: '/v1/billing/call-balance',
       }),
   });
 

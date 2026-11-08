@@ -5,6 +5,7 @@ import type {
   Expect,
   OkResponseBody,
   RequestBody,
+  ResponseBody,
   SameValues,
   SpecEnum,
 } from '../generated/helpers.js';
@@ -40,6 +41,19 @@ type NotificationEmailAddResponse = OkResponseBody<
 type NotificationEmailConfirmResponse = OkResponseBody<
   '/v1/notification-emails/{id}/confirm',
   'post'
+>;
+type NotificationPhoneListResponse = OkResponseBody<
+  '/v1/notification-phones',
+  'get'
+>;
+type NotificationPhoneTestResponse = ResponseBody<
+  '/v1/notification-phones/{id}/test-notify',
+  'post',
+  202
+>;
+type NotificationPhoneTestResultResponse = OkResponseBody<
+  '/v1/notification-phones/{id}/test-calls/{callId}',
+  'get'
 >;
 
 // All public subscription types — used for per-channel notification rules.
@@ -358,6 +372,75 @@ export function registerNotificationTools(
       await client.call({
         method: 'DELETE',
         path: `/v1/notification-emails/${id}`,
+      });
+      return { deleted: true, id };
+    },
+  });
+
+  // ---------- Notification phones ----------
+
+  registerTool(server, ctx, {
+    name: 'notification_phone_list',
+    title: 'List phones for outage calls',
+    description:
+      'Lists the phones of the account that Statuser calls when a monitor goes down. A call goes only to a confirmed phone (`status: confirmed`) that is switched on in the project of the monitor (`project_channel_list`) while calls are on in that project (`project_voice_calls_get`). A phone still being confirmed carries `confirmation` — which number to call from it and until when. Phones are added and confirmed in the Statuser panel only.',
+    inputSchema: {},
+    handler: async (_args, { client }) =>
+      client.call<NotificationPhoneListResponse>({
+        method: 'GET',
+        path: '/v1/notification-phones',
+      }),
+  });
+
+  registerTool(server, ctx, {
+    name: 'notification_phone_test',
+    title: 'Place a test call to a phone',
+    description:
+      'Places a real test call to a confirmed phone — the same call as on an outage — and spends one call from the balance (`call_balance_get`). Notification rules and project settings do not apply: only the phone itself is checked. Returns `call_id`; the outcome usually arrives within a minute, read it with `notification_phone_test_result`. 409 — the phone is not confirmed, no calls are left, or the previous test call is still going; 429 — too many test calls to this phone; 403 — calls are not available on the plan.',
+    write: true,
+    inputSchema: {
+      id: z.number().int().positive(),
+    },
+    handler: async ({ id }, { client }) =>
+      client.call<NotificationPhoneTestResponse>({
+        method: 'POST',
+        path: `/v1/notification-phones/${id}/test-notify`,
+      }),
+  });
+
+  registerTool(server, ctx, {
+    name: 'notification_phone_test_result',
+    title: 'Get the outcome of a test call',
+    description:
+      'Returns the status of a test call placed by `notification_phone_test`: `calling` — still going, `answered`, `no_answer` or `failed`.',
+    inputSchema: {
+      id: z.number().int().positive().describe('Phone id.'),
+      call_id: z
+        .number()
+        .int()
+        .positive()
+        .describe('`call_id` returned by `notification_phone_test`.'),
+    },
+    handler: async ({ id, call_id }, { client }) =>
+      client.call<NotificationPhoneTestResultResponse>({
+        method: 'GET',
+        path: `/v1/notification-phones/${id}/test-calls/${call_id}`,
+      }),
+  });
+
+  registerTool(server, ctx, {
+    name: 'notification_phone_remove',
+    title: 'Remove a phone for outage calls',
+    description:
+      'Removes a phone from the account: it is no longer called in any project. Irreversible — to use the same number again, it must be added and confirmed in the Statuser panel once more.',
+    write: true,
+    inputSchema: {
+      id: z.number().int().positive(),
+    },
+    handler: async ({ id }, { client }) => {
+      await client.call({
+        method: 'DELETE',
+        path: `/v1/notification-phones/${id}`,
       });
       return { deleted: true, id };
     },
