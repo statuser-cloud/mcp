@@ -2144,6 +2144,11 @@ export interface components {
             subscribers: components["schemas"]["StatusPageSubscriberResponseDto"][];
             stats: components["schemas"]["StatusPageSubscribersStatsResponseDto"];
         };
+        PortProbeItemDto: {
+            port: number;
+            result: "service_responded" | "reset" | "silent" | "no_connection";
+            detail: Record<string, never> | null;
+        };
         TimingDetails: {
             effective_url: string;
             redirect_count: number;
@@ -2166,6 +2171,7 @@ export interface components {
             traceroute: string[];
             ping: string[];
             nmap: string[];
+            port_probe?: components["schemas"]["PortProbeItemDto"][] | null;
             resolved_ips: string[];
             timing: components["schemas"]["TimingDetails"] | null;
             location: "msk-1" | "spb-1" | "ala-1" | "nyc-1" | "ams-1";

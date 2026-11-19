@@ -10588,6 +10588,39 @@
         ],
         "title": "StatusPageSubscribersResponseDto"
       },
+      "PortProbeItemDto": {
+        "type": "object",
+        "properties": {
+          "port": {
+            "type": "number",
+            "example": 443,
+            "description": "Порт"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "service_responded",
+              "reset",
+              "silent",
+              "no_connection"
+            ],
+            "example": "service_responded",
+            "description": "Что произошло после подключения: service_responded — сервис ответил сам, reset — соединение сброшено, silent — соединение держится без ответа, no_connection — подключиться не удалось"
+          },
+          "detail": {
+            "type": "object",
+            "example": "TLSv1.3",
+            "nullable": true,
+            "description": "Что ответил сервис: первая строка приветствия, статус HTTP или версия TLS"
+          }
+        },
+        "required": [
+          "port",
+          "result",
+          "detail"
+        ],
+        "title": "PortProbeItemDto"
+      },
       "TimingDetails": {
         "type": "object",
         "properties": {
@@ -10729,6 +10762,14 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "port_probe": {
+            "nullable": true,
+            "description": "Ответы частых портов на полное подключение. Заполняется, когда nmap показал открытыми почти все порты: так бывает, если на подключение к любому порту отвечает защитное устройство перед сервером",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortProbeItemDto"
             }
           },
           "resolved_ips": {
